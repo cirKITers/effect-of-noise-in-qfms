@@ -1,3 +1,44 @@
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[project]
+name = "disentanting_entanglement"
+readme = "README.md"
+dynamic = [ "dependencies", "version",]
+
+[project.scripts]
+disentanting-entanglement = "disentanting_entanglement.__main__:main"
+
+[tool.kedro]
+package_name = "disentanting_entanglement"
+project_name = "Disentanting-Entanglement"
+kedro_init_version = "0.19.6"
+tools = [ "Testing", "Custom Logging", "Kedro Viz",]
+example_pipeline = "False"
+source_dir = "src"
+
+[project.entry-points."kedro.hooks"]
+
+[tool.pytest.ini_options]
+addopts = "--cov-report term-missing --cov src/disentanting_entanglement -ra"
+
+[tool.coverage.report]
+fail_under = 0
+show_missing = true
+exclude_lines = [ "pragma: no cover", "raise NotImplementedError",]
+
+[tool.setuptools.dynamic.dependencies]
+file = "requirements.txt"
+
+[tool.setuptools.dynamic.version]
+attr = "disentanting_entanglement.__version__"
+
+[tool.setuptools.packages.find]
+where = [ "src",]
+namespaces = false
+
 [tool.poetry]
 name = "disentangling-entanglement-in-qml"
 version = "0.1.0"
@@ -6,11 +47,11 @@ authors = ["Melvin Strobl <lc3267@kit.edu>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = ">=3.11,<3.12"
 mlflow = "^2.13.2"
 pennylane = "^0.36.0"
+pytest = "^8.2.2"
+kedro = "^0.19.6"
+kedro-mlflow = "^0.12.2"
+kedro-viz = "^9.1.0"
 
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"

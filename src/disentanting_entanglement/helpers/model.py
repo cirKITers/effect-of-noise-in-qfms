@@ -4,7 +4,7 @@ import pennylane.numpy as np
 import hashlib
 import os
 
-from ansaetze import Ansaetze
+from src.disentanting_entanglement.helpers.ansaetze import Ansaetze
 
 
 class Model:
