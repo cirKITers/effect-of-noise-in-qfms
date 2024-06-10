@@ -76,9 +76,7 @@ class Entanglement:
             mw = 2 * np.sum(mw_measure.real) / samples
 
             # catch floating point errors
-            if mw < 0.0:
-                mw = 0.0
-            return mw
+            return min(max(mw, 0.0), 1.0)
 
         # TODO: maybe switch to JAX rng
         rng = np.random.default_rng(seed)
