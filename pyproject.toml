@@ -4,16 +4,16 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [project]
-name = "disentanting_entanglement"
+name = "disentangling_entanglement"
 readme = "README.md"
 dynamic = [ "dependencies", "version",]
 
 [project.scripts]
-disentanting-entanglement = "disentanting_entanglement.__main__:main"
+disentangling-entanglement = "disentangling_entanglement.__main__:main"
 
 [tool.kedro]
-package_name = "disentanting_entanglement"
-project_name = "Disentanting-Entanglement"
+package_name = "disentangling_entanglement"
+project_name = "disentangling-Entanglement"
 kedro_init_version = "0.19.6"
 tools = [ "Testing", "Custom Logging", "Kedro Viz",]
 example_pipeline = "False"
@@ -22,7 +22,7 @@ source_dir = "src"
 [project.entry-points."kedro.hooks"]
 
 [tool.pytest.ini_options]
-addopts = "--cov-report term-missing --cov src/disentanting_entanglement -ra"
+addopts = "--cov-report term-missing --cov src/disentangling_entanglement -ra"
 
 [tool.coverage.report]
 fail_under = 0
@@ -33,7 +33,7 @@ exclude_lines = [ "pragma: no cover", "raise NotImplementedError",]
 file = "requirements.txt"
 
 [tool.setuptools.dynamic.version]
-attr = "disentanting_entanglement.__version__"
+attr = "disentangling_entanglement.__version__"
 
 [tool.setuptools.packages.find]
 where = [ "src",]

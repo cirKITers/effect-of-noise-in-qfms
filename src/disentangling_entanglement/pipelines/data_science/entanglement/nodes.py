@@ -1,5 +1,9 @@
-from disentanting_entanglement.helpers.entanglement import Entanglement
-from disentanting_entanglement.helpers.model import Model
+from disentangling_entanglement.helpers.entanglement import Entanglement
+from disentangling_entanglement.helpers.model import Model
+
+import pennylane as qml
+import pennylane.numpy as np
+import mlflow
 
 import logging
 
@@ -25,5 +29,7 @@ def calculate_entanglement(model: Model, samples: int, seed: int):
         cache=True,
         state_vector=True,
     )
+
+    log.info(f"Calculated entangling capability: {entangling_capability}")
 
     return entangling_capability

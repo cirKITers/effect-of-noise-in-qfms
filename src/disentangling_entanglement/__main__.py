@@ -1,6 +1,7 @@
-"""Disentanting-Entanglement file for ensuring the package is executable
-as `disentanting-entanglement` and `python -m disentanting_entanglement`
+"""disentangling-Entanglement file for ensuring the package is executable
+as `disentangling-entanglement` and `python -m disentangling_entanglement`
 """
+
 import importlib
 from pathlib import Path
 

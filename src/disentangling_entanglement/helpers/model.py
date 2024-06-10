@@ -4,7 +4,7 @@ import pennylane.numpy as np
 import hashlib
 import os
 
-from src.disentanting_entanglement.helpers.ansaetze import Ansaetze
+from disentangling_entanglement.helpers.ansaetze import Ansaetze
 
 
 class Model:
@@ -51,7 +51,7 @@ class Model:
             impl_n_layers,
             self.pqc(None, self.n_qubits),
         )
-        self.params = np.random.uniform(0, 2 * np.pi, params_shape)
+        self.params = np.random.uniform(0, 2 * np.pi, params_shape, requires_grad=True)
 
         self.dev = qml.device("default.mixed", wires=n_qubits)
 
@@ -59,7 +59,7 @@ class Model:
 
     def iec(
         self,
-        x: np.ndarray,
+        inputs: np.ndarray,
         data_reupload: bool = True,
     ) -> None:
         """
@@ -75,9 +75,9 @@ class Model:
         """
         if data_reupload:
             for q in range(self.n_qubits):
-                qml.RX(x[0], wires=q)
+                qml.RX(inputs, wires=q)
         else:
-            qml.RX(x[0], wires=0)
+            qml.RX(inputs, wires=0)
 
     def _circuit(
         self,
@@ -92,8 +92,8 @@ class Model:
         The Circuit consists of a PQC and IEC in each layer.
 
         Args:
-            inputs (np.ndarray): weight vector of size n_layers*(n_qubits*3-1)
-            params (np.ndarray): input vector of size 1
+            inputs (np.ndarray): input vector of size 1
+            params (np.ndarray): weight vector of size n_layers*(n_qubits*3-1)
             noise_params (Optional[Dict[str, float]]): dictionary with noise parameters
                 - "BitFlip": float, default = 0.0
                 - "PhaseFlip": float, default = 0.0
@@ -105,15 +105,15 @@ class Model:
             float: Expectation value of PauliZ(0) of the circuit.
         """
         if self.data_reupload:
-            n_layers = inputs.shape[0] - 1
+            n_layers = self.n_layers - 1
         else:
-            n_layers = inputs.shape[0]
+            n_layers = self.n_layers
 
         for l in range(0, n_layers):
-            self.pqc(inputs[l], self.n_qubits)
+            self.pqc(params[l], self.n_qubits)
 
             if self.data_reupload or l == 0:
-                self.iec(params, data_reupload=self.data_reupload)
+                self.iec(inputs, data_reupload=self.data_reupload)
 
             if noise_params is not None:
                 for q in range(self.n_qubits):
@@ -126,7 +126,7 @@ class Model:
                     )
 
         if self.data_reupload:
-            self.pqc(inputs[-1], self.n_qubits)
+            self.pqc(params[-1], self.n_qubits)
 
         if state_vector:
             return qml.density_matrix(wires=list(range(self.n_qubits)))
@@ -158,14 +158,6 @@ class Model:
         Returns:
             np.ndarray: The output of the quantum circuit.
         """
-        if params is not None:
-            params = params
-        else:
-            params = self.params
-
-        if isinstance(params, list):
-            params = np.array(params)
-
         # the qasm representation contains the bound parameters, thus it is ok to hash that
         hs = hashlib.md5(
             repr(
@@ -195,8 +187,8 @@ class Model:
         if result is None:
             # execute the PQC circuit with the current set of parameters
             result = self.circuit(
-                params,
-                inputs,
+                inputs=inputs,
+                params=params,
                 noise_params=noise_params,
                 state_vector=state_vector,
             )

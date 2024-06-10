@@ -22,7 +22,7 @@ def sample_domain(domain: List[float], omega: List[List[float]]) -> np.ndarray:
     np.Tensor
         Grid tensor of shape (sidelen^dim, dim)
     """
-    dimensions = len(omega)
+    dimensions = 1  # len(omega)
 
     # using the max of all dimensions because we want uniform sampling
     n_d = int(np.ceil(2 * np.max(np.abs(domain)) * np.max(omega)))
@@ -31,7 +31,7 @@ def sample_domain(domain: List[float], omega: List[List[float]]) -> np.ndarray:
 
     tensors = tuple(dimensions * [np.linspace(domain[0], domain[1], num=n_d)])
 
-    return np.meshgrid(*tensors)[0].reshape(-1, dimensions)
+    return np.meshgrid(*tensors)[0].reshape(-1)  # .reshape(-1, dimensions)
 
 
 def generate_fourier_series(

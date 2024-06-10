@@ -1,0 +1,45 @@
+from disentangling_entanglement.helpers.entanglement import Entanglement
+from disentangling_entanglement.helpers.model import Model
+
+import pennylane as qml
+import pennylane.numpy as np
+import mlflow
+
+import logging
+
+log = logging.getLogger(__name__)
+
+
+def train_model(
+    model: Model,
+    domain_samples: np.ndarray,
+    fourier_series: np.ndarray,
+    seed: int,
+    epochs: int,
+    learning_rate: float,
+    batch_size: int,
+):
+    opt = qml.AdamOptimizer(stepsize=learning_rate)
+
+    def mse(prediction, target):
+        return np.mean((prediction - target) ** 2)
+
+    def cost(params, **kwargs):
+        return mse(model(params=params, **kwargs), fourier_series)
+
+    log.info(f"Training model for {epochs} epochs")
+
+    for epoch in range(epochs):
+        model.params, cost_val = opt.step_and_cost(
+            cost,
+            model.params,
+            inputs=domain_samples,
+            noise_params=None,
+            cache=False,
+            state_vector=False,
+        )
+
+        log.debug(f"Cost in epoch {epoch}: {cost_val}")
+        mlflow.log_metric("mse", cost_val, epoch)
+
+    return model

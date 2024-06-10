@@ -36,7 +36,7 @@ loggers:
   kedro:
     level: INFO
 
-  disentanting_entanglement:
+  disentangling_entanglement:
     level: INFO
 
 root:

@@ -1,7 +1,5 @@
 domain: [-0.7,0.7] # domain of x values
-# Up to 3 dim allowed but each dimension must have the same length.
-# Different lenghts are supported by using '0's as placeholder
-omega: [[1.0,2.0,3.0,4.0], [1.0,2.0,3.0,0.0], [1.0,2.0,0.0,0.0]] 
+omega: [1.0,2.0,3.0,4.0]
 
 n_qubits: 3
 n_layers: 3
@@ -9,3 +7,7 @@ circuit_type: 'circuit19'
 data_reupload: True
 samples: 100
 seed: 1000
+
+epochs: 100
+learning_rate: 0.001
+batch_size: -1
