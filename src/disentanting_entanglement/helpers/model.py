@@ -18,8 +18,6 @@ class Model:
         n_layers: int,
         circuit_type: str,
         data_reupload: bool = True,
-        tffm: bool = False,
-        state_vector: bool = False,
     ) -> None:
         """
         Initialize the quantum circuit model.
@@ -41,9 +39,7 @@ class Model:
         """
         self.n_qubits = n_qubits
         self.n_layers = n_layers
-        self.state_vector = state_vector
         self.data_reupload = data_reupload
-        self.tffm = tffm
         self.pqc = getattr(Ansaetze, circuit_type or "no_ansatz")
 
         if data_reupload:
@@ -51,10 +47,11 @@ class Model:
         else:
             impl_n_layers = n_layers
 
-        self.n_params = (
+        params_shape = (
             impl_n_layers,
             self.pqc(None, self.n_qubits),
         )
+        self.params = np.random.uniform(0, 2 * np.pi, params_shape)
 
         self.dev = qml.device("default.mixed", wires=n_qubits)
 
@@ -87,6 +84,7 @@ class Model:
         inputs: np.ndarray,
         params: np.ndarray,
         noise_params: Optional[Dict[str, float]] = None,
+        state_vector: bool = False,
     ) -> float:
         """
         Creates a circuit with noise.
@@ -130,7 +128,7 @@ class Model:
         if self.data_reupload:
             self.pqc(inputs[-1], self.n_qubits)
 
-        if self.state_vector:
+        if state_vector:
             return qml.density_matrix(wires=list(range(self.n_qubits)))
         else:
             return qml.expval(qml.PauliZ(wires=0))
@@ -144,6 +142,7 @@ class Model:
         params: Optional[np.ndarray] = None,
         noise_params: Optional[Dict[str, float]] = None,
         cache: Optional[bool] = False,
+        state_vector: bool = False,
     ) -> np.ndarray:
         """Perform a forward pass of the quantum circuit.
 
@@ -171,10 +170,10 @@ class Model:
         hs = hashlib.md5(
             repr(
                 {
-                    "n_qubits": self.model.n_qubits,
-                    "n_layers": self.model.n_params[0],
-                    "pqc": self.model.pqc.__name__,
-                    "dru": self.model.data_reupload,
+                    "n_qubits": self.n_qubits,
+                    "n_layers": self.n_layers,
+                    "pqc": self.pqc.__name__,
+                    "dru": self.data_reupload,
                     "noise_params": noise_params,
                 }
             ).encode("utf-8")
@@ -195,14 +194,11 @@ class Model:
 
         if result is None:
             # execute the PQC circuit with the current set of parameters
-            result = self._circuit(
+            result = self.circuit(
                 params,
                 inputs,
-                bf=noise_params["BitFlip"],
-                pf=noise_params["PhaseFlip"],
-                ad=noise_params["AmplitudeDamping"],
-                pd=noise_params["PhaseDamping"],
-                dp=noise_params["DepolarizingChannel"],
+                noise_params=noise_params,
+                state_vector=state_vector,
             )
 
         if cache:

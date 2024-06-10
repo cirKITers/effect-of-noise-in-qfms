@@ -1,16 +1,18 @@
-from typing import Dict, Optional
+from typing import Dict, Optional, List, Any
 import pennylane as qml
 import pennylane.numpy as np
 
 
-class Entangling:
+class Entanglement:
 
     @staticmethod
     def meyer_wallach(
-        self,
-        samples_per_qubit: int,
-        params: Optional[np.ndarray] = None,
-        noise_params: Optional[Dict[str, float]] = None,
+        evaluate: callable,
+        n_qubits: int,
+        params_shape: List[int],
+        samples: int,
+        seed: int,
+        **kwargs: Any
     ) -> float:
         """
         Calculates the entangling capacity of a given quantum circuit
@@ -18,15 +20,18 @@ class Entangling:
 
         Parameters
         ----------
-        samples_per_qubit : int
+        evaluate : callable
+            Function that evaluates the quantum circuit.
+        n_qubits : int
+            Number of qubits in the circuit.
+        params_shape : List[int]
+            Shape of the parameters array.
+        samples : int
             Number of samples per qubit.
-        bf: float: The bit flip rate.
-        pf: float: The phase flip rate.
-        ad: float: The amplitude damping rate.
-        pd: float: The phase damping rate.
-        dp: float: The depolarization rate.
-        params: optional, np.ndarray:
-            Parameters of the instructor
+        seed : int
+            Seed for the random number generator.
+        **kwargs : Any
+            Additional keyword arguments for the evaluate function.
 
         Returns
         -------
@@ -34,7 +39,7 @@ class Entangling:
             Entangling capacity of the given circuit.
         """
 
-        def _meyer_wallach(n_qubits: int, samples: int, params: np.ndarray):
+        def _meyer_wallach(n_qubits: int, samples: int, params: np.ndarray) -> float:
             """
             Calculates the Meyer-Wallach sampling of the entangling capacity
             of a quantum circuit.
@@ -45,7 +50,7 @@ class Entangling:
                 Number of qubits in the circuit.
             samples : int
                 Number of samples to be taken.
-            params: optional, np.ndarray:
+            params : np.ndarray
                 Parameters of the instructor
 
             Returns
@@ -58,9 +63,7 @@ class Entangling:
             qb = list(range(n_qubits))
 
             for i in range(samples):
-                U = self.instructor.forward(
-                    0, params[i], noise_params=noise_params, cache=True
-                )
+                U = evaluate(params=params[i], **kwargs)
 
                 entropy = 0
 
@@ -77,25 +80,12 @@ class Entangling:
                 mw = 0.0
             return mw
 
-        circuit = self.instructor.model.circuit
-        samples = samples_per_qubit * len(circuit.device.wires)
+        # TODO: maybe switch to JAX rng
+        rng = np.random.default_rng(seed)
+        p = rng.uniform(0, 2 * np.pi, size=(samples, *params_shape))
 
-        if params is not None:
-            assert params.shape == self.instructor.model.n_params, (
-                "Parameter shape of instructor, and that provided for "
-                "entangling capability should be equal, but are "
-                f"{params.shape} and {self.instructor.model.n_params} "
-                "respectively"
-            )
-            p = np.repeat(np.expand_dims(params, axis=0), samples, axis=0)
-        else:
-            p = self.rng.uniform(
-                0, 2 * np.pi, size=(samples, *self.instructor.model.n_params)
-            )
-
-        # TODO: propagate precision to kedro parameters
         entangling_capability = _meyer_wallach(
-            n_qubits=len(circuit.device.wires),
+            n_qubits=n_qubits,
             samples=samples,
             params=p,
         )
