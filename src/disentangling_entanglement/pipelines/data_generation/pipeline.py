@@ -10,7 +10,7 @@ def create_pipeline() -> Pipeline:
                 func=sample_domain,
                 inputs={
                     "domain": "params:domain",
-                    "omega": "params:omega",
+                    "omegas": "params:omegas",
                 },
                 outputs="domain_samples",
                 name="sample_domain",
@@ -19,7 +19,8 @@ def create_pipeline() -> Pipeline:
                 func=generate_fourier_series,
                 inputs={
                     "domain_samples": "domain_samples",
-                    "omega": "params:omega",
+                    "omegas": "params:omegas",
+                    "coefficients": "params:coefficients",
                 },
                 outputs="fourier_series",
                 name="generate_fourier_series",

@@ -1,5 +1,6 @@
 domain: [-0.7,0.7] # domain of x values
-omega: [1.0,2.0,3.0,4.0]
+omegas: [1.0,2.0,3.0,4.0]
+coefficients: [1.0,1.0,1.0,1.0]
 
 n_qubits: 3
 n_layers: 3

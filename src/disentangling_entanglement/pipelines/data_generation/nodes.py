@@ -6,7 +6,7 @@ import logging
 log = logging.getLogger(__name__)
 
 
-def sample_domain(domain: List[float], omega: List[List[float]]) -> np.ndarray:
+def sample_domain(domain: List[float], omegas: List[List[float]]) -> np.ndarray:
     """
     Generates a flattened grid of (x,y,...) coordinates in a range of -1 to 1.
 
@@ -25,9 +25,9 @@ def sample_domain(domain: List[float], omega: List[List[float]]) -> np.ndarray:
     dimensions = 1  # len(omega)
 
     # using the max of all dimensions because we want uniform sampling
-    n_d = int(np.ceil(2 * np.max(np.abs(domain)) * np.max(omega)))
+    n_d = int(np.ceil(2 * np.max(np.abs(domain)) * np.max(omegas)))
 
-    log.info(f"Using {n_d} data points on {len(omega)} dimensions")
+    log.info(f"Using {n_d} data points on {len(omegas)} dimensions")
 
     tensors = tuple(dimensions * [np.linspace(domain[0], domain[1], num=n_d)])
 
@@ -36,7 +36,8 @@ def sample_domain(domain: List[float], omega: List[List[float]]) -> np.ndarray:
 
 def generate_fourier_series(
     domain_samples: np.ndarray,
-    omega: List[List[float]],
+    omegas: List[List[float]],
+    coefficients: List[List[float]],
 ) -> np.ndarray:
     """
     Generates the Fourier series representation of a function.
@@ -53,7 +54,8 @@ def generate_fourier_series(
     np.ndarray
         Fourier series representation of the function.
     """
-    omega = np.array(omega)
+    omegas = np.array(omegas)
+    coefficients = np.array(coefficients)
 
     def y(x: np.ndarray) -> float:
         """
@@ -69,7 +71,9 @@ def generate_fourier_series(
         float
             Value of the Fourier series representation at the given point.
         """
-        return 1 / np.linalg.norm(omega) * np.sum(np.cos(omega.T * x))  # transpose!
+        return (
+            1 / np.linalg.norm(omegas) * np.sum(coefficients * np.cos(omegas.T * x))
+        )  # transpose!
 
     values = np.stack([y(x) for x in domain_samples])
 
