@@ -14,7 +14,6 @@ def train_model(
     model: Model,
     domain_samples: np.ndarray,
     fourier_series: np.ndarray,
-    seed: int,
     epochs: int,
     learning_rate: float,
     batch_size: int,
@@ -30,6 +29,17 @@ def train_model(
     log.info(f"Training model for {epochs} epochs")
 
     for epoch in range(epochs):
+        ent_cap = Entanglement.meyer_wallach(
+            model=model,
+            samples=0,  # disable sampling, use model params
+            inputs=[0],
+            noise_params=None,
+            cache=False,
+            state_vector=True,
+        )
+        log.debug(f"Entangling capability in epoch {epoch}: {ent_cap}")
+        mlflow.log_metric("entangling_capability", ent_cap, epoch)
+
         model.params, cost_val = opt.step_and_cost(
             cost,
             model.params,

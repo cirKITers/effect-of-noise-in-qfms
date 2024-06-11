@@ -19,9 +19,7 @@ def create_model(
 def calculate_entanglement(model: Model, samples: int, seed: int):
 
     entangling_capability = Entanglement.meyer_wallach(
-        evaluate=model,
-        n_qubits=model.n_qubits,
-        params_shape=model.params.shape,
+        model=model,
         samples=samples,
         seed=seed,
         inputs=[0],

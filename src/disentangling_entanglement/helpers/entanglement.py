@@ -2,16 +2,18 @@ from typing import Dict, Optional, List, Any
 import pennylane as qml
 import pennylane.numpy as np
 
+import logging
+
+log = logging.getLogger(__name__)
+
 
 class Entanglement:
 
     @staticmethod
     def meyer_wallach(
-        evaluate: callable,
-        n_qubits: int,
-        params_shape: List[int],
+        model: callable,  # type: ignore
         samples: int,
-        seed: int,
+        seed: Optional[int] = None,
         **kwargs: Any
     ) -> float:
         """
@@ -20,26 +22,30 @@ class Entanglement:
 
         Parameters
         ----------
-        evaluate : callable
-            Function that evaluates the quantum circuit.
-        n_qubits : int
-            Number of qubits in the circuit.
-        params_shape : List[int]
-            Shape of the parameters array.
+        model : callable
+            Function that models the quantum circuit.
+            It must have a `n_qubits` attribute representing the number of qubits.
+            It must accept a `params` argument representing the parameters of the circuit.
         samples : int
             Number of samples per qubit.
-        seed : int
+        seed : Optional[int], optional
             Seed for the random number generator.
         **kwargs : Any
-            Additional keyword arguments for the evaluate function.
+            Additional keyword arguments for the model function.
 
         Returns
         -------
         float
             Entangling capacity of the given circuit.
+            It is guaranteed to be between 0.0 and 1.0.
         """
 
-        def _meyer_wallach(n_qubits: int, samples: int, params: np.ndarray) -> float:
+        def _meyer_wallach(
+            evaluate: callable,  # type: ignore
+            n_qubits: int,
+            samples: int,
+            params: np.ndarray,
+        ) -> float:
             """
             Calculates the Meyer-Wallach sampling of the entangling capacity
             of a quantum circuit.
@@ -52,14 +58,19 @@ class Entanglement:
                 Number of samples to be taken.
             params : np.ndarray
                 Parameters of the instructor
+                Shape: (samples, *model.params.shape)
 
             Returns
             -------
             float
                 Entangling capacity of the given circuit.
+                It is guaranteed to be between 0.0 and 1.0.
             """
-            mw_measure = np.zeros(samples, dtype=complex)
+            assert (
+                params.shape[0] == samples
+            ), "Number of samples does not match number of parameters"
 
+            mw_measure = np.zeros(samples, dtype=complex)
             qb = list(range(n_qubits))
 
             for i in range(samples):
@@ -78,14 +89,21 @@ class Entanglement:
             # catch floating point errors
             return min(max(mw, 0.0), 1.0)
 
-        # TODO: maybe switch to JAX rng
-        rng = np.random.default_rng(seed)
-        p = rng.uniform(0, 2 * np.pi, size=(samples, *params_shape))
+        if samples > 0:
+            # TODO: maybe switch to JAX rng
+            rng = np.random.default_rng(seed)
+            params = rng.uniform(0, 2 * np.pi, size=(samples, *model.params.shape))
+        else:
+            if seed is not None:
+                log.warning("Seed is ignored when samples is 0")
+            samples = 1
+            params = model.params.reshape(1, *model.params.shape)
 
         entangling_capability = _meyer_wallach(
-            n_qubits=n_qubits,
+            evaluate=model,
+            n_qubits=model.n_qubits,
             samples=samples,
-            params=p,
+            params=params,
         )
 
         return float(entangling_capability)
