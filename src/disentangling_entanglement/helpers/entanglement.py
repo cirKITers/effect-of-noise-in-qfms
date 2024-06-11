@@ -41,7 +41,7 @@ class Entanglement:
         """
 
         def _meyer_wallach(
-            evaluate: callable,  # type: ignore
+            evaluate: callable,
             n_qubits: int,
             samples: int,
             params: np.ndarray,

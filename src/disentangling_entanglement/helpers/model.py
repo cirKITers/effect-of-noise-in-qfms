@@ -57,7 +57,7 @@ class Model:
 
         self.circuit = qml.QNode(self._circuit, self.dev)
 
-    def iec(
+    def _iec(
         self,
         inputs: np.ndarray,
         data_reupload: bool = True,
@@ -113,7 +113,7 @@ class Model:
             self.pqc(params[l], self.n_qubits)
 
             if self.data_reupload or l == 0:
-                self.iec(inputs, data_reupload=self.data_reupload)
+                self._iec(inputs, data_reupload=self.data_reupload)
 
             if noise_params is not None:
                 for q in range(self.n_qubits):
@@ -134,9 +134,10 @@ class Model:
             return qml.expval(qml.PauliZ(wires=0))
 
     def __call__(self, *args: Any, **kwds: Any) -> Any:
-        return self.forward(*args, **kwds)
+        # Call forward method which handles the actual caching etc.
+        return self._forward(*args, **kwds)
 
-    def forward(
+    def _forward(
         self,
         inputs: np.ndarray,
         params: Optional[np.ndarray] = None,
