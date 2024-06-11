@@ -19,4 +19,4 @@ To visualize the nodes and pipeline
 ## Tweaking :wrench:
 
 - To specify a pipeline: `kedro run --pipeline NAME`
- - Parameters can be adjusted in `conf\base\parameters.yml` or as command line arguments `--params=<key1>=<value1>
+ - Parameters can be adjusted in `conf\base\parameters.yml` or as command line arguments `--params=<key1>=<value1>`
