@@ -22,6 +22,7 @@ def create_pipeline() -> Pipeline:
                 inputs={
                     "model": "model",
                     "samples": "params:samples",
+                    "noise_params": "params:noise_params",
                     "seed": "params:seed",
                 },
                 outputs="entanglement",

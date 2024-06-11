@@ -121,9 +121,7 @@ class Model:
                     qml.PhaseFlip(noise_params["PhaseFlip"], wires=q)
                     qml.AmplitudeDamping(noise_params["AmplitudeDamping"], wires=q)
                     qml.PhaseDamping(noise_params["PhaseDamping"], wires=q)
-                    qml.DepolarizingChannel(
-                        noise_params["DepolarizingChannel"], wires=q
-                    )
+                    qml.DepolarizingChannel(noise_params["Depolarizing"], wires=q)
 
         if self.data_reupload:
             self.pqc(params[-1], self.n_qubits)

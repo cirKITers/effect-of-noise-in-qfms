@@ -4,6 +4,7 @@ from disentangling_entanglement.helpers.model import Model
 import pennylane as qml
 import pennylane.numpy as np
 import mlflow
+from typing import Dict
 
 import logging
 
@@ -14,6 +15,7 @@ def train_model(
     model: Model,
     domain_samples: np.ndarray,
     fourier_series: np.ndarray,
+    noise_params: Dict,
     epochs: int,
     learning_rate: float,
     batch_size: int,
@@ -33,8 +35,8 @@ def train_model(
             model=model,
             samples=0,  # disable sampling, use model params
             inputs=[0],
-            noise_params=None,
-            cache=False,
+            noise_params=noise_params,
+            cache=True,
             state_vector=True,
         )
         log.debug(f"Entangling capability in epoch {epoch}: {ent_cap}")
@@ -44,8 +46,8 @@ def train_model(
             cost,
             model.params,
             inputs=domain_samples,
-            noise_params=None,
-            cache=False,
+            noise_params=noise_params,
+            cache=False,  # disable caching because currently no gradients are being stored
             state_vector=False,
         )
 

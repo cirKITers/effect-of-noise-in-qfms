@@ -1,9 +1,7 @@
 from disentangling_entanglement.helpers.entanglement import Entanglement
 from disentangling_entanglement.helpers.model import Model
 
-import pennylane as qml
-import pennylane.numpy as np
-import mlflow
+from typing import Dict
 
 import logging
 
@@ -16,14 +14,14 @@ def create_model(
     return Model(n_qubits, n_layers, circuit_type, data_reupload)
 
 
-def calculate_entanglement(model: Model, samples: int, seed: int):
+def calculate_entanglement(model: Model, samples: int, seed: int, noise_params: Dict):
 
     entangling_capability = Entanglement.meyer_wallach(
         model=model,
         samples=samples,
         seed=seed,
         inputs=[0],
-        noise_params=None,
+        noise_params=noise_params,
         cache=True,
         state_vector=True,
     )

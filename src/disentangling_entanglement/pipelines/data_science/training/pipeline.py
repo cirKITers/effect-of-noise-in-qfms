@@ -12,6 +12,7 @@ def create_pipeline() -> Pipeline:
                     "model": "model",
                     "domain_samples": "domain_samples",
                     "fourier_series": "fourier_series",
+                    "noise_params": "params:noise_params",
                     "epochs": "params:epochs",
                     "learning_rate": "params:learning_rate",
                     "batch_size": "params:batch_size",
