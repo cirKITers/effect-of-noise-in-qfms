@@ -1,4 +1,4 @@
-from typing import Dict, Optional, List, Any
+from typing import Callable, Optional, List, Any
 import pennylane as qml
 import pennylane.numpy as np
 
@@ -11,7 +11,7 @@ class Entanglement:
 
     @staticmethod
     def meyer_wallach(
-        model: callable,  # type: ignore
+        model: Callable,  # type: ignore
         samples: int,
         seed: Optional[int] = None,
         **kwargs: Any
@@ -22,7 +22,7 @@ class Entanglement:
 
         Parameters
         ----------
-        model : callable
+        model : Callable
             Function that models the quantum circuit.
             It must have a `n_qubits` attribute representing the number of qubits.
             It must accept a `params` argument representing the parameters of the circuit.
@@ -41,17 +41,24 @@ class Entanglement:
         """
 
         def _meyer_wallach(
-            evaluate: callable,
-            n_qubits: int,
-            samples: int,
-            params: np.ndarray,
-        ) -> float:
+            evaluate: Callable[
+                [np.ndarray], np.ndarray
+            ],  # Callable that evaluates the quantum circuit
+            n_qubits: int,  # Number of qubits in the circuit
+            samples: int,  # Number of samples to be taken
+            params: np.ndarray,  # Parameters of the instructor, shape: (samples, *model.params.shape)
+        ) -> (
+            float
+        ):  # Entangling capacity of the given circuit, guaranteed to be between 0.0 and 1.0
             """
             Calculates the Meyer-Wallach sampling of the entangling capacity
             of a quantum circuit.
 
             Parameters
             ----------
+            evaluate : Callable[[np.ndarray], np.ndarray]
+                Callable that evaluates the quantum circuit
+                It must accept a `params` argument representing the parameters of the circuit.
             n_qubits : int
                 Number of qubits in the circuit.
             samples : int

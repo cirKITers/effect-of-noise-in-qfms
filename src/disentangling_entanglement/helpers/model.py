@@ -1,8 +1,9 @@
-from typing import Dict, Optional, Tuple, Any
+from typing import Dict, Optional, Tuple, Callable, Union
 import pennylane as qml
 import pennylane.numpy as np
 import hashlib
 import os
+from kedro.io import AbstractDataset
 
 from disentangling_entanglement.helpers.ansaetze import Ansaetze
 
@@ -29,33 +30,33 @@ class Model:
                 If None, defaults to "no_ansatz".
             data_reupload (bool, optional): Whether to reupload data to the
                 quantum device on each measurement. Defaults to True.
-            tffm (bool, optional): Whether to use the TensorFlow Quantum
-                Fourier Machine Learning interface. Defaults to False.
-            state_vector (bool, optional): Whether to measure the state vector
-                instead of the wave function. Defaults to False.
 
         Returns:
             None
         """
-        self.n_qubits = n_qubits
-        self.n_layers = n_layers
-        self.data_reupload = data_reupload
-        self.pqc = getattr(Ansaetze, circuit_type or "no_ansatz")
+        self.n_qubits: int = n_qubits
+        self.n_layers: int = n_layers
+        self.data_reupload: bool = data_reupload
+        self.pqc: Callable[[Optional[np.ndarray], int], int] = getattr(
+            Ansaetze, circuit_type or "no_ansatz"
+        )
 
         if data_reupload:
-            impl_n_layers = n_layers + 1  # we need L+1 according to Schuld et al.
+            impl_n_layers: int = n_layers + 1  # we need L+1 according to Schuld et al.
         else:
-            impl_n_layers = n_layers
+            impl_n_layers: int = n_layers
 
-        params_shape = (
+        params_shape: Tuple[int, int] = (
             impl_n_layers,
             self.pqc(None, self.n_qubits),
         )
-        self.params = np.random.uniform(0, 2 * np.pi, params_shape, requires_grad=True)
+        self.params: np.ndarray = np.random.uniform(
+            0, 2 * np.pi, params_shape, requires_grad=True
+        )
 
-        self.dev = qml.device("default.mixed", wires=n_qubits)
+        self.dev: qml.Device = qml.device("default.mixed", wires=n_qubits)
 
-        self.circuit = qml.QNode(self._circuit, self.dev)
+        self.circuit: qml.QNode = qml.QNode(self._circuit, self.dev)
 
     def _iec(
         self,
@@ -66,8 +67,8 @@ class Model:
         Creates an AngleEncoding using RY gates
 
         Args:
-            x (np.ndarray): length of vector must be 1, shape (1,)
-            data_reupload (bool): Whether to reupload the data for the IEC
+            inputs (np.ndarray): length of vector must be 1, shape (1,)
+            data_reupload (bool, optional): Whether to reupload the data for the IEC
                 or not, default is True.
 
         Returns:
@@ -84,8 +85,8 @@ class Model:
         inputs: np.ndarray,
         params: np.ndarray,
         noise_params: Optional[Dict[str, float]] = None,
-        state_vector: bool = False,
-    ) -> float:
+        state_vector: Optional[bool] = False,
+    ) -> Union[float, np.ndarray]:
         """
         Creates a circuit with noise.
         This involves, Amplitude Damping, Phase Damping and Depolarization.
@@ -100,9 +101,12 @@ class Model:
                 - "AmplitudeDamping": float, default = 0.0
                 - "PhaseDamping": float, default = 0.0
                 - "DepolarizingChannel": float, default = 0.0
+            state_vector (bool, optional): Whether to measure the state vector
+                instead of the wave function. Defaults to False.
 
         Returns:
-            float: Expectation value of PauliZ(0) of the circuit.
+            Union[float, np.ndarray]: Expectation value of PauliZ(0) of the circuit if
+                state_vector is False, otherwise the density matrix of all qubits.
         """
         if self.data_reupload:
             n_layers = self.n_layers - 1
@@ -131,9 +135,28 @@ class Model:
         else:
             return qml.expval(qml.PauliZ(wires=0))
 
-    def __call__(self, *args: Any, **kwds: Any) -> Any:
+    def __call__(
+        self,
+        inputs: np.ndarray,
+        params: Optional[np.ndarray] = None,
+        noise_params: Optional[Dict[str, float]] = None,
+        cache: Optional[bool] = False,
+        state_vector: bool = False,
+    ) -> np.ndarray:
+        """Perform a forward pass of the quantum circuit.
+
+        Args:
+            inputs (np.ndarray): input vector of size 1
+            params (Optional[np.ndarray], optional): weight vector of size n_layers*(n_qubits*3-1). Defaults to None.
+            noise_params (Optional[Dict[str, float]], optional): dictionary with noise parameters. Defaults to None.
+            cache (Optional[bool], optional): cache the circuit. Defaults to False.
+            state_vector (bool, optional): measure the state vector instead of the wave function. Defaults to False.
+
+        Returns:
+            np.ndarray: Expectation value of PauliZ(0) of the circuit.
+        """
         # Call forward method which handles the actual caching etc.
-        return self._forward(*args, **kwds)
+        return self._forward(inputs, params, noise_params, cache, state_vector)
 
     def _forward(
         self,
@@ -198,3 +221,42 @@ class Model:
             np.save(file_path, result)
 
         return result
+
+
+class ModelDataset(AbstractDataset):
+    def __init__(
+        self,
+        filepath: str,
+        n_qubits: int,
+        n_layers: int,
+        circuit_type: str,
+        data_reupload: bool,
+    ) -> None:
+        self.filepath = filepath
+        self.n_qubits = n_qubits
+        self.n_layers = n_layers
+        self.circuit_type = circuit_type
+        self.data_reupload = data_reupload
+
+    def _save(self, model: Model):
+        np.save(self.filepath, model.params)
+
+    def _load(self):
+        params = np.load(self.filepath)
+        model = Model(
+            n_qubits=self.n_qubits,
+            n_layers=self.n_layers,
+            circuit_type=self.circuit_type,
+            data_reupload=self.data_reupload,
+        )
+
+        model.params = params
+        return model
+
+    def _describe(self):
+        return {
+            "n_qubits": self.n_qubits,
+            "n_layers": self.n_layers,
+            "circuit_type": self.circuit_type,
+            "data_reupload": self.data_reupload,
+        }
