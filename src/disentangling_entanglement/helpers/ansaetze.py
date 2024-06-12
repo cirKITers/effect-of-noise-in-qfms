@@ -99,8 +99,6 @@ class Ansaetze:
             for q in range(n_qubits):
                 qml.CNOT(wires=[q, (q + n_qubits // 2) % n_qubits])
 
-        # qml.StronglyEntanglingLayers(w.reshape(-1, n_qubits, 3), wires=range(n_qubits))
-
     @staticmethod
     def no_entangling(w: np.ndarray, n_qubits: int):
         """
