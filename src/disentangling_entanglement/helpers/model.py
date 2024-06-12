@@ -64,7 +64,7 @@ class Model:
         data_reupload: bool = True,
     ) -> None:
         """
-        Creates an AngleEncoding using RY gates
+        Creates an AngleEncoding using RX gates
 
         Args:
             inputs (np.ndarray): length of vector must be 1, shape (1,)
@@ -89,8 +89,10 @@ class Model:
     ) -> Union[float, np.ndarray]:
         """
         Creates a circuit with noise.
-        This involves, Amplitude Damping, Phase Damping and Depolarization.
-        The Circuit consists of a PQC and IEC in each layer.
+        This involves, Bit Flip, Phase Flip, Amplitude Damping,
+        Phase Damping and Depolarization.
+        The Circuit consists of a PQC and IEC in each layer
+        with the PQC as specified in the construction of the model.
 
         Args:
             inputs (np.ndarray): input vector of size 1
