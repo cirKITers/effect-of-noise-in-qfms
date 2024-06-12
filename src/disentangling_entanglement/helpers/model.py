@@ -153,6 +153,8 @@ class Model:
             noise_params (Optional[Dict[str, float]], optional): The noise parameters.
                 Defaults to None.
             cache (Optional[bool], optional): Whether to cache the results. Defaults to False.
+            state_vector (bool, optional): Whether to return the state vector instead of the
+                expectation value. Defaults to False.
 
         Returns:
             np.ndarray: The output of the quantum circuit.
