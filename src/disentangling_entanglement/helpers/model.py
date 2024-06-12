@@ -82,8 +82,8 @@ class Model:
 
     def _circuit(
         self,
-        inputs: np.ndarray,
         params: np.ndarray,
+        inputs: np.ndarray,
         noise_params: Optional[Dict[str, float]] = None,
         state_vector: Optional[bool] = False,
     ) -> Union[float, np.ndarray]:
@@ -139,8 +139,8 @@ class Model:
 
     def __call__(
         self,
+        params: Optional[np.ndarray],
         inputs: np.ndarray,
-        params: Optional[np.ndarray] = None,
         noise_params: Optional[Dict[str, float]] = None,
         cache: Optional[bool] = False,
         state_vector: bool = False,
@@ -158,12 +158,12 @@ class Model:
             np.ndarray: Expectation value of PauliZ(0) of the circuit.
         """
         # Call forward method which handles the actual caching etc.
-        return self._forward(inputs, params, noise_params, cache, state_vector)
+        return self._forward(params, inputs, noise_params, cache, state_vector)
 
     def _forward(
         self,
+        params: Optional[np.ndarray],
         inputs: np.ndarray,
-        params: Optional[np.ndarray] = None,
         noise_params: Optional[Dict[str, float]] = None,
         cache: Optional[bool] = False,
         state_vector: bool = False,
@@ -213,8 +213,8 @@ class Model:
         if result is None:
             # execute the PQC circuit with the current set of parameters
             result = self.circuit(
-                inputs=inputs,
                 params=params,
+                inputs=inputs,
                 noise_params=noise_params,
                 state_vector=state_vector,
             )
