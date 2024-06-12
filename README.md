@@ -5,7 +5,7 @@
 
 This repository uses [Kedro](https://kedro.org/). To get started, follow these steps:
 1. Clone this repository
-2. Run `poetry install` or `pip install -r requirements.in`
+2. Run `poetry install` or `pip install -r requirements.txt`
 3. Run the experiment: `kedro run`
 
 Experiments are automatically recorded using [MlFlow](https://mlflow.org/). You can view the experiments by
