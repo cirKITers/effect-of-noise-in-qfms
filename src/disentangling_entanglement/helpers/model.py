@@ -192,6 +192,7 @@ class Model:
                     "n_layers": self.n_layers,
                     "pqc": self.pqc.__name__,
                     "dru": self.data_reupload,
+                    "params": params,
                     "noise_params": noise_params,
                 }
             ).encode("utf-8")

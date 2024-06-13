@@ -36,7 +36,7 @@ def train_model(
             samples=0,  # disable sampling, use model params
             inputs=[0],
             noise_params=noise_params,
-            cache=True,
+            cache=False,
             state_vector=True,
         )
         log.debug(f"Entangling capability in epoch {epoch}: {ent_cap}")
