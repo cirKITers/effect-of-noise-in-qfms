@@ -19,6 +19,7 @@ class Model:
         n_layers: int,
         circuit_type: str,
         data_reupload: bool = True,
+        initialization: str = "random",
     ) -> None:
         """
         Initialize the quantum circuit model.
@@ -50,9 +51,15 @@ class Model:
             impl_n_layers,
             self.pqc(None, self.n_qubits),
         )
-        self.params: np.ndarray = np.random.uniform(
-            0, 2 * np.pi, params_shape, requires_grad=True
-        )
+
+        if initialization == "random":
+            self.params: np.ndarray = np.random.uniform(
+                0, 2 * np.pi, params_shape, requires_grad=True
+            )
+        elif initialization == "zeros":
+            self.params: np.ndarray = np.zeros(params_shape, requires_grad=True)
+        else:
+            raise Exception("Invalid initialization method")
 
         self.dev: qml.Device = qml.device("default.mixed", wires=n_qubits)
 

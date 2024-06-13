@@ -54,4 +54,11 @@ def train_model(
         log.debug(f"Cost in epoch {epoch}: {cost_val}")
         mlflow.log_metric("mse", cost_val, epoch)
 
+        control_params = model.params[:, 2::3]
+        control_mean = (
+            np.sum(np.abs(control_params) % (2 * np.pi)) / control_params.size
+        )
+
+        mlflow.log_metric("control_mean", cost_val, epoch)
+
     return model

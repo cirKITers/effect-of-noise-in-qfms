@@ -4,7 +4,7 @@ coefficients: [1.0,1.0,1.0,1.0]
 
 n_qubits: 3
 n_layers: 3
-circuit_type: 'circuit19'
+circuit_type: 'Circuit19'
 data_reupload: True
 samples: 100
 seed: 1000
