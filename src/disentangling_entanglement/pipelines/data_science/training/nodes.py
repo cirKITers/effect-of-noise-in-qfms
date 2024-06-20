@@ -58,10 +58,10 @@ def train_model(
         mlflow.log_metric("mse", cost_val, epoch)
 
         if control_params is not None:
-            control_mean = (
+            control_rotation_mean = (
                 np.sum(np.abs(control_params) % (2 * np.pi)) / control_params.size
             )
 
-            mlflow.log_metric("control_mean", control_mean, epoch)
+            mlflow.log_metric("control_rotation_mean", control_rotation_mean, epoch)
 
     return model
