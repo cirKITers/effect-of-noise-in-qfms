@@ -1,7 +1,6 @@
 from typing import Callable, Optional, List, Any
 import pennylane as qml
 import pennylane.numpy as np
-from rich.progress import track
 
 import logging
 
@@ -81,7 +80,7 @@ class Entanglement:
             mw_measure = np.zeros(samples, dtype=complex)
             qb = list(range(n_qubits))
 
-            for i in track(range(samples), description="Sampling..", total=samples):
+            for i in range(samples):
                 U = evaluate(params=params[i], **kwargs)
 
                 entropy = 0
