@@ -133,12 +133,8 @@ class Model:
                 state_vector is False and exp_val is True, otherwise the density matrix
                 of all qubits.
         """
-        if self.data_reupload:
-            n_layers = self.n_layers - 1
-        else:
-            n_layers = self.n_layers
 
-        for l in range(0, n_layers):
+        for l in range(0, self.n_layers):
             self.pqc(params[l], self.n_qubits)
 
             if self.data_reupload or l == 0:
