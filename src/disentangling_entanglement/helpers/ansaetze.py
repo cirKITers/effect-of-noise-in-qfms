@@ -266,7 +266,7 @@ class Ansaetze:
 
         @staticmethod
         def get_control_indices(w: np.ndarray):
-            return w[2::3]
+            return None
 
         @staticmethod
         def build(w: np.ndarray, n_qubits: int) -> None:
