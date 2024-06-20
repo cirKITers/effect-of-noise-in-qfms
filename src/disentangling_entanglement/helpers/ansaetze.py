@@ -19,8 +19,7 @@ class Circuit(ABC):
 
     @staticmethod
     @abstractmethod
-    def get_control_angles(w: np.ndarray, n_qubits: int) \
-            -> Optional[np.ndarray]:
+    def get_control_angles(w: np.ndarray, n_qubits: int) -> Optional[np.ndarray]:
         """
         Returns the angles for the controlled rotation gates from the list of
         all parameters for one layer.
@@ -72,8 +71,7 @@ class Ansaetze:
                 return 2
 
         @staticmethod
-        def get_control_angles(w: np.ndarray, n_qubits: int) \
-                -> Optional[np.ndarray]:
+        def get_control_angles(w: np.ndarray, n_qubits: int) -> Optional[np.ndarray]:
             return None
 
         @staticmethod
@@ -109,9 +107,11 @@ class Ansaetze:
                 return 2
 
         @staticmethod
-        def get_control_angles(w: np.ndarray, n_qubits: int) \
-                -> Optional[np.ndarray]:
-            return w[-n_qubits:]
+        def get_control_angles(w: np.ndarray, n_qubits: int) -> Optional[np.ndarray]:
+            if n_qubits > 1:
+                return w[-n_qubits:]
+            else:
+                return None
 
         @staticmethod
         def build(w: np.ndarray, n_qubits: int):
@@ -149,8 +149,7 @@ class Ansaetze:
                 return 2
 
         @staticmethod
-        def get_control_angles(w: np.ndarray, n_qubits: int) \
-                -> Optional[np.ndarray]:
+        def get_control_angles(w: np.ndarray, n_qubits: int) -> Optional[np.ndarray]:
             return w[2::3]
 
         @staticmethod
@@ -189,8 +188,7 @@ class Ansaetze:
                 return 2
 
         @staticmethod
-        def get_control_angles(w: np.ndarray, n_qubits: int) \
-                -> Optional[np.ndarray]:
+        def get_control_angles(w: np.ndarray, n_qubits: int) -> Optional[np.ndarray]:
             return None
 
         @staticmethod
@@ -226,8 +224,7 @@ class Ansaetze:
             return n_qubits
 
         @staticmethod
-        def get_control_angles(w: np.ndarray, n_qubits: int) \
-                -> Optional[np.ndarray]:
+        def get_control_angles(w: np.ndarray, n_qubits: int) -> Optional[np.ndarray]:
             return None
 
         @staticmethod
@@ -260,8 +257,7 @@ class Ansaetze:
             return n_qubits * 2
 
         @staticmethod
-        def get_control_angles(w: np.ndarray, n_qubits: int) \
-                -> Optional[np.ndarray]:
+        def get_control_angles(w: np.ndarray, n_qubits: int) -> Optional[np.ndarray]:
             return None
 
         @staticmethod
@@ -292,8 +288,7 @@ class Ansaetze:
                 return 2
 
         @staticmethod
-        def get_control_angles(w: np.ndarray, n_qubits: int) \
-                -> Optional[np.ndarray]:
+        def get_control_angles(w: np.ndarray, n_qubits: int) -> Optional[np.ndarray]:
             return None
 
         @staticmethod
@@ -328,8 +323,7 @@ class Ansaetze:
             return n_qubits * 3
 
         @staticmethod
-        def get_control_angles(w: np.ndarray, n_qubits: int) \
-                -> Optional[np.ndarray]:
+        def get_control_angles(w: np.ndarray, n_qubits: int) -> Optional[np.ndarray]:
             return None
 
         @staticmethod
