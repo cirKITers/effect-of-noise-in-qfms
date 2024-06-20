@@ -10,6 +10,9 @@ output_qubit: 0
 initialization: "zero-controlled" # random, zero, zero-controlled, pi-controlled 
 samples: 100
 seed: 1000
+n_samples: 1000
+n_input_samples: 5
+n_bins: 75
 
 noise_params:
   BitFlip: 0.0
