@@ -144,6 +144,15 @@ class Model:
         else:
             return qml.expval(qml.PauliZ(wires=0))
 
+    def _draw(self) -> None:
+        return qml.draw(self.circuit)(params=self.params, inputs=[0])
+
+    def __repr__(self) -> str:
+        return self._draw()
+
+    def __str__(self) -> str:
+        return self._draw()
+
     def __call__(
         self,
         params: Optional[np.ndarray],
