@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Optional
 import pennylane.numpy as np
 import pennylane as qml
 
@@ -12,14 +12,35 @@ class Circuit(ABC):
     def __init__(self):
         pass
 
+    @staticmethod
     @abstractmethod
-    def n_params_per_layer(n_qubits: int):
+    def n_params_per_layer(n_qubits: int) -> int:
         return
 
+    @staticmethod
     @abstractmethod
-    def get_control_indices(w: np.ndarray):
+    def get_control_angles(w: np.ndarray, n_qubits: int) \
+            -> Optional[np.ndarray]:
+        """
+        Returns the angles for the controlled rotation gates from the list of
+        all parameters for one layer.
+
+        Parameters
+        ----------
+        w : np.ndarray
+            List of parameters for one layer
+        n_qubits : int
+            Number of qubits in the circuit
+
+        Returns
+        -------
+        Optional[np.ndarray]
+            List of all controlled parameters, or None if the circuit does not
+            contain controlled rotation gates.
+        """
         return
 
+    @staticmethod
     @abstractmethod
     def build(self, n_qubits: int, n_layers: int):
         return
@@ -31,8 +52,7 @@ class Circuit(ABC):
 class Ansaetze:
     def get_available():
         return [
-            Ansaetze.Circuit_01,
-            Ansaetze.Circuit_5,
+            Ansaetze.Circuit_1,
             Ansaetze.Circuit_9,
             Ansaetze.Circuit_15,
             Ansaetze.Circuit_18,
@@ -44,7 +64,7 @@ class Ansaetze:
 
     class Hardware_Efficient(Circuit):
         @staticmethod
-        def n_params_per_layer(n_qubits: int):
+        def n_params_per_layer(n_qubits: int) -> int:
             if n_qubits > 1:
                 return n_qubits * 3
             else:
@@ -52,7 +72,8 @@ class Ansaetze:
                 return 2
 
         @staticmethod
-        def get_control_indices(w: np.ndarray):
+        def get_control_angles(w: np.ndarray, n_qubits: int) \
+                -> Optional[np.ndarray]:
             return None
 
         @staticmethod
@@ -80,7 +101,7 @@ class Ansaetze:
 
     class Circuit_19(Circuit):
         @staticmethod
-        def n_params_per_layer(n_qubits: int):
+        def n_params_per_layer(n_qubits: int) -> int:
             if n_qubits > 1:
                 return n_qubits * 3
             else:
@@ -88,8 +109,9 @@ class Ansaetze:
                 return 2
 
         @staticmethod
-        def get_control_indices(w: np.ndarray):
-            return w[2::3]
+        def get_control_angles(w: np.ndarray, n_qubits: int) \
+                -> Optional[np.ndarray]:
+            return w[-n_qubits:]
 
         @staticmethod
         def build(w: np.ndarray, n_qubits: int):
@@ -119,7 +141,7 @@ class Ansaetze:
 
     class Circuit_18(Circuit):
         @staticmethod
-        def n_params_per_layer(n_qubits: int):
+        def n_params_per_layer(n_qubits: int) -> int:
             if n_qubits > 1:
                 return n_qubits * 3
             else:
@@ -127,7 +149,8 @@ class Ansaetze:
                 return 2
 
         @staticmethod
-        def get_control_indices(w: np.ndarray):
+        def get_control_angles(w: np.ndarray, n_qubits: int) \
+                -> Optional[np.ndarray]:
             return w[2::3]
 
         @staticmethod
@@ -158,7 +181,7 @@ class Ansaetze:
 
     class Circuit_15(Circuit):
         @staticmethod
-        def n_params_per_layer(n_qubits: int):
+        def n_params_per_layer(n_qubits: int) -> int:
             if n_qubits > 1:
                 return n_qubits * 3
             else:
@@ -166,7 +189,8 @@ class Ansaetze:
                 return 2
 
         @staticmethod
-        def get_control_indices(w: np.ndarray):
+        def get_control_angles(w: np.ndarray, n_qubits: int) \
+                -> Optional[np.ndarray]:
             return None
 
         @staticmethod
@@ -198,11 +222,12 @@ class Ansaetze:
 
     class Circuit_9(Circuit):
         @staticmethod
-        def n_params_per_layer(n_qubits: int):
+        def n_params_per_layer(n_qubits: int) -> int:
             return n_qubits
 
         @staticmethod
-        def get_control_indices(w: np.ndarray):
+        def get_control_angles(w: np.ndarray, n_qubits: int) \
+                -> Optional[np.ndarray]:
             return None
 
         @staticmethod
@@ -231,11 +256,12 @@ class Ansaetze:
 
     class Circuit_1(Circuit):
         @staticmethod
-        def n_params_per_layer(n_qubits: int):
+        def n_params_per_layer(n_qubits: int) -> int:
             return n_qubits * 2
 
         @staticmethod
-        def get_control_indices(w: np.ndarray):
+        def get_control_angles(w: np.ndarray, n_qubits: int) \
+                -> Optional[np.ndarray]:
             return None
 
         @staticmethod
@@ -258,7 +284,7 @@ class Ansaetze:
 
     class Strongly_Entangling(Circuit):
         @staticmethod
-        def n_params_per_layer(n_qubits: int):
+        def n_params_per_layer(n_qubits: int) -> int:
             if n_qubits > 1:
                 return n_qubits * 6
             else:
@@ -266,7 +292,8 @@ class Ansaetze:
                 return 2
 
         @staticmethod
-        def get_control_indices(w: np.ndarray):
+        def get_control_angles(w: np.ndarray, n_qubits: int) \
+                -> Optional[np.ndarray]:
             return None
 
         @staticmethod
@@ -297,11 +324,12 @@ class Ansaetze:
 
     class No_Entangling(Circuit):
         @staticmethod
-        def n_params_per_layer(n_qubits: int):
+        def n_params_per_layer(n_qubits: int) -> int:
             return n_qubits * 3
 
         @staticmethod
-        def get_control_indices(w: np.ndarray):
+        def get_control_angles(w: np.ndarray, n_qubits: int) \
+                -> Optional[np.ndarray]:
             return None
 
         @staticmethod

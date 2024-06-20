@@ -57,8 +57,8 @@ def train_model(
 
         control_params = np.array(
             [
-                model.pqc.get_control_indices(model.params[q])
-                for q in range(model.n_qubits)
+                model.pqc.get_control_angles(params, model.n_qubits)
+                for params in model.params
             ]
         )
         if control_params.any() != None:
