@@ -65,6 +65,8 @@ class Model:
 
         self.circuit: qml.QNode = qml.QNode(self._circuit, self.dev)
 
+        log.debug(self._draw())
+
     def _iec(
         self,
         inputs: np.ndarray,
