@@ -7,6 +7,10 @@ from kedro.io import AbstractDataset
 
 from disentangling_entanglement.helpers.ansaetze import Ansaetze
 
+import logging
+
+log = logging.getLogger(__name__)
+
 
 class Model:
     """
@@ -19,7 +23,7 @@ class Model:
         n_layers: int,
         circuit_type: str,
         data_reupload: bool = True,
-        initialization: str = "random",
+        output_qubit: int = 0,
     ) -> None:
         """
         Initialize the quantum circuit model.
@@ -31,7 +35,7 @@ class Model:
                 If None, defaults to "no_ansatz".
             data_reupload (bool, optional): Whether to reupload data to the
                 quantum device on each measurement. Defaults to True.
-
+            output_qubit (int, optional): The index of the output qubit.
         Returns:
             None
         """
