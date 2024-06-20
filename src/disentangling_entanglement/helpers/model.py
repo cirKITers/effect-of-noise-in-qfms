@@ -105,6 +105,7 @@ class Model:
         inputs: np.ndarray,
         noise_params: Optional[Dict[str, float]] = None,
         state_vector: Optional[bool] = False,
+        exp_val: Optional[bool] = True,
     ) -> Union[float, np.ndarray]:
         """
         Creates a circuit with noise.
@@ -114,8 +115,8 @@ class Model:
         with the PQC as specified in the construction of the model.
 
         Args:
-            inputs (np.ndarray): input vector of size 1
             params (np.ndarray): weight vector of size n_layers*(n_qubits*3-1)
+            inputs (np.ndarray): input vector of size 1
             noise_params (Optional[Dict[str, float]]): dictionary with noise parameters
                 - "BitFlip": float, default = 0.0
                 - "PhaseFlip": float, default = 0.0
@@ -124,10 +125,13 @@ class Model:
                 - "DepolarizingChannel": float, default = 0.0
             state_vector (bool, optional): Whether to measure the state vector
                 instead of the wave function. Defaults to False.
+            exp_val (bool, optional): Whether to measure the expectation value
+                of PauliZ(0) of the circuit. Defaults to True.
 
         Returns:
             Union[float, np.ndarray]: Expectation value of PauliZ(0) of the circuit if
-                state_vector is False, otherwise the density matrix of all qubits.
+                state_vector is False and exp_val is True, otherwise the density matrix
+                of all qubits.
         """
         if self.data_reupload:
             n_layers = self.n_layers - 1
@@ -142,19 +146,28 @@ class Model:
 
             if noise_params is not None:
                 for q in range(self.n_qubits):
-                    qml.BitFlip(noise_params["BitFlip"], wires=q)
-                    qml.PhaseFlip(noise_params["PhaseFlip"], wires=q)
-                    qml.AmplitudeDamping(noise_params["AmplitudeDamping"], wires=q)
-                    qml.PhaseDamping(noise_params["PhaseDamping"], wires=q)
-                    qml.DepolarizingChannel(noise_params["Depolarizing"], wires=q)
+                    qml.BitFlip(noise_params.get("BitFlip", 0.0), wires=q)
+                    qml.PhaseFlip(noise_params.get("PhaseFlip", 0.0), wires=q)
+                    qml.AmplitudeDamping(
+                        noise_params.get("AmplitudeDamping", 0.0), wires=q
+                    )
+                    qml.PhaseDamping(noise_params.get("PhaseDamping", 0.0), wires=q)
+                    qml.DepolarizingChannel(
+                        noise_params.get("DepolarizingChannel", 0.0), wires=q
+                    )
 
         if self.data_reupload:
             self.pqc(params[-1], self.n_qubits)
 
         if state_vector:
             return qml.density_matrix(wires=list(range(self.n_qubits)))
+        elif exp_val:
+            return qml.expval(qml.PauliZ(self.output_qubit))
         else:
-            return qml.expval(qml.PauliZ(wires=0))
+            if self.output_qubit == -1:
+                return qml.probs(wires=list(range(self.n_qubits)))
+            else:
+                return qml.probs(wires=self.output_qubit)
 
     def _draw(self) -> None:
         return qml.draw(self.circuit)(params=self.params, inputs=[0])
@@ -172,6 +185,7 @@ class Model:
         noise_params: Optional[Dict[str, float]] = None,
         cache: Optional[bool] = False,
         state_vector: bool = False,
+        exp_val: bool = True,
     ) -> np.ndarray:
         """Perform a forward pass of the quantum circuit.
 
@@ -186,7 +200,7 @@ class Model:
             np.ndarray: Expectation value of PauliZ(0) of the circuit.
         """
         # Call forward method which handles the actual caching etc.
-        return self._forward(params, inputs, noise_params, cache, state_vector)
+        return self._forward(params, inputs, noise_params, cache, state_vector, exp_val)
 
     def _forward(
         self,
@@ -195,6 +209,7 @@ class Model:
         noise_params: Optional[Dict[str, float]] = None,
         cache: Optional[bool] = False,
         state_vector: bool = False,
+        exp_val: bool = True,
     ) -> np.ndarray:
         """Perform a forward pass of the quantum circuit.
 
@@ -246,6 +261,7 @@ class Model:
                 inputs=inputs,
                 noise_params=noise_params,
                 state_vector=state_vector,
+                exp_val=exp_val,
             )
 
         if cache:
