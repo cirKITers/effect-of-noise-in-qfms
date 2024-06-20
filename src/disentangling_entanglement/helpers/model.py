@@ -38,18 +38,23 @@ class Model:
         self.n_qubits: int = n_qubits
         self.n_layers: int = n_layers
         self.data_reupload: bool = data_reupload
+        self.output_qubit: int = output_qubit
         self.pqc: Callable[[Optional[np.ndarray], int], int] = getattr(
             Ansaetze, circuit_type or "no_ansatz"
-        )
+        )()
+
+        log.info(f"Using {circuit_type} circuit.")
 
         if data_reupload:
             impl_n_layers: int = n_layers + 1  # we need L+1 according to Schuld et al.
+            self.degree = n_layers * n_qubits
         else:
             impl_n_layers: int = n_layers
+            self.degree = 0
 
         params_shape: Tuple[int, int] = (
             impl_n_layers,
-            self.pqc(None, self.n_qubits),
+            self.pqc.n_params_per_layer(self.n_qubits),
         )
 
         if initialization == "random":
