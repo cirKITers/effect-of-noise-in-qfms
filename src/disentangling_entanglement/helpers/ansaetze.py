@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from typing import Any
 import pennylane.numpy as np
 import pennylane as qml
@@ -7,21 +8,21 @@ import logging
 log = logging.getLogger(__name__)
 
 
-class Circuit:
+class Circuit(ABC):
     def __init__(self):
         pass
 
-    @staticmethod
+    @abstractmethod
     def n_params_per_layer(n_qubits: int):
-        raise NotImplemented
+        return
 
-    @staticmethod
+    @abstractmethod
     def get_control_indices(w: np.ndarray):
-        raise NotImplemented
+        return
 
-    @staticmethod
+    @abstractmethod
     def build(self, n_qubits: int, n_layers: int):
-        raise NotImplemented
+        return
 
     def __call__(self, *args: Any, **kwds: Any) -> Any:
         self.build(*args, **kwds)
