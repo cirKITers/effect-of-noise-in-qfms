@@ -1,9 +1,21 @@
+from disentangling_entanglement.helpers.model import Model
+
 from typing import List
 import numpy as np
 
 import logging
 
 log = logging.getLogger(__name__)
+
+
+def create_model(
+    n_qubits: int,
+    n_layers: int,
+    circuit_type: str,
+    data_reupload: bool,
+    output_qubit: int,
+) -> Model:
+    return Model(n_qubits, n_layers, circuit_type, data_reupload, output_qubit)
 
 
 def sample_domain(domain: List[float], omegas: List[List[float]]) -> np.ndarray:
