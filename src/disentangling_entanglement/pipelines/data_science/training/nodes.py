@@ -29,6 +29,8 @@ def train_model(
     def cost(params, **kwargs):
         return mse(model(params=params, **kwargs), fourier_series)
 
+    control_params = model.pqc.get_control_indices(model.params)
+
     log.info(f"Training model for {epochs} epochs")
 
     for epoch in track(range(epochs), description="Training..", total=epochs):
@@ -55,11 +57,11 @@ def train_model(
         log.debug(f"Cost in epoch {epoch}: {cost_val}")
         mlflow.log_metric("mse", cost_val, epoch)
 
-        control_params = model.params[:, 2::3]
-        control_mean = (
-            np.sum(np.abs(control_params) % (2 * np.pi)) / control_params.size
-        )
+        if control_params is not None:
+            control_mean = (
+                np.sum(np.abs(control_params) % (2 * np.pi)) / control_params.size
+            )
 
-        mlflow.log_metric("control_mean", cost_val, epoch)
+            mlflow.log_metric("control_mean", control_mean, epoch)
 
     return model
