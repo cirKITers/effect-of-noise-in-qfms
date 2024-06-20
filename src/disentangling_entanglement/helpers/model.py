@@ -218,7 +218,7 @@ class Model:
                 {
                     "n_qubits": self.n_qubits,
                     "n_layers": self.n_layers,
-                    "pqc": self.pqc.__name__,
+                    "pqc": self.pqc.__class__.__name__,
                     "dru": self.data_reupload,
                     "params": params,
                     "noise_params": noise_params,
