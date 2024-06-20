@@ -13,6 +13,7 @@ def create_pipeline() -> Pipeline:
                     "n_layers": "params:n_layers",
                     "circuit_type": "params:circuit_type",
                     "data_reupload": "params:data_reupload",
+                    "initialization": "params:initialization",
                     "output_qubit": "params:output_qubit",
                 },
                 outputs="model",

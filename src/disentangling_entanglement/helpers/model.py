@@ -23,6 +23,7 @@ class Model:
         n_layers: int,
         circuit_type: str,
         data_reupload: bool = True,
+        initialization: str = "random",
         output_qubit: int = 0,
     ) -> None:
         """
