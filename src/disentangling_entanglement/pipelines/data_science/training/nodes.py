@@ -5,6 +5,7 @@ import pennylane as qml
 import pennylane.numpy as np
 import mlflow
 from typing import Dict
+from rich.progress import track
 
 import logging
 
@@ -30,7 +31,7 @@ def train_model(
 
     log.info(f"Training model for {epochs} epochs")
 
-    for epoch in range(epochs):
+    for epoch in track(range(epochs), description="Training..", total=epochs):
         ent_cap = Entanglement.meyer_wallach(
             model=model,
             samples=0,  # disable sampling, use model params
