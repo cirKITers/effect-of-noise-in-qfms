@@ -23,6 +23,8 @@ def validate_problem(omegas: List[List[float]], model: Model):
             log.warning(
                 f"Model is too large to use {len(omegas)} frequencies. Consider adjusting the model degree."
             )
+        else:
+            log.info("Problem and model validation passed.")
     else:
         log.warning("Problem validation not implemented yet.")
 
