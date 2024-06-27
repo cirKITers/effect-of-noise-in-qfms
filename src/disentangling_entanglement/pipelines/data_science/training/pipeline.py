@@ -1,11 +1,20 @@
 from kedro.pipeline import Pipeline, node, pipeline
 
-from .nodes import train_model
+from .nodes import validate_problem, train_model
 
 
 def create_pipeline() -> Pipeline:
     return pipeline(
         [
+            node(
+                func=validate_problem,
+                inputs={
+                    "omegas": "params:omegas",
+                    "model": "model",
+                },
+                outputs=None,
+                name="validate_problem",
+            ),
             node(
                 func=train_model,
                 inputs={
