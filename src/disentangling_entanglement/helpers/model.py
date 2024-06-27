@@ -28,6 +28,10 @@ class Model:
     ) -> None:
         """
         Initialize the quantum circuit model.
+        Parameters will have the shape [impl_n_layers, parameters_per_layer]
+        where impl_n_layers is the number of layers provided and added by one
+        depending if data_reupload is True and parameters_per_layer is given by
+        the chosen ansatz.
 
         Args:
             n_qubits (int): The number of qubits in the circuit.
@@ -62,12 +66,35 @@ class Model:
             self.pqc.n_params_per_layer(self.n_qubits),
         )
 
+        def set_control_params(params, value):
+            indices = self.pqc.get_control_indices(self.n_qubits)
+            if indices is None:
+                log.warning(
+                    f"Specified {initialization} but circuit does not contain controlled rotation gates. Parameters are intialized randomly."
+                )
+            else:
+                params[:, indices[0] : indices[1] : indices[2]] = (
+                    np.ones_like(params[:, indices[0] : indices[1] : indices[2]])
+                    * value
+                )
+            return params
+
         if initialization == "random":
             self.params: np.ndarray = np.random.uniform(
                 0, 2 * np.pi, params_shape, requires_grad=True
             )
         elif initialization == "zeros":
             self.params: np.ndarray = np.zeros(params_shape, requires_grad=True)
+        elif initialization == "zero-controlled":
+            self.params: np.ndarray = np.random.uniform(
+                0, 2 * np.pi, params_shape, requires_grad=True
+            )
+            self.params = set_control_params(self.params, 0)
+        elif initialization == "pi-controlled":
+            self.params: np.ndarray = np.random.uniform(
+                0, 2 * np.pi, params_shape, requires_grad=True
+            )
+            self.params = set_control_params(self.params, np.pi)
         else:
             raise Exception("Invalid initialization method")
 
