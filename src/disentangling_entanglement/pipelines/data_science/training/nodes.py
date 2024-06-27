@@ -6,10 +6,25 @@ import pennylane.numpy as np
 import mlflow
 from typing import Dict
 from rich.progress import track
+from typing import List
 
 import logging
 
 log = logging.getLogger(__name__)
+
+
+def validate_problem(omegas: List[List[float]], model: Model):
+    if model.n_layers == 1 or model.n_qubits == 1:
+        if model.degree < len(omegas):
+            log.warning(
+                f"Model is too small to use {len(omegas)} frequencies. Consider adjusting the model degree."
+            )
+        elif model.degree > len(omegas):
+            log.warning(
+                f"Model is too large to use {len(omegas)} frequencies. Consider adjusting the model degree."
+            )
+    else:
+        log.warning("Problem validation not implemented yet.")
 
 
 def train_model(
@@ -61,7 +76,9 @@ def train_model(
                 for params in model.params
             ]
         )
-        if control_params.any() != None:
+        indices = model.pqc.get_control_indices(model.n_qubits)
+        if indices is not None:
+            control_params = model.params[:, indices[0] : indices[1] : indices[2]]
             control_rotation_mean = (
                 np.sum(np.abs(control_params) % (2 * np.pi)) / control_params.size
             )
