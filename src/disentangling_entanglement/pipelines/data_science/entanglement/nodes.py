@@ -1,5 +1,5 @@
 from disentangling_entanglement.helpers.entanglement import Entanglement
-from disentangling_entanglement.helpers.model import Model
+from qml_essentials.model import Model
 
 from typing import Dict
 
