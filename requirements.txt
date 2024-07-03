@@ -71,17 +71,17 @@ matplotlib==3.9.0
 matplotlib-inline==0.1.7
 mdurl==0.1.2
 mlflow==2.13.2
-more-itertools==10.3.0
+more-itertools==10.2.0
 networkx==3.3
 numpy==1.26.4
 omegaconf==2.3.0
 opentelemetry-api==1.25.0
 opentelemetry-sdk==1.25.0
 opentelemetry-semantic-conventions==0.46b0
-orjson==3.10.4
+orjson==3.10.3
 packaging==23.2
 pandas==2.2.2
-parse==1.20.2
+parse==1.20.1
 parso==0.8.4
 PennyLane==0.36.0
 PennyLane_Lightning==0.36.0
@@ -96,7 +96,7 @@ protobuf==4.25.3
 ptyprocess==0.7.0
 pure-eval==0.2.2
 pyarrow==15.0.2
-pydantic==2.7.4
+pydantic==2.7.3
 pydantic_core==2.18.4
 Pygments==2.18.0
 pyparsing==3.1.2
@@ -128,7 +128,7 @@ SQLAlchemy==2.0.30
 sqlparse==0.5.0
 stack-data==0.6.3
 starlette==0.37.2
-strawberry-graphql==0.235.0
+strawberry-graphql==0.234.2
 tenacity==8.3.0
 text-unidecode==1.3
 threadpoolctl==3.5.0
@@ -150,3 +150,5 @@ websockets==12.0
 Werkzeug==3.0.3
 wrapt==1.16.0
 zipp==3.19.2
+-i https://ea3a0fbb-599f-4d83-86f1-0e71abe27513.ka.bw-cloud-instance.org/lc3267/quantum/+simple/
+qml-essentials==0.1.0

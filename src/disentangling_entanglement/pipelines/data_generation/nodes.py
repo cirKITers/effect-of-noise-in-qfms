@@ -1,4 +1,4 @@
-from disentangling_entanglement.helpers.model import Model
+from qml_essentials.model import Model
 
 from typing import List
 import numpy as np
