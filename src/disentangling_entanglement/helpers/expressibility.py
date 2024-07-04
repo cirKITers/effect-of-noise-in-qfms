@@ -177,7 +177,8 @@ class Expressibility_Sampler:
                 )
             )
         )
-        for idx, x in enumerate(self.x_samples[:-1]):
+
+        for idx, x in enumerate(self.x_samples):
 
             sv = self.model(
                 inputs=x, params=w, **self.kwargs
@@ -192,8 +193,7 @@ class Expressibility_Sampler:
                 )
                 ** 2
             )
-            fidelities[idx] = fidelity
-        fidelities[-1] = fidelities[0]  # fist input is the equal to the last one
+            fidelities[idx] = np.real(fidelity)
 
         return fidelities
 
