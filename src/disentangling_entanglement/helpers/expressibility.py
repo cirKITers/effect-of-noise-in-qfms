@@ -1,6 +1,7 @@
 import pennylane.numpy as np
 from typing import Tuple, Callable, Any
 from scipy import integrate
+from scipy.special import rel_entr
 import os
 
 
@@ -134,7 +135,7 @@ def get_kl_divergence_expr(
 
     kl_divergence = np.zeros(vqc_prob_dist.shape[0])
     for i, p in enumerate(vqc_prob_dist):
-        kl_divergence[i] = np.sum(np.where(p != 0, p * np.log(p / haar_dist), 0))
+        kl_divergence[i] = np.sum(rel_entr(p, haar_dist))
 
     return kl_divergence
 
