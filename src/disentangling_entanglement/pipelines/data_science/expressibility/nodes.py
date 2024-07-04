@@ -7,7 +7,7 @@ from disentangling_entanglement.helpers.expressibility import (
         get_sampled_haar_probability_histogram,
     get_kl_divergence_expr,
 )
-from disentangling_entanglement.helpers.model import Model
+from qml_essentials.model import Model
 
 
 log = logging.getLogger(__name__)
