@@ -5,7 +5,7 @@ import mlflow
 from disentangling_entanglement.helpers.expressibility import (
         Expressibility_Sampler,
         get_sampled_haar_probability_histogram,
-    get_kl_divergence_expr,
+        get_kl_divergence_expr,
 )
 from qml_essentials.model import Model
 
