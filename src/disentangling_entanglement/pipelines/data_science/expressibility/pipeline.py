@@ -10,9 +10,9 @@ def create_pipeline() -> Pipeline:
                 func=calculate_expressibility,
                 inputs={
                     "model": "model",
-                    "n_bins": "params:n_bins",
-                    "n_samples": "params:n_samples",
-                    "n_input_samples": "params:n_input_samples",
+                    "n_bins": "params:expr_n_bins",
+                    "n_samples": "params:expr_n_samples",
+                    "n_input_samples": "params:expr_n_input_samples",
                     "noise_params": "params:noise_params",
                     "seed": "params:seed",
                 },
