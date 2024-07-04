@@ -41,8 +41,14 @@ def calculate_expressibility(model: Model,
     kl_divergence = get_kl_divergence_expr(z, y_haar)
     log.debug(f"KL Divergence {kl_divergence}")
 
+    for i, prob in enumerate(y_haar):
+        mlflow.log_metric("haar_probability", prob, i)
+
     for i, (x_sample, kl) in enumerate(zip(x, kl_divergence)):
         mlflow.log_metric("kl_divergence", kl, i)
         mlflow.log_metric("x", x_sample, i)
+
+        for j, fidelity in enumerate(z[i]):
+            mlflow.log_metric(f"x_{x_sample:.2f}_fidelity", fidelity, j)
 
     return kl_divergence
