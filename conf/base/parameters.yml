@@ -8,7 +8,7 @@ circuit_type: 'Circuit_19' # Circuit_1, Circuit_5, Circuit_9, Circuit_15, Circui
 data_reupload: True
 output_qubit: 0
 initialization: "zero-controlled" # random, zero, zero-controlled, pi-controlled 
-shots: 1024 # number or -1 if expectation value should be used
+shots: -1 # number or -1 if expectation value should be used
 samples: 100
 seed: 1000
 

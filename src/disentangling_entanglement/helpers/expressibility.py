@@ -58,9 +58,9 @@ def sampled_haar_probability(n_qubits: int, n_bins: int) -> np.ndarray:
 
 
 def get_sampled_haar_probability_histogram(
-        n_qubits: int,
-        n_bins: int,
-        cache: bool = True,
+    n_qubits: int,
+    n_bins: int,
+    cache: bool = True,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
     Calculates theoretical probability density function for random Haar states
@@ -108,6 +108,7 @@ def get_sampled_haar_probability_histogram(
 
     return x, y
 
+
 def get_kl_divergence_expr(
     vqc_prob_dist: np.ndarray,
     haar_dist: np.ndarray,
@@ -129,15 +130,18 @@ def get_kl_divergence_expr(
     np.ndarray
         Array of KL-Divergence values for all values in axis 1
     """
-    assert all([haar_dist.shape == p.shape for p in vqc_prob_dist]), "All "\
-            "probabilities for inputs should have the same shape as Haar. " \
-            f"Got {haar_dist.shape} for Haar and {vqc_prob_dist.shape} for VQC"
+    assert all([haar_dist.shape == p.shape for p in vqc_prob_dist]), (
+        "All "
+        "probabilities for inputs should have the same shape as Haar. "
+        f"Got {haar_dist.shape} for Haar and {vqc_prob_dist.shape} for VQC"
+    )
 
     kl_divergence = np.zeros(vqc_prob_dist.shape[0])
     for i, p in enumerate(vqc_prob_dist):
         kl_divergence[i] = np.sum(rel_entr(p, haar_dist))
 
     return kl_divergence
+
 
 class Expressibility_Sampler:
     def __init__(
@@ -146,7 +150,7 @@ class Expressibility_Sampler:
         n_samples: int = 1000,
         n_input_samples: int = 10,
         seed: int = 100,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
 
         self.model = model
@@ -172,17 +176,13 @@ class Expressibility_Sampler:
             * (
                 1
                 - 2
-                * self.rng.random(
-                    size=[*self.model.params.shape, self.n_samples * 2]
-                )
+                * self.rng.random(size=[*self.model.params.shape, self.n_samples * 2])
             )
         )
 
         for idx, x in enumerate(self.x_samples):
 
-            sv = self.model(
-                inputs=x, params=w, **self.kwargs
-            )
+            sv = self.model(inputs=x.reshape(1), params=w, **self.kwargs)
             sqrt_sv1 = np.sqrt(sv[: self.n_samples])
 
             fidelity = (
@@ -197,8 +197,9 @@ class Expressibility_Sampler:
 
         return fidelities
 
-    def sample_hist_state_fidelities(self, n_bins: int) -> \
-            Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def sample_hist_state_fidelities(
+        self, n_bins: int
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         fidelities = self._sample_state_fidelities()
         z_component = np.zeros((len(self.x_samples), n_bins))
 
@@ -210,4 +211,3 @@ class Expressibility_Sampler:
             z_component[i], _ = np.histogram(f, bins=b)
         z_component = z_component / self.n_samples
         return self.x_samples, b, z_component
-
