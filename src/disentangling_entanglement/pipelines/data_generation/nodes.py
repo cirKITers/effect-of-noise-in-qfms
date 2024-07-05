@@ -15,6 +15,7 @@ def create_model(
     data_reupload: bool,
     initialization: str,
     output_qubit: int,
+    shots: int,
 ) -> Model:
     return Model(
         n_qubits=n_qubits,
@@ -23,6 +24,7 @@ def create_model(
         data_reupload=data_reupload,
         initialization=initialization,
         output_qubit=output_qubit,
+        shots=shots,
     )
 
 
