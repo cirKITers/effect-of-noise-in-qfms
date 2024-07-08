@@ -182,7 +182,10 @@ class Expressibility_Sampler:
 
         for idx, x in enumerate(self.x_samples):
 
-            sv = self.model(inputs=x.reshape(1), params=w, **self.kwargs)
+            # We need the same number of inputs as parameters
+            batched_inputs = x.repeat(w.shape[-1])
+
+            sv = self.model(inputs=batched_inputs, params=w, **self.kwargs)
             sqrt_sv1 = np.sqrt(sv[: self.n_samples])
 
             fidelity = (
