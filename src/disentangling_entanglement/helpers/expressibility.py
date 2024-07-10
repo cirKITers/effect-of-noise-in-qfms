@@ -3,6 +3,7 @@ from typing import Tuple, Callable, Any
 from scipy import integrate
 from scipy.special import rel_entr
 import os
+from rich.progress import track
 
 
 def theoretical_haar_probability(fidelity: float, n_qubits: int) -> float:
@@ -167,8 +168,9 @@ class Expressibility_Sampler:
         self.kwargs = kwargs
 
     def _sample_state_fidelities(self) -> np.ndarray:
+        n_x_samples = len(self.x_samples)
 
-        fidelities = np.zeros((len(self.x_samples), self.n_samples))
+        fidelities = np.zeros((n_x_samples, self.n_samples))
 
         w = (
             2
@@ -180,9 +182,18 @@ class Expressibility_Sampler:
             )
         )
 
-        for idx, x in enumerate(self.x_samples):
+        # TODO: Maybe we could vectorize this for loop as follows ?
+        # x_samples_batched = self.x_samples.repeat(self.n_samples * 2)
+        # w_batched = w.repeat(n_x_samples, axis=2)
+        # self.model(inputs=x_samples_batched, params=w_batched, **self.kwargs)
 
-            sv = self.model(inputs=x.reshape(1), params=w, **self.kwargs)
+        x_samples_batched = self.x_samples.reshape(1, -1).repeat(
+            self.n_samples * 2, axis=0
+        )
+
+        for idx in track(range(n_x_samples), desc="Calculating fidelities..."):
+
+            sv = self.model(inputs=x_samples_batched[:, idx], params=w, **self.kwargs)
             sqrt_sv1 = np.sqrt(sv[: self.n_samples])
 
             fidelity = (
