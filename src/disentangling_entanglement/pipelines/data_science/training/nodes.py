@@ -47,6 +47,9 @@ def train_model(
         prediction = model(params=params, **kwargs)
         if model.execution_type == "probs":
             # convert probabilities for zero state to expectation value
+            raise NotImplementedError(
+                f"Not implemented gradient calculation for execeution_type {model.execution_type} in conjunction with shots."
+            )
             prediction = 2 * prediction[:, 0] - 1
         return mse(prediction, fourier_series)
 
