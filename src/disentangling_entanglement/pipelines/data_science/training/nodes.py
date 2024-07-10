@@ -44,7 +44,14 @@ def train_model(
         return np.mean((prediction - target) ** 2)
 
     def cost(params, **kwargs):
-        return mse(model(params=params, **kwargs), fourier_series)
+        prediction = model(params=params, **kwargs)
+        if model.execution_type == "probs":
+            # convert probabilities for zero state to expectation value
+            raise NotImplementedError(
+                f"Not implemented gradient calculation for execeution_type {model.execution_type} in conjunction with shots."
+            )
+            prediction = 2 * prediction[:, 0] - 1
+        return mse(prediction, fourier_series)
 
     log.info(f"Training model for {epochs} epochs")
 
@@ -52,10 +59,10 @@ def train_model(
         ent_cap = Entanglement.meyer_wallach(
             model=model,
             samples=0,  # disable sampling, use model params
-            inputs=[0],
+            inputs=None,
             noise_params=noise_params,
             cache=False,
-            state_vector=True,
+            execution_type="density",
         )
         log.debug(f"Entangling capability in epoch {epoch}: {ent_cap}")
         mlflow.log_metric("entangling_capability", ent_cap, epoch)
@@ -66,7 +73,7 @@ def train_model(
             inputs=domain_samples,
             noise_params=noise_params,
             cache=False,  # disable caching because currently no gradients are being stored
-            state_vector=False,
+            execution_type="probs" if model.shots is not None else "expval",
         )
 
         log.debug(f"Cost in epoch {epoch}: {cost_val}")

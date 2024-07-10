@@ -8,8 +8,14 @@ circuit_type: 'Circuit_19' # Circuit_1, Circuit_5, Circuit_9, Circuit_15, Circui
 data_reupload: True
 output_qubit: 0
 initialization: "zero-controlled" # random, zero, zero-controlled, pi-controlled 
+shots: -1 # number or -1 if expectation value should be used
 samples: 100
 seed: 1000
+
+# Expressibility Params
+expr_n_samples: 1000
+expr_n_input_samples: 5
+expr_n_bins: 75
 
 noise_params:
   BitFlip: 0.0
