@@ -191,7 +191,7 @@ class Expressibility_Sampler:
             self.n_samples * 2, axis=0
         )
 
-        for idx in track(range(n_x_samples), desc="Calculating fidelities..."):
+        for idx in track(range(n_x_samples), description="Calculating fidelities..."):
 
             sv = self.model(inputs=x_samples_batched[:, idx], params=w, **self.kwargs)
             sqrt_sv1 = np.sqrt(sv[: self.n_samples])
