@@ -12,17 +12,21 @@ shots: -1 # number or -1 if expectation value should be used
 samples: 100
 seed: 1000
 
+noise_params:
+  BitFlip: 0.06
+  PhaseFlip: 0.06
+  AmplitudeDamping: 0.06
+  PhaseDamping: 0.06
+  Depolarizing: 0.06
+
 # Expressibility Params
 expr_n_samples: 1000
 expr_n_input_samples: 5
 expr_n_bins: 75
 
-noise_params:
-  BitFlip: 0.0
-  PhaseFlip: 0.0
-  AmplitudeDamping: 0.0
-  PhaseDamping: 0.0
-  Depolarizing: 0.0
+# Coefficients Params
+coefficients_n_samples: 100
+noise_steps: 3
 
 epochs: 100
 learning_rate: 0.001
