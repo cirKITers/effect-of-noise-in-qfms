@@ -14,7 +14,7 @@ Experiments are automatically recorded using [MlFlow](https://mlflow.org/). You 
 
 To visualize the nodes and pipeline
 1. Run `poetry run kedro viz`
-2. 2. Navigating to [http://127.0.0.1:4141](http://127.0.0.1:4141)
+2. Navigating to [http://127.0.0.1:4141](http://127.0.0.1:4141)
 
 ## Tweaking :wrench:
 
