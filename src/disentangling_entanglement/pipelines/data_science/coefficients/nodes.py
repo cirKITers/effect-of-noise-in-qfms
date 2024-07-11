@@ -123,7 +123,7 @@ def iterate_layers_and_noise(
 
     with Progress() as progress:
         noise_it_task = progress.add_task(
-            "Iterating noise levels...", total=noise_steps
+            "Iterating noise levels...", total=noise_steps + 1
         )
         layer_it_task = progress.add_task("Iterating layers...", total=model.n_layers)
         sample_coeff_task = progress.add_task("Sampling...", total=samples)
