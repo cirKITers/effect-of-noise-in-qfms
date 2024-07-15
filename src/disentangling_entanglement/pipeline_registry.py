@@ -17,6 +17,9 @@ from disentangling_entanglement.pipelines.data_science.training.pipeline import 
 from disentangling_entanglement.pipelines.data_science.expressibility.pipeline import (
     create_pipeline as create_expressibility_pipeline,
 )
+from disentangling_entanglement.pipelines.data_science.coefficients.pipeline import (
+    create_pipeline as create_coefficients_pipeline,
+)
 
 # from disentangling_entanglement.pipelines.visualization.pipeline import (
 #     create_pipeline as create_visualization_pipeline,
@@ -35,6 +38,8 @@ def register_pipelines() -> Dict[str, Pipeline]:
         + create_expressibility_pipeline()
         + create_training_pipeline(),
         "training": create_data_generation_pipeline() + create_training_pipeline(),
+        "coefficients": create_data_generation_pipeline()
+        + create_coefficients_pipeline(),
         "entanglement": create_data_generation_pipeline()
         + create_entanglement_pipeline(),
         "expressibility": create_data_generation_pipeline()

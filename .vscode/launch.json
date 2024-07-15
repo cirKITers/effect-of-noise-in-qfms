@@ -16,6 +16,58 @@
             ],
             "console": "integratedTerminal",
             "justMyCode": false
-        }
+        },
+        {
+            "name": "training",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "kedro",
+            "args": [
+                "run",
+                "--pipeline",
+                "training"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        {
+            "name": "coefficients",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "kedro",
+            "args": [
+                "run",
+                "--pipeline",
+                "coefficients"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        {
+            "name": "entanglement",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "kedro",
+            "args": [
+                "run",
+                "--pipeline",
+                "entanglement"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        {
+            "name": "expressibility",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "kedro",
+            "args": [
+                "run",
+                "--pipeline",
+                "expressibility"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
     ]
 }
