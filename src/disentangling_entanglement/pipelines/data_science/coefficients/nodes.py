@@ -55,9 +55,11 @@ def iterate_layers_and_sample(
     """
     coeffs_pl = np.ndarray((n_layers, samples), dtype=complex)
 
-    progress.reset(layer_it_task)
+    if progress is not None:
+        progress.reset(layer_it_task)
     for n in range(n_layers):
-        progress.reset(sample_coeff_task)
+        if progress is not None:
+            progress.reset(sample_coeff_task)
         for s in range(samples):
             # Re-initialize model, because it triggers new sampling
             model = Model(
