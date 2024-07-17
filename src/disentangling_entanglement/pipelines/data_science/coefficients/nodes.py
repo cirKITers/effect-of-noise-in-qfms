@@ -54,6 +54,10 @@ def iterate_layers_and_sample(
         Tuple[np.ndarray, np.ndarray]: Real and imaginary parts of the sampled coefficients.
     """
     coeffs_pl = np.ndarray((n_layers, samples), dtype=complex)
+    model_degrees = np.ndarray(
+        (n_layers),
+        dtype=int,
+    )
 
     if progress is not None:
         progress.reset(layer_it_task)
@@ -76,6 +80,8 @@ def iterate_layers_and_sample(
             coeffs_p = coeffs_nz[len(coeffs_nz) // 2 :]
             coeffs_pl[n][s] = coeffs_p[-1]
 
+            model_degrees[n] = model.degree
+
             if progress is not None:
                 progress.update(sample_coeff_task, advance=1)
         if progress is not None:
@@ -84,7 +90,7 @@ def iterate_layers_and_sample(
     coeffs_plr = coeffs_pl.real
     coeffs_pli = coeffs_pl.imag
 
-    return coeffs_plr, coeffs_pli
+    return coeffs_plr, coeffs_pli, model_degrees
 
 
 def iterate_layers_and_noise(
@@ -134,7 +140,7 @@ def iterate_layers_and_noise(
         for step in range(noise_steps + 1):  # +1 to go for 100%
             part_noise_params = noise_params * (step / noise_steps)
 
-            coeffs_plr, coeffs_pli = iterate_layers_and_sample(
+            coeffs_plr, coeffs_pli, model_degrees = iterate_layers_and_sample(
                 n_qubits=model.n_qubits,
                 n_layers=model.n_layers,
                 ansatz=model.pqc.__class__.__name__,
@@ -148,7 +154,7 @@ def iterate_layers_and_noise(
 
             fig.add_trace(
                 go.Scatter(
-                    x=np.arange(1, model.n_layers + 1),
+                    x=model_degrees,
                     y=coeffs_abs.var(axis=1),
                     mode="lines+markers",
                     name=f"Rel. Noise Level: {(step/noise_steps)*100:.0f}%",
