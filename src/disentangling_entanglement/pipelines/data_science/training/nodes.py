@@ -4,9 +4,8 @@ from qml_essentials.model import Model
 import pennylane as qml
 import pennylane.numpy as np
 import mlflow
-from typing import Dict
+from typing import Dict, List, Tuple, Callable
 from rich.progress import track
-from typing import List
 
 import logging
 
@@ -29,6 +28,41 @@ def validate_problem(omegas: List[List[float]], model: Model):
         log.warning("Problem validation not implemented yet.")
 
 
+## TODO: move to qml_essentials
+def step_cost_and_grads(
+        opt: qml.GradientDescentOptimizer, objective_fn: Callable, *args, **kwargs
+) -> Tuple[np.ndarray, float, np.ndarray]:
+    """
+    Same as qml.GradientDescentOptimizer.step_and_cost but with returning the
+    gradients
+
+    Update trainable arguments with one step of the optimizer and return the
+    corresponding objective function value prior to the step.
+
+    :param opt: pennylane optimiser
+    :type opt: qml.GradientDescentOptimizer
+    :param objective_fn: the objective function for optimization
+    :type objective_fn: Callable
+    :param *args : variable length argument list for objective function
+    :param **kwargs : variable length of keyword arguments for the objective
+        function
+    :return: the new variable values :math:`x^{(t+1)}`
+    :return: the objective function output prior to the step
+    :return: the gradients
+    :rtype: Tuple[np.ndarray, float, np.ndarray]
+    """
+    g, forward = opt.compute_grad(objective_fn, args, kwargs)
+    new_args = opt.apply_grad(g, args)
+
+    if forward is None:
+        forward = objective_fn(*args, **kwargs)
+
+    # unwrap from list if one argument, cleaner return
+    if len(new_args) == 1:
+        return new_args[0], forward, g
+    return new_args, forward, g
+
+
 def train_model(
     model: Model,
     domain_samples: np.ndarray,
@@ -48,7 +82,8 @@ def train_model(
         if model.execution_type == "probs":
             # convert probabilities for zero state to expectation value
             raise NotImplementedError(
-                f"Not implemented gradient calculation for execeution_type {model.execution_type} in conjunction with shots."
+                f"Not implemented gradient calculation for execeution_type "
+                f"{model.execution_type} in conjunction with shots."
             )
             prediction = 2 * prediction[:, 0] - 1
         return mse(prediction, fourier_series)
@@ -67,7 +102,8 @@ def train_model(
         log.debug(f"Entangling capability in epoch {epoch}: {ent_cap}")
         mlflow.log_metric("entangling_capability", ent_cap, epoch)
 
-        model.params, cost_val = opt.step_and_cost(
+        model.params, cost_val, grads = step_cost_and_grads(
+            opt,
             cost,
             model.params,
             inputs=domain_samples,
@@ -78,6 +114,24 @@ def train_model(
 
         log.debug(f"Cost in epoch {epoch}: {cost_val}")
         mlflow.log_metric("mse", cost_val, epoch)
+        mlflow.log_metrics(
+            {
+                f"param_l{l:02d}_w{w:02d}": p.numpy()
+                for l, par in enumerate(model.params)
+                for w, p in enumerate(par)
+            },
+            step=epoch,
+        )
+        mlflow.log_metrics(
+            {
+                f"grad_l{l:02d}_w{w:02d}_g{i:02d}": g
+                for l, par in enumerate(grads)
+                for w, p in enumerate(par)
+                for i, g in enumerate(p)
+            },
+            step=epoch,
+        )
+
 
         control_params = np.array(
             [
