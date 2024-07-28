@@ -86,6 +86,8 @@ def train_model(
                 f"{model.execution_type} in conjunction with shots."
             )
             prediction = 2 * prediction[:, 0] - 1
+        elif isinstance(model.output_qubit, list):
+            prediction = np.mean(prediction, axis=0)
         return mse(prediction, fourier_series)
 
     log.info(f"Training model for {epochs} epochs")
