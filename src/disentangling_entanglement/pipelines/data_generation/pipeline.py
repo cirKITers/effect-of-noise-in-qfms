@@ -16,6 +16,7 @@ def create_pipeline() -> Pipeline:
                     "initialization": "params:initialization",
                     "output_qubit": "params:output_qubit",
                     "shots": "params:shots",
+                    "seed": "params:seed",
                 },
                 outputs="model",
                 name="create_model",
