@@ -10,7 +10,7 @@ def create_pipeline() -> Pipeline:
                 func=calculate_entanglement,
                 inputs={
                     "model": "model",
-                    "samples": "params:samples",
+                    "samples": "params:ent_n_samples",
                     "noise_params": "params:noise_params",
                     "seed": "params:seed",
                 },
