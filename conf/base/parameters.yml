@@ -9,7 +9,6 @@ data_reupload: True
 output_qubit: 0
 initialization: "zero-controlled" # random, zero, zero-controlled, pi-controlled 
 shots: -1 # number or -1 if expectation value should be used
-samples: 100
 seed: 1000
 
 noise_params:
@@ -18,6 +17,9 @@ noise_params:
   AmplitudeDamping: 0.06
   PhaseDamping: 0.06
   Depolarizing: 0.06
+
+# Entanglement Params
+ent_n_samples: 100
 
 # Expressibility Params
 expr_n_samples: 1000
