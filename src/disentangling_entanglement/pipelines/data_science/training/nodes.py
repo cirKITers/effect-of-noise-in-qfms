@@ -6,6 +6,9 @@ import pennylane.numpy as np
 import mlflow
 from typing import Dict, List, Tuple, Callable
 from rich.progress import track
+import pandas as pd
+from kedro_datasets.pandas import CSVDataset
+from kedro_mlflow.io.artifacts import MlflowArtifactDataset
 
 import logging
 
@@ -74,6 +77,18 @@ def train_model(
 ):
     opt = qml.AdamOptimizer(stepsize=learning_rate)
 
+    # Indices for logging params and gradients
+    df_param_index_names = ["layer_dim", "param_dim"]
+    df_params_index = pd.MultiIndex.from_product(
+        [range(s) for s in model.params.shape], names=df_param_index_names
+    )
+    df_grads_index_names = ["out_dim", "layer_dim", "param_dim"]
+    df_grads_index = pd.MultiIndex.from_product(
+        [range(s) for s in (1, *model.params.shape)], names=df_grads_index_names
+    )
+    df_params = pd.DataFrame()
+    df_grads = pd.DataFrame()
+
     def mse(prediction, target):
         return np.mean((prediction - target) ** 2)
 
@@ -114,24 +129,18 @@ def train_model(
 
         log.debug(f"Cost in epoch {epoch}: {cost_val}")
         mlflow.log_metric("mse", cost_val, epoch)
-        mlflow.log_metrics(
-            {
-                f"param_l{l:02d}_w{w:02d}": p.numpy()
-                for l, par in enumerate(model.params)
-                for w, p in enumerate(par)
-            },
-            step=epoch,
-        )
-        mlflow.log_metrics(
-            {
-                f"grad_l{l:02d}_w{w:02d}_g{i:02d}": g
-                for l, par in enumerate(grads)
-                for w, p in enumerate(par)
-                for i, g in enumerate(p)
-            },
-            step=epoch,
-        )
 
+        # log params and gradients
+        df_params_epoch = pd.DataFrame(
+            {"param": model.params.flatten(), "epoch": epoch},
+            index=df_params_index,
+        )
+        df_grads_epoch = pd.DataFrame(
+            {"param": model.params.flatten(), "epoch": epoch},
+            index=df_grads_index,
+        )
+        df_params = pd.concat([df_params, df_params_epoch])
+        df_grads = pd.concat([df_grads, df_grads_epoch])
 
         control_params = np.array(
             [
@@ -147,5 +156,18 @@ def train_model(
             )
 
             mlflow.log_metric("control_rotation_mean", control_rotation_mean, epoch)
+
+    # Convert indices to columns
+    df_params = df_params.rename_axis(df_param_index_names).reset_index()
+    df_grads = df_grads.rename_axis(df_grads_index_names).reset_index()
+
+    csv_params = MlflowArtifactDataset(
+        dataset={"type": CSVDataset, "filepath": "params.csv"}
+    )
+    csv_params.save(data=df_params)
+    csv_grads = MlflowArtifactDataset(
+        dataset={"type": CSVDataset, "filepath": "grads.csv"}
+    )
+    csv_grads.save(data=df_grads)
 
     return model
