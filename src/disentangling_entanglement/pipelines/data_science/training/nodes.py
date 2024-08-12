@@ -4,9 +4,11 @@ from qml_essentials.model import Model
 import pennylane as qml
 import pennylane.numpy as np
 import mlflow
-from typing import Dict
+from typing import Dict, List, Tuple, Callable
 from rich.progress import track
-from typing import List
+import pandas as pd
+from kedro_datasets.pandas import CSVDataset
+from kedro_mlflow.io.artifacts import MlflowArtifactDataset
 
 import logging
 
@@ -29,6 +31,41 @@ def validate_problem(omegas: List[List[float]], model: Model):
         log.warning("Problem validation not implemented yet.")
 
 
+## TODO: move to qml_essentials
+def step_cost_and_grads(
+        opt: qml.GradientDescentOptimizer, objective_fn: Callable, *args, **kwargs
+) -> Tuple[np.ndarray, float, np.ndarray]:
+    """
+    Same as qml.GradientDescentOptimizer.step_and_cost but with returning the
+    gradients
+
+    Update trainable arguments with one step of the optimizer and return the
+    corresponding objective function value prior to the step.
+
+    :param opt: pennylane optimiser
+    :type opt: qml.GradientDescentOptimizer
+    :param objective_fn: the objective function for optimization
+    :type objective_fn: Callable
+    :param *args : variable length argument list for objective function
+    :param **kwargs : variable length of keyword arguments for the objective
+        function
+    :return: the new variable values :math:`x^{(t+1)}`
+    :return: the objective function output prior to the step
+    :return: the gradients
+    :rtype: Tuple[np.ndarray, float, np.ndarray]
+    """
+    g, forward = opt.compute_grad(objective_fn, args, kwargs)
+    new_args = opt.apply_grad(g, args)
+
+    if forward is None:
+        forward = objective_fn(*args, **kwargs)
+
+    # unwrap from list if one argument, cleaner return
+    if len(new_args) == 1:
+        return new_args[0], forward, g
+    return new_args, forward, g
+
+
 def train_model(
     model: Model,
     domain_samples: np.ndarray,
@@ -40,6 +77,18 @@ def train_model(
 ):
     opt = qml.AdamOptimizer(stepsize=learning_rate)
 
+    # Indices for logging params and gradients
+    df_param_index_names = ["layer_dim", "param_dim"]
+    df_params_index = pd.MultiIndex.from_product(
+        [range(s) for s in model.params.shape], names=df_param_index_names
+    )
+    df_grads_index_names = ["out_dim", "layer_dim", "param_dim"]
+    df_grads_index = pd.MultiIndex.from_product(
+        [range(s) for s in (1, *model.params.shape)], names=df_grads_index_names
+    )
+    df_params = pd.DataFrame()
+    df_grads = pd.DataFrame()
+
     def mse(prediction, target):
         return np.mean((prediction - target) ** 2)
 
@@ -48,7 +97,8 @@ def train_model(
         if model.execution_type == "probs":
             # convert probabilities for zero state to expectation value
             raise NotImplementedError(
-                f"Not implemented gradient calculation for execeution_type {model.execution_type} in conjunction with shots."
+                f"Not implemented gradient calculation for execeution_type "
+                f"{model.execution_type} in conjunction with shots."
             )
             prediction = 2 * prediction[:, 0] - 1
         return mse(prediction, fourier_series)
@@ -67,7 +117,8 @@ def train_model(
         log.debug(f"Entangling capability in epoch {epoch}: {ent_cap}")
         mlflow.log_metric("entangling_capability", ent_cap, epoch)
 
-        model.params, cost_val = opt.step_and_cost(
+        model.params, cost_val, grads = step_cost_and_grads(
+            opt,
             cost,
             model.params,
             inputs=domain_samples,
@@ -78,6 +129,18 @@ def train_model(
 
         log.debug(f"Cost in epoch {epoch}: {cost_val}")
         mlflow.log_metric("mse", cost_val, epoch)
+
+        # log params and gradients
+        df_params_epoch = pd.DataFrame(
+            {"param": model.params.flatten(), "epoch": epoch},
+            index=df_params_index,
+        )
+        df_grads_epoch = pd.DataFrame(
+            {"param": model.params.flatten(), "epoch": epoch},
+            index=df_grads_index,
+        )
+        df_params = pd.concat([df_params, df_params_epoch])
+        df_grads = pd.concat([df_grads, df_grads_epoch])
 
         control_params = np.array(
             [
@@ -93,5 +156,18 @@ def train_model(
             )
 
             mlflow.log_metric("control_rotation_mean", control_rotation_mean, epoch)
+
+    # Convert indices to columns
+    df_params = df_params.rename_axis(df_param_index_names).reset_index()
+    df_grads = df_grads.rename_axis(df_grads_index_names).reset_index()
+
+    csv_params = MlflowArtifactDataset(
+        dataset={"type": CSVDataset, "filepath": "params.csv"}
+    )
+    csv_params.save(data=df_params)
+    csv_grads = MlflowArtifactDataset(
+        dataset={"type": CSVDataset, "filepath": "grads.csv"}
+    )
+    csv_grads.save(data=df_grads)
 
     return model
