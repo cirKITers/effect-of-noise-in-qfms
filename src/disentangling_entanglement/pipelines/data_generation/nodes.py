@@ -16,6 +16,7 @@ def create_model(
     initialization: str,
     output_qubit: int,
     shots: int,
+    seed: int,
 ) -> Model:
     return Model(
         n_qubits=n_qubits,
@@ -25,6 +26,7 @@ def create_model(
         initialization=initialization,
         output_qubit=output_qubit,
         shots=shots,
+        random_seed=seed,
     )
 
 
