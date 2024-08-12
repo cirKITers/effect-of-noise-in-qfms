@@ -1,5 +1,8 @@
 mlruns
 session_store.db
+
+grads.csv
+params.csv
 ##########################
 # KEDRO PROJECT
 
