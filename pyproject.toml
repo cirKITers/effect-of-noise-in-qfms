@@ -55,7 +55,7 @@ pytest = "^8.2.2"
 kedro = "^0.19.6"
 kedro-mlflow = "^0.12.2"
 kedro-viz = "^9.1.0"
-qml-essentials = "^0.1.10"
+qml-essentials = "^0.1.11"
 
 
 [[tool.poetry.source]]
