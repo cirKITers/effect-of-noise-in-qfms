@@ -2,13 +2,8 @@ from typing import Dict
 import logging
 import mlflow
 
-from disentangling_entanglement.helpers.expressibility import (
-    Expressibility_Sampler,
-    get_sampled_haar_probability_histogram,
-    get_kl_divergence_expr,
-)
 from qml_essentials.model import Model
-
+from qml_essentials.expressibility import Expressibility
 
 log = logging.getLogger(__name__)
 
@@ -21,25 +16,25 @@ def calculate_expressibility(
     seed: int,
     noise_params: Dict,
 ):
-
-    expr_sampler = Expressibility_Sampler(
-        model=model,
+    x, _, z = Expressibility.state_fidelities(
+        n_bins=n_bins,
         n_samples=n_samples,
         n_input_samples=n_input_samples,
         seed=seed,
+        model=model,
         noise_params=noise_params,
         cache=True,
         execution_type="density",
     )
 
-    x, y, z = expr_sampler.sample_hist_state_fidelities(n_bins=n_bins)
-
-    _, y_haar = get_sampled_haar_probability_histogram(
-        model.n_qubits,
-        n_bins,
+    y_haar = Expressibility.haar_integral(
+        n_qubits=model.n_qubits, n_bins=n_bins, cache=True
     )
 
-    kl_divergence = get_kl_divergence_expr(z, y_haar)
+    kl_divergence = Expressibility.kullback_leibler_divergence(
+        vqc_prob_dist=z, haar_dist=y_haar
+    )
+
     log.debug(f"KL Divergence {kl_divergence}")
 
     for i, prob in enumerate(y_haar):
