@@ -17,7 +17,6 @@ def calculate_entanglement(model: Model, samples: int, seed: int, noise_params: 
         inputs=None,
         noise_params=noise_params,
         cache=True,
-        execution_type="density",
     )
 
     log.info(f"Calculated entangling capability: {entangling_capability}")
