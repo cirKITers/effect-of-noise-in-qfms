@@ -1,5 +1,5 @@
-from disentangling_entanglement.helpers.entanglement import Entanglement
 from qml_essentials.model import Model
+from qml_essentials.entanglement import Entanglement
 
 from typing import Dict
 
@@ -12,7 +12,7 @@ def calculate_entanglement(model: Model, samples: int, seed: int, noise_params: 
 
     entangling_capability = Entanglement.meyer_wallach(
         model=model,
-        samples=samples,
+        n_samples=samples,
         seed=seed,
         inputs=None,
         noise_params=noise_params,
