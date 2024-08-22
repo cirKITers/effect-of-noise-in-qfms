@@ -33,7 +33,7 @@ def validate_problem(omegas: List[List[float]], model: Model):
 
 ## TODO: move to qml_essentials
 def step_cost_and_grads(
-        opt: qml.GradientDescentOptimizer, objective_fn: Callable, *args, **kwargs
+    opt: qml.GradientDescentOptimizer, objective_fn: Callable, *args, **kwargs
 ) -> Tuple[np.ndarray, float, np.ndarray]:
     """
     Same as qml.GradientDescentOptimizer.step_and_cost but with returning the
@@ -163,13 +163,8 @@ def train_model(
     df_params = df_params.rename_axis(df_param_index_names).reset_index()
     df_grads = df_grads.rename_axis(df_grads_index_names).reset_index()
 
-    csv_params = MlflowArtifactDataset(
-        dataset={"type": CSVDataset, "filepath": "params.csv"}
-    )
-    csv_params.save(data=df_params)
-    csv_grads = MlflowArtifactDataset(
-        dataset={"type": CSVDataset, "filepath": "grads.csv"}
-    )
-    csv_grads.save(data=df_grads)
-
-    return model
+    return {
+        "model": model,
+        "params": df_params,
+        "grads": df_grads,
+    }
