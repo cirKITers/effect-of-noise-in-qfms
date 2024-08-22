@@ -24,7 +24,6 @@ def calculate_expressibility(
         model=model,
         noise_params=noise_params,
         cache=True,
-        execution_type="density",
     )
 
     y_haar = Expressibility.haar_integral(
