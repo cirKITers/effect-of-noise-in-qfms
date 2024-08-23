@@ -26,7 +26,7 @@ def calculate_expressibility(
         cache=True,
     )
 
-    y_haar = Expressibility.haar_integral(
+    _, y_haar = Expressibility.haar_integral(
         n_qubits=model.n_qubits, n_bins=n_bins, cache=True
     )
 
