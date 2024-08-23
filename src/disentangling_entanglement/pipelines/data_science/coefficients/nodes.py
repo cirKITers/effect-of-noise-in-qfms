@@ -1,6 +1,5 @@
 from qml_essentials.model import Model
-from functools import partial
-from pennylane.fourier import coefficients
+from qml_essentials.coefficients import Coefficients
 import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
@@ -11,20 +10,6 @@ import mlflow
 import logging
 
 log = logging.getLogger(__name__)
-
-
-def sample_coefficients(model: Model) -> np.ndarray:
-    """
-    Sample the Fourier coefficients of a given model.
-
-    Args:
-        model (Model): The model to sample.
-
-    Returns:
-        np.ndarray: The sampled Fourier coefficients.
-    """
-    partial_circuit = partial(model, model.params)
-    return coefficients(partial_circuit, 1, model.degree)
 
 
 def iterate_layers_and_sample(
@@ -73,7 +58,7 @@ def iterate_layers_and_sample(
             )
             model.noise_params = noise_params
 
-            coeffs = sample_coefficients(model=model)
+            coeffs = Coefficients.sample_coefficients(model=model)
 
             coeff_z = coeffs[0]
             coeffs_nz = coeffs[1:]

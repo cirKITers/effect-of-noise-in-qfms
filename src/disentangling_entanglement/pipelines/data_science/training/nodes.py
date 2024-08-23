@@ -1,4 +1,4 @@
-from disentangling_entanglement.helpers.entanglement import Entanglement
+from qml_essentials.entanglement import Entanglement
 from qml_essentials.model import Model
 
 import pennylane as qml
@@ -110,11 +110,10 @@ def train_model(
     for epoch in track(range(epochs), description="Training..", total=epochs):
         ent_cap = Entanglement.meyer_wallach(
             model=model,
-            samples=0,  # disable sampling, use model params
-            inputs=None,
+            n_samples=0,  # disable sampling, use model params
+            seed=None,
             noise_params=noise_params,
             cache=False,
-            execution_type="density",
         )
         log.debug(f"Entangling capability in epoch {epoch}: {ent_cap}")
         mlflow.log_metric("entangling_capability", ent_cap, epoch)
