@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List
 import logging
 import mlflow
 
@@ -14,11 +14,13 @@ def calculate_expressibility(
     n_input_samples: int,
     n_bins: int,
     seed: int,
+    input_domain: List[float],
     noise_params: Dict,
 ):
     x, _, z = Expressibility.state_fidelities(
         n_bins=n_bins,
         n_samples=n_samples,
+        input_domain=input_domain,
         n_input_samples=n_input_samples,
         seed=seed,
         model=model,

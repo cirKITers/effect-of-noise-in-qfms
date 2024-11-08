@@ -12,6 +12,7 @@ def create_pipeline() -> Pipeline:
                     "model": "model",
                     "n_bins": "params:expr_n_bins",
                     "n_samples": "params:expr_n_samples",
+                    "input_domain": "params:domain",
                     "n_input_samples": "params:expr_n_input_samples",
                     "noise_params": "params:noise_params",
                     "seed": "params:seed",
