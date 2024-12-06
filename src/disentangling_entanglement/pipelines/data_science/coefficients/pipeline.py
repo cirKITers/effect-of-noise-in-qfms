@@ -1,20 +1,20 @@
 from kedro.pipeline import Pipeline, node, pipeline
 
-from .nodes import iterate_layers_and_noise
+from .nodes import iterate_noise_and_layers
 
 
 def create_pipeline() -> Pipeline:
     return pipeline(
         [
             node(
-                func=iterate_layers_and_noise,
+                func=iterate_noise_and_layers,
                 inputs={
                     "model": "model",
                     "noise_params": "params:noise_params",
                     "noise_steps": "params:noise_steps",
                     "samples": "params:coefficients_n_samples",
                 },
-                outputs=None,
+                outputs={"coefficients_noise_layers": "coefficients_noise_layers"},
                 name="calculate_coefficients",
             ),
         ]

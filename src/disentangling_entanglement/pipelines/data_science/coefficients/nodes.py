@@ -13,7 +13,7 @@ import logging
 log = logging.getLogger(__name__)
 
 
-def iterate_layers_and_sample(
+def iterate_layers(
     n_qubits: int,
     n_layers: int,
     ansatz: str,
@@ -79,7 +79,7 @@ def iterate_layers_and_sample(
     return coeffs_plr, coeffs_pli, model_degrees
 
 
-def iterate_layers_and_noise(
+def iterate_noise_and_layers(
     model: Model, noise_params: Dict[str, float], noise_steps: int, samples: int
 ) -> None:
     """
@@ -118,8 +118,8 @@ def iterate_layers_and_noise(
     df = pd.DataFrame(
         columns=[
             *[n for n in noise_params.keys()],
+            "noise_level",
             "layers",
-            "coeffs_abs",
             "coeffs_abs_var",
             "coeffs_abs_mean",
         ]
@@ -136,7 +136,7 @@ def iterate_layers_and_noise(
         for step in range(noise_steps + 1):  # +1 to go for 100%
             part_noise_params = noise_params * (step / noise_steps)
 
-            coeffs_plr, coeffs_pli, model_degrees = iterate_layers_and_sample(
+            coeffs_plr, coeffs_pli, model_degrees = iterate_layers(
                 n_qubits=model.n_qubits,
                 n_layers=model.n_layers,
                 ansatz=model.pqc.__class__.__name__,
@@ -150,6 +150,7 @@ def iterate_layers_and_noise(
 
             for n, v in part_noise_params.items():
                 df.loc[step, n] = v
+            df.loc[step, "noise_level"] = step / noise_steps
             df.loc[step, "layers"] = model_degrees
             df.loc[step, "coeffs_abs_var"] = coeffs_abs.var(axis=1)
             df.loc[step, "coeffs_abs_mean"] = coeffs_abs.mean(axis=1)
@@ -180,3 +181,5 @@ def iterate_layers_and_noise(
     fig.update_yaxes(type="log")
 
     mlflow.log_figure(fig, "coefficients.html")
+
+    return {"coefficients_noise_layers": df}
