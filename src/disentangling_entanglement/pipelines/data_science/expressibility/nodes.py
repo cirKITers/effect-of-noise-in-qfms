@@ -15,11 +15,11 @@ log = logging.getLogger(__name__)
 def calculate_expressibility(
     model: Model,
     n_samples: int,
-    n_input_samples: int,
     n_bins: int,
     seed: int,
-    input_domain: List[float],
     noise_params: Dict,
+    n_input_samples: int = None,
+    input_domain: List[float] = None,
 ):
     x, _, z = Expressibility.state_fidelities(
         n_bins=n_bins,
@@ -45,12 +45,16 @@ def calculate_expressibility(
     for i, prob in enumerate(y_haar):
         mlflow.log_metric("haar_probability", prob, i)
 
-    for i, (x_sample, kl) in enumerate(zip(x, kl_divergence)):
-        mlflow.log_metric("kl_divergence", kl, i)
-        mlflow.log_metric("x", x_sample, i)
+    # TODO: I feel like the following part should rather go into a dataframe
+    if n_input_samples is not None and input_domain is not None:
+        for i, (x_sample, kl) in enumerate(zip(x, kl_divergence)):
+            mlflow.log_metric("kl_divergence", kl, i)
+            mlflow.log_metric("x", x_sample, i)
 
-        for j, fidelity in enumerate(z[i]):
-            mlflow.log_metric(f"x_{x_sample:.2f}_fidelity", fidelity, j)
+            for j, fidelity in enumerate(z[i]):
+                mlflow.log_metric(f"x_{x_sample:.2f}_fidelity", fidelity, j)
+    else:
+        mlflow.log_metric("kl_divergence", kl_divergence, 0)
 
     return kl_divergence
 
@@ -75,7 +79,6 @@ def iterate_noise(
     Returns:
         None
     """
-    fig = go.Figure()
 
     class NoiseDict(Dict[str, float]):
         """
@@ -96,7 +99,9 @@ def iterate_noise(
 
     noise_params = NoiseDict(noise_params)
 
-    df = pd.DataFrame(columns=["noise", "expressibility"])
+    df = pd.DataFrame(
+        columns=[*[n for n in noise_params.keys()], "noise_level", "expressibility"]
+    )
 
     with Progress() as progress:
         noise_it_task = progress.add_task(
@@ -113,6 +118,12 @@ def iterate_noise(
                 seed=seed,
                 noise_params=part_noise_params,
             )
-            mlflow.log_metric("expressibility", expressibility, step)
+
+            for n, v in part_noise_params.items():
+                df.loc[step, n] = v
+            df.loc[step, "noise_level"] = step / noise_steps
+            df.loc[step, "expressibility"] = expressibility
 
             progress.advance(noise_it_task)
+
+    return {"expressibility_noise": df}
