@@ -6,6 +6,7 @@ import plotly.express as px
 from rich.progress import Progress, Task
 from typing import Dict, Tuple, Optional
 import mlflow
+import pandas as pd
 
 import logging
 
@@ -114,6 +115,16 @@ def iterate_layers_and_noise(
 
     noise_params = NoiseDict(noise_params)
 
+    df = pd.DataFrame(
+        columns=[
+            *[n for n in noise_params.keys()],
+            "layers",
+            "coeffs_abs",
+            "coeffs_abs_var",
+            "coeffs_abs_mean",
+        ]
+    )
+
     with Progress() as progress:
         noise_it_task = progress.add_task(
             "Iterating noise levels...", total=noise_steps + 1
@@ -136,6 +147,12 @@ def iterate_layers_and_noise(
                 sample_coeff_task=sample_coeff_task,
             )
             coeffs_abs = np.sqrt(coeffs_plr**2 + coeffs_pli**2)
+
+            for n, v in part_noise_params.items():
+                df.loc[step, n] = v
+            df.loc[step, "layers"] = model_degrees
+            df.loc[step, "coeffs_abs_var"] = coeffs_abs.var(axis=1)
+            df.loc[step, "coeffs_abs_mean"] = coeffs_abs.mean(axis=1)
 
             fig.add_trace(
                 go.Scatter(
