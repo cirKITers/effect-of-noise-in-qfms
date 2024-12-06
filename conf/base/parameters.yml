@@ -22,7 +22,7 @@ noise_params:
 ent_n_samples: 100
 
 # Expressibility Params
-expr_n_samples: 10
+expr_n_samples: 300
 expr_n_input_samples: 5
 expr_n_bins: 75
 
