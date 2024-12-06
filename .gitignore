@@ -1,3 +1,5 @@
+*.csv
+
 mlruns
 session_store.db
 

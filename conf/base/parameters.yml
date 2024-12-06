@@ -1,13 +1,13 @@
-domain: [-0.7,0.7] # domain of x values
-omegas: [1.0,2.0,3.0,4.0]
-coefficients: [1.0,1.0,1.0,1.0]
+domain: [-0.7, 0.7] # domain of x values
+omegas: [1.0, 2.0, 3.0, 4.0]
+coefficients: [1.0, 1.0, 1.0, 1.0]
 
-n_qubits: 2
-n_layers: 5
-circuit_type: 'Circuit_19' # Circuit_1, Circuit_5, Circuit_9, Circuit_15, Circuit_18, Circuit_19, Hardware_Efficient, Strongly_Entangling, No_Entangling
+n_qubits: 4
+n_layers: 4
+circuit_type: "Circuit_19" # Circuit_1, Circuit_5, Circuit_9, Circuit_15, Circuit_18, Circuit_19, Hardware_Efficient, Strongly_Entangling, No_Entangling
 data_reupload: True
-output_qubit: 0
-initialization: "zero-controlled" # random, zero, zero-controlled, pi-controlled 
+output_qubit: -1
+initialization: "zero-controlled" # random, zero, zero-controlled, pi-controlled
 shots: -1 # number or -1 if expectation value should be used
 seed: 1000
 
@@ -22,12 +22,12 @@ noise_params:
 ent_n_samples: 100
 
 # Expressibility Params
-expr_n_samples: 1000
+expr_n_samples: 10
 expr_n_input_samples: 5
 expr_n_bins: 75
 
 # Coefficients Params
-coefficients_n_samples: 100
+coefficients_n_samples: 10
 noise_steps: 3
 
 epochs: 100
