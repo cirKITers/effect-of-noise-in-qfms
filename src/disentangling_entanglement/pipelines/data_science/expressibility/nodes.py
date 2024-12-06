@@ -1,6 +1,10 @@
 from typing import Dict, List
 import logging
 import mlflow
+import plotly.graph_objects as go
+import plotly.express as px
+from rich.progress import Progress, Task
+import pandas as pd
 
 from qml_essentials.model import Model
 from qml_essentials.expressibility import Expressibility
@@ -49,3 +53,66 @@ def calculate_expressibility(
             mlflow.log_metric(f"x_{x_sample:.2f}_fidelity", fidelity, j)
 
     return kl_divergence
+
+
+def iterate_noise(
+    model: Model,
+    noise_params: Dict[str, float],
+    noise_steps: int,
+    n_samples: int,
+    n_bins: int,
+    seed: int,
+) -> None:
+    """
+    Iterate over noise params and plot the variance of coefficients for each layer.
+
+    Args:
+        model: The model to sample coefficients from.
+        noise_params: The noise parameters to iterate over.
+        noise_steps: The number of noise steps to iterate over.
+        samples: The number of samples to take for each step.
+
+    Returns:
+        None
+    """
+    fig = go.Figure()
+
+    class NoiseDict(Dict[str, float]):
+        """
+        A dictionary subclass for noise params.
+        """
+
+        def __truediv__(self, other: float) -> "NoiseDict":
+            """
+            Divide all values by a scalar.
+            """
+            return NoiseDict({k: v / other for k, v in self.items()})
+
+        def __mul__(self, other: float) -> "NoiseDict":
+            """
+            Multiply all values by a scalar.
+            """
+            return NoiseDict({k: v * other for k, v in self.items()})
+
+    noise_params = NoiseDict(noise_params)
+
+    df = pd.DataFrame(columns=["noise", "expressibility"])
+
+    with Progress() as progress:
+        noise_it_task = progress.add_task(
+            "Iterating noise levels...", total=noise_steps + 1
+        )
+
+        for step in range(noise_steps + 1):  # +1 to go for 100%
+            part_noise_params = noise_params * (step / noise_steps)
+
+            expressibility = calculate_expressibility(
+                model=model,
+                n_samples=n_samples,
+                n_bins=n_bins,
+                seed=seed,
+                noise_params=part_noise_params,
+            )
+            mlflow.log_metric("expressibility", expressibility, step)
+
+            progress.advance(noise_it_task)
