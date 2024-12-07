@@ -47,7 +47,7 @@ def calculate_expressibility(
         mlflow.log_metric("haar_probability", prob, i)
 
     # TODO: I feel like the following part should rather go into a dataframe
-    if n_input_samples is not None and input_domain is not None:
+    if n_input_samples is not None and n_input_samples > 0 and input_domain is not None:
         for i, (x_sample, kl) in enumerate(zip(x, kl_divergence)):
             mlflow.log_metric("kl_divergence", kl, i)
             mlflow.log_metric("x", x_sample, i)
