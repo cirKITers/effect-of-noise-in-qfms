@@ -28,7 +28,7 @@ expr_n_bins: 75
 
 # Coefficients Params
 coefficients_n_samples: 10
-noise_steps: 3
+noise_steps: 6
 
 epochs: 100
 learning_rate: 0.001
