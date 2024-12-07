@@ -2,8 +2,8 @@ domain: [-0.7, 0.7] # domain of x values
 omegas: [1.0, 2.0, 3.0, 4.0]
 coefficients: [1.0, 1.0, 1.0, 1.0]
 
-n_qubits: 4
-n_layers: 4
+n_qubits: 5
+n_layers: 5
 circuit_type: "Circuit_19" # Circuit_1, Circuit_5, Circuit_9, Circuit_15, Circuit_18, Circuit_19, Hardware_Efficient, Strongly_Entangling, No_Entangling
 data_reupload: True
 output_qubit: -1
@@ -23,7 +23,7 @@ ent_n_samples: 100
 
 # Expressibility Params
 expr_n_samples: 300
-expr_n_input_samples: 5
+expr_n_input_samples: 0
 expr_n_bins: 75
 
 # Coefficients Params
