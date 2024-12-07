@@ -29,11 +29,12 @@ def calculate_expressibility(
         seed=seed,
         model=model,
         noise_params=noise_params,
-        cache=True,
+        scale=True,
+        cache=False,
     )
 
     _, y_haar = Expressibility.haar_integral(
-        n_qubits=model.n_qubits, n_bins=n_bins, cache=True
+        n_qubits=model.n_qubits, n_bins=n_bins, scale=True, cache=True
     )
 
     kl_divergence = Expressibility.kullback_leibler_divergence(
