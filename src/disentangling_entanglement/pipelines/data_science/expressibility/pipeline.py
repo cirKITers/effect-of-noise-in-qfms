@@ -25,7 +25,7 @@ def create_pipeline() -> Pipeline:
                 inputs={
                     "model": "model",
                     "noise_params": "params:model.noise_params",
-                    "noise_steps": "params:model..noise_steps",
+                    "noise_steps": "params:model.noise_steps",
                     "n_samples": "params:expressibility.n_samples",
                     "n_bins": "params:expressibility.n_bins",
                     "seed": "params:seed",

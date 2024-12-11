@@ -24,21 +24,21 @@ seed: 1000
 
 entanglement:
   # Entanglement Params
-  n_samples: 100
+  n_samples: 10
 
 expressibility:
   # Expressibility Params
-  n_samples: 300
+  n_samples: 3
   n_input_samples: 0
   n_bins: 75
 
 coefficients:
   # Coefficients Params
-  n_samples: 300
+  n_samples: 3
 
 training:
-  epochs: 100
-  learning_rate: 0.001
+  steps: 1000
+  learning_rate: 0.01
   batch_size: -1
   log_entangling: False
   convergence:

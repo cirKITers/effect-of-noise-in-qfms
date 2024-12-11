@@ -14,7 +14,7 @@ def create_pipeline() -> Pipeline:
                     "circuit_type": "params:model.circuit_type",
                     "data_reupload": "params:model.data_reupload",
                     "initialization": "params:model.initialization",
-                    "initialization": "params:model.initialization_domain",
+                    "initialization_domain": "params:model.initialization_domain",
                     "shots": "params:model.shots",
                     "output_qubit": "params:model.output_qubit",
                     "seed": "params:seed",
