@@ -17,7 +17,7 @@
 #SBATCH --partition single
 # 
 # expected memory requirements
-#SBATCH --mem=16000MB
+#SBATCH --mem=24000MB
 #
 # infos
 #
