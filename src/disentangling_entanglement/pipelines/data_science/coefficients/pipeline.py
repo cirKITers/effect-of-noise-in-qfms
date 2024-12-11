@@ -10,9 +10,9 @@ def create_pipeline() -> Pipeline:
                 func=iterate_noise_and_layers,
                 inputs={
                     "model": "model",
-                    "noise_params": "params:noise_params",
-                    "noise_steps": "params:noise_steps",
-                    "samples": "params:coefficients_n_samples",
+                    "noise_params": "params:model.noise_params",
+                    "noise_steps": "params:model.noise_steps",
+                    "samples": "params:coefficients.n_samples",
                 },
                 outputs={"coefficients_noise_layers": "coefficients_noise_layers"},
                 name="calculate_coefficients",
