@@ -5,6 +5,8 @@ session_store.db
 
 grads.csv
 params.csv
+
+stats.json
 ##########################
 # KEDRO PROJECT
 
