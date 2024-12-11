@@ -34,7 +34,6 @@ def create_pipeline() -> Pipeline:
                     "model": "trained_model",
                     "params": "trained_params",
                     "grads": "trained_grads",
-                    "coeffs": "trained_coefficients",
                 },
                 name="train_model",
             ),
