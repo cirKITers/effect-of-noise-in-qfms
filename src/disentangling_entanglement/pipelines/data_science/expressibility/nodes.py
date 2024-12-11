@@ -20,6 +20,7 @@ def calculate_expressibility(
     noise_params: Dict,
     n_input_samples: int = None,
     input_domain: List[float] = None,
+    iterator=None,
 ):
     x, _, z = Expressibility.state_fidelities(
         n_bins=n_bins,
@@ -55,7 +56,7 @@ def calculate_expressibility(
             for j, fidelity in enumerate(z[i]):
                 mlflow.log_metric(f"x_{x_sample:.2f}_fidelity", fidelity, j)
     else:
-        mlflow.log_metric("kl_divergence", kl_divergence, 0)
+        mlflow.log_metric("kl_divergence", kl_divergence, step=iterator)
 
     return kl_divergence
 
@@ -118,6 +119,7 @@ def iterate_noise(
                 n_bins=n_bins,
                 seed=seed,
                 noise_params=part_noise_params,
+                iterator=step,
             )
 
             for n, v in part_noise_params.items():
