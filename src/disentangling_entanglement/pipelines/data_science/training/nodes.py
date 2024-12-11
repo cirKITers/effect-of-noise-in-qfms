@@ -7,8 +7,7 @@ import mlflow
 from typing import Dict, List, Tuple, Callable
 from rich.progress import track
 import pandas as pd
-from kedro_datasets.pandas import CSVDataset
-from kedro_mlflow.io.artifacts import MlflowArtifactDataset
+import warnings
 
 import logging
 
@@ -71,9 +70,13 @@ def train_model(
     domain_samples: np.ndarray,
     fourier_series: np.ndarray,
     noise_params: Dict,
-    epochs: int,
+    steps: int,
     learning_rate: float,
     batch_size: int,
+    log_entangling: bool,
+    convergence_threshold: float,
+    convergence_gradient: float,
+    convergence_steps: int,
 ):
     opt = qml.AdamOptimizer(stepsize=learning_rate)
 
@@ -105,43 +108,73 @@ def train_model(
             prediction = np.mean(prediction, axis=0)
         return mse(prediction, fourier_series)
 
-    log.info(f"Training model for {epochs} epochs")
+    log.info(f"Training model for {steps} steps")
 
-    for epoch in track(range(epochs), description="Training..", total=epochs):
-        ent_cap = Entanglement.meyer_wallach(
-            model=model,
-            n_samples=0,  # disable sampling, use model params
-            seed=None,
-            noise_params=noise_params,
-            cache=False,
+    costs = np.zeros(steps)
+
+    for step in track(range(steps), description="Training..", total=steps):
+        if log_entangling:
+            with warnings.catch_warnings(action="ignore"):
+                ent_cap = Entanglement.meyer_wallach(
+                    model=model,
+                    n_samples=0,  # disable sampling, use model params
+                    seed=None,  # set seed none to disable warnings
+                    noise_params=noise_params,
+                    cache=False,
+                )
+            log.debug(f"Entangling capability in step {step}: {ent_cap}")
+            mlflow.log_metric("entangling_capability", ent_cap, step)
+
+        # log params and gradients
+        df_params = pd.concat(
+            [
+                df_params,
+                pd.DataFrame(
+                    {"param": model.params.flatten(), "step": step},
+                    index=df_params_index,
+                ),
+            ]
         )
-        log.debug(f"Entangling capability in epoch {epoch}: {ent_cap}")
-        mlflow.log_metric("entangling_capability", ent_cap, epoch)
+        df_grads = pd.concat(
+            [
+                df_grads,
+                pd.DataFrame(
+                    {"param": model.params.flatten(), "step": step},
+                    index=df_grads_index,
+                ),
+            ]
+        )
 
-        model.params, cost_val, grads = step_cost_and_grads(
-            opt,
+        model.params, cost_val = opt.step_and_cost(
             cost,
             model.params,
             inputs=domain_samples,
             noise_params=noise_params,
             cache=False,  # disable caching because currently no gradients are being stored
-            execution_type="probs" if model.shots is not None else "expval",
+            execution_type="expval",
+            force_mean=True,
         )
 
-        log.debug(f"Cost in epoch {epoch}: {cost_val}")
-        mlflow.log_metric("mse", cost_val, epoch)
+        # log cost
+        log.debug(f"Cost in step {step}: {cost_val}")
+        mlflow.log_metric("mse", cost_val, step)
+        costs[step] = cost_val
 
-        # log params and gradients
-        df_params_epoch = pd.DataFrame(
-            {"param": model.params.flatten(), "epoch": epoch},
-            index=df_params_index,
-        )
-        df_grads_epoch = pd.DataFrame(
-            {"param": model.params.flatten(), "epoch": epoch},
-            index=df_grads_index,
-        )
-        df_params = pd.concat([df_params, df_params_epoch])
-        df_grads = pd.concat([df_grads, df_grads_epoch])
+        # early stopping
+        if cost_val < convergence_threshold:
+            log.info(
+                f"Convergence threshold {convergence_threshold} reached after {step} steps."
+            )
+            break
+        elif (
+            step >= convergence_steps
+            and np.abs(np.gradient(costs)[step - convergence_steps : step].mean())
+            < convergence_gradient
+        ):
+            log.info(
+                f"Convergence gradient {convergence_gradient} reached after {step} steps."
+            )
+            break
 
         control_params = np.array(
             [
@@ -156,7 +189,7 @@ def train_model(
                 np.sum(np.abs(control_params) % (2 * np.pi)) / control_params.size
             )
 
-            mlflow.log_metric("control_rotation_mean", control_rotation_mean, epoch)
+            mlflow.log_metric("control_rotation_mean", control_rotation_mean, step)
 
     # Convert indices to columns
     df_params = df_params.rename_axis(df_param_index_names).reset_index()
