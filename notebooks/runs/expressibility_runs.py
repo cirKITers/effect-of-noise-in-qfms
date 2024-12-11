@@ -1,2 +1,13 @@
-experiment_id =
-run_id = 
+experiment_id = "104937400219110401"
+run_ids = [
+    "3e82d0d84fb6402aa826624a07248dc7",
+    "1ef792877ee649929a81c8e0f95b4308",
+    "75957cba7631424ab7e1aadedca7dbde",
+    "07fbf839772f4fd283686c4abf019315",
+    "88c5739b7de04de0867e37af9bc16652",
+    "158e14d91c7f44babbd6111dad261a66",
+    "7faa763c480c481bb0bed0fc83a325d4",
+    "503bcccc1c6c4b5d94a2108f533e1def",
+    "c47e684cfbbb409a880ebfd823b07de8",
+    "9b9a01e040dc48d4b08fe4cf395fe1c2",
+]
