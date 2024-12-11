@@ -9,7 +9,7 @@ from helper import (
     assign_ansatz_id,
 )
 
-# pio.kaleido.scope.mathjax = None
+pio.kaleido.scope.mathjax = None
 
 expr_df = get_expressibility_df(run_ids)
 expr_df.sort_values(by="qubits", inplace=True)
