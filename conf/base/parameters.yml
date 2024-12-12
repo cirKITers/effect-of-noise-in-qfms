@@ -1,6 +1,6 @@
 data:
   domain: [-3.1415, 3.1415] # domain of x values
-  omegas: 4
+  omegas: 5
   amplitude: 0.5
 
 model:
