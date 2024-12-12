@@ -67,9 +67,9 @@ for ansatz in ansaetze:
     )
 
 fig.update_layout(
-    title=f"Expressibility Mean for Different Ansaetze over Noise Level",
+    title=f"KL Divergence Mean for Different Ansaetze over Noise Level",
     template="plotly_white",
-    yaxis=dict(title="Expressibility Mean"),
+    yaxis=dict(title="KL Divergence Mean"),
     xaxis=dict(title="Noise Level"),
 )
 
