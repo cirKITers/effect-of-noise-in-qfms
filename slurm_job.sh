@@ -26,7 +26,7 @@
 
 module load compiler/llvm
 module load devel/python/3.11.7
-~/saqml/.venv/bin/python -m kedro run --pipeline expressibility --params=$1
+~/disentangling-entanglement-in-qml/.venv/bin/python -m kedro run --pipeline expressibility --params=$1
 
 # Done
 exit 0
