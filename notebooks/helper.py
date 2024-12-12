@@ -156,8 +156,12 @@ def get_expressibility_df(run_ids):
 
         sub_df_a.loc[it, "run_id"] = run_id
 
-        sub_df_a.loc[it, "ansatz"] = client.get_run(run_id).data.params["circuit_type"]
-        sub_df_a.loc[it, "qubits"] = int(client.get_run(run_id).data.params["n_qubits"])
+        sub_df_a.loc[it, "ansatz"] = client.get_run(run_id).data.params[
+            "model.circuit_type"
+        ]
+        sub_df_a.loc[it, "qubits"] = int(
+            client.get_run(run_id).data.params["model.n_qubits"]
+        )
 
         sub_df_a.loc[it, "seed"] = int(client.get_run(run_id).data.params["seed"])
 
