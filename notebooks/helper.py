@@ -173,6 +173,60 @@ def get_expressibility_df(run_ids):
     return df
 
 
+def get_entanglement_df(run_ids):
+    df = pd.DataFrame(
+        columns=[
+            "run_id",
+            "ansatz",
+            "qubits",
+            "seed",
+            "BitFlip",
+            "PhaseFlip",
+            "AmplitudeDamping",
+            "PhaseDamping",
+            "Depolarizing",
+            "entangling_capability",
+        ]
+    )
+
+    for it, run_id in track(
+        enumerate(run_ids),
+        description="Collecting coefficients data..",
+        total=len(run_ids),
+    ):
+        client = mlflow.tracking.MlflowClient()
+        if client.get_run(run_id).info.status != "FINISHED":
+            print(f"Run {run_id} not finished")
+            continue
+
+        sub_df_a = pd.DataFrame(
+            columns=[
+                "run_id",
+                "ansatz",
+                "qubits",
+                "seed",
+            ]
+        )
+
+        sub_df_a.loc[it, "run_id"] = run_id
+
+        sub_df_a.loc[it, "ansatz"] = client.get_run(run_id).data.params[
+            "model.circuit_type"
+        ]
+        sub_df_a.loc[it, "qubits"] = int(
+            client.get_run(run_id).data.params["model.n_qubits"]
+        )
+
+        sub_df_a.loc[it, "seed"] = int(client.get_run(run_id).data.params["seed"])
+
+        sub_df_b = get_csv_artifact(run_id, "entangling_capability_noise")
+        df = pd.concat(
+            [df, pd.merge(sub_df_a.iloc[[-1]], sub_df_b, how="cross")]
+        ).reset_index(drop=True)
+
+    return df
+
+
 def assign_ansatz_id(df):
     # add a column with name "ansatz_id" where each ansatz has a unique id
     df["ansatz_id"] = df["ansatz"].factorize()[0]
