@@ -7,7 +7,7 @@
 #SBATCH --nodes=1
 #
 # we only need on 1 cpu at a time
-#SBATCH --ntasks=8
+#SBATCH --ntasks=6
 #
 # expected duration of the job
 #              hh:mm:ss
@@ -26,7 +26,7 @@
 
 module load compiler/llvm
 module load devel/python/3.11.7
-~/saqml/.venv/bin/python -m kedro run --pipeline expressibility --params=$1
+~/disentangling-entanglement-in-qml/.venv/bin/python -m kedro run --pipeline entanglement --params=$1
 
 # Done
 exit 0
