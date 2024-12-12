@@ -36,6 +36,7 @@ def register_pipelines() -> Dict[str, Pipeline]:
         "__default__": create_data_generation_pipeline()
         + create_entanglement_pipeline()
         + create_expressibility_pipeline()
+        + create_entanglement_pipeline()
         + create_training_pipeline(),
         "training": create_data_generation_pipeline() + create_training_pipeline(),
         "coefficients": create_data_generation_pipeline()

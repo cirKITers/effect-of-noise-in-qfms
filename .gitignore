@@ -1,8 +1,13 @@
+*.csv
+*tar.gz
+logs/*
 mlruns
 session_store.db
 
 grads.csv
 params.csv
+
+stats.json
 ##########################
 # KEDRO PROJECT
 

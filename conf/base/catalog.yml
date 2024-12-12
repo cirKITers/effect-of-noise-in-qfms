@@ -1,4 +1,3 @@
-
 # trained_model:
 #   type: kedro_mlflow.io.models.MlflowModelTrackingDataset
 #   flavor: python_function
@@ -14,3 +13,21 @@ trained_grads:
   dataset:
     type: pandas.CSVDataset
     filepath: "grads.csv"
+
+coefficients_noise_layers:
+  type: kedro_mlflow.io.artifacts.MlflowArtifactDataset
+  dataset:
+    type: pandas.CSVDataset
+    filepath: "coefficients_noise_layers.csv"
+
+expressibility_noise:
+  type: kedro_mlflow.io.artifacts.MlflowArtifactDataset
+  dataset:
+    type: pandas.CSVDataset
+    filepath: "expressibility_noise.csv"
+
+entangling_capability_noise:
+  type: kedro_mlflow.io.artifacts.MlflowArtifactDataset
+  dataset:
+    type: pandas.CSVDataset
+    filepath: "entangling_capability_noise.csv"

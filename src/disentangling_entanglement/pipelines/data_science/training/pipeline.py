@@ -9,7 +9,7 @@ def create_pipeline() -> Pipeline:
             node(
                 func=validate_problem,
                 inputs={
-                    "omegas": "params:omegas",
+                    "omegas": "params:data.omegas",
                     "model": "model",
                 },
                 outputs=None,
@@ -21,10 +21,14 @@ def create_pipeline() -> Pipeline:
                     "model": "model",
                     "domain_samples": "domain_samples",
                     "fourier_series": "fourier_series",
-                    "noise_params": "params:noise_params",
-                    "epochs": "params:epochs",
-                    "learning_rate": "params:learning_rate",
-                    "batch_size": "params:batch_size",
+                    "noise_params": "params:model.noise_params",
+                    "steps": "params:training.steps",
+                    "learning_rate": "params:training.learning_rate",
+                    "batch_size": "params:training.batch_size",
+                    "log_entangling": "params:training.log_entangling",
+                    "convergence_threshold": "params:training.convergence.threshold",
+                    "convergence_gradient": "params:training.convergence.gradient",
+                    "convergence_steps": "params:training.convergence.steps",
                 },
                 outputs={
                     "model": "trained_model",
