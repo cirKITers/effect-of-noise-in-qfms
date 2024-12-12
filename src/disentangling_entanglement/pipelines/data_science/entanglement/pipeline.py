@@ -27,7 +27,7 @@ def create_pipeline() -> Pipeline:
                     "seed": "params:seed",
                 },
                 outputs={"entangling_capability_noise": "entangling_capability_noise"},
-                name="iterate_noise",
+                name="entanglement_iterate_noise",
             ),
         ]
     )

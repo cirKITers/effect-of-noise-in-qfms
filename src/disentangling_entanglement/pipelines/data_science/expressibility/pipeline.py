@@ -31,7 +31,7 @@ def create_pipeline() -> Pipeline:
                     "seed": "params:seed",
                 },
                 outputs={"expressibility_noise": "expressibility_noise"},
-                name="iterate_noise",
+                name="expressibility_iterate_noise",
             ),
         ]
     )

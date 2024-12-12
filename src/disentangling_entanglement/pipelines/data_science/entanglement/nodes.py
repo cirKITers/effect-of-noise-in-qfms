@@ -19,7 +19,6 @@ def calculate_entanglement(
         seed=seed,
         inputs=None,
         noise_params=noise_params,
-        cache=True,
     )
 
     log.info(f"Calculated entangling capability: {entangling_capability}")
@@ -91,7 +90,8 @@ def iterate_noise(
                 model=model,
                 samples=n_samples,
                 seed=seed,
-                noise_params=noise_params,
+                noise_params=part_noise_params,
+                iterator=step,
             )
 
             for n, v in part_noise_params.items():
