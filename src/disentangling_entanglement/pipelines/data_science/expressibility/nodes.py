@@ -55,7 +55,7 @@ def calculate_expressibility(
 
             for j, fidelity in enumerate(z[i]):
                 mlflow.log_metric(f"x_{x_sample:.2f}_fidelity", fidelity, j)
-    else:
+    elif iterator is not None:
         mlflow.log_metric("kl_divergence", kl_divergence, step=iterator)
 
     return kl_divergence
@@ -70,16 +70,20 @@ def iterate_noise(
     seed: int,
 ) -> None:
     """
-    Iterate over noise params and plot the variance of coefficients for each layer.
+    Iterate over different noise levels and calculate the expressibility
+    for each level using the given model and noise parameters.
 
     Args:
-        model: The model to sample coefficients from.
-        noise_params: The noise parameters to iterate over.
-        noise_steps: The number of noise steps to iterate over.
-        samples: The number of samples to take for each step.
+        model: The quantum model to evaluate.
+        noise_params: A dictionary of noise parameters with their initial values.
+        noise_steps: The number of steps to incrementally apply noise.
+        n_samples: The number of samples to use in the expressibility calculation.
+        n_bins: The number of bins for the expressibility calculation.
+        seed: The random seed for reproducibility.
 
     Returns:
-        None
+        A dictionary containing a DataFrame with the calculated expressibility
+        and noise levels for each step.
     """
 
     class NoiseDict(Dict[str, float]):

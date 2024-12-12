@@ -25,3 +25,9 @@ expressibility_noise:
   dataset:
     type: pandas.CSVDataset
     filepath: "expressibility_noise.csv"
+
+entangling_capability_noise:
+  type: kedro_mlflow.io.artifacts.MlflowArtifactDataset
+  dataset:
+    type: pandas.CSVDataset
+    filepath: "entangling_capability_noise.csv"
