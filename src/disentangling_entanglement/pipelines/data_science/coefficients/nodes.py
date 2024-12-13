@@ -262,4 +262,4 @@ def iterate_noise(
 
             progress.advance(noise_it_task)
 
-    return {"coefficients_noise_layers": df}
+    return {"coefficients_noise": df}
