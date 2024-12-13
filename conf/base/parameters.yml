@@ -5,7 +5,7 @@ data:
 
 model:
   n_qubits: 5
-  n_layers: 5
+  n_layers: 1
   circuit_type: "Circuit_19" # Circuit_1, Circuit_5, Circuit_9, Circuit_15, Circuit_18, Circuit_19, Hardware_Efficient, Strongly_Entangling, No_Entangling
   data_reupload: True
   output_qubit: -1
