@@ -7,6 +7,7 @@ import mlflow
 import numpy as np
 import os
 from rich.progress import track
+from typing import Union, List
 
 
 def save_fig(fig, name, run_ids, experiment_id):
@@ -39,8 +40,8 @@ def read_from_html(path):
     return plotly.io.from_json(json.dumps(plotly_json))
 
 
-def read_from_csv(path):
-    return pd.read_csv(path)
+def read_from_csv(path, **kwargs):
+    return pd.read_csv(path, **kwargs)
 
 
 def rgb_to_rgba(rgb_value: str, alpha: float):
@@ -91,11 +92,11 @@ def get_training_df(run_ids):
     return df
 
 
-def get_csv_artifact(run_id, identifier=""):
+def get_csv_artifact(run_id, identifier: str, **kwargs):
     client = mlflow.tracking.MlflowClient()
 
     csv_path = client.download_artifacts(run_id, f"{identifier}.csv", "./")
-    df = read_from_csv(csv_path)
+    df = read_from_csv(csv_path, **kwargs)
 
     os.remove(csv_path)
 
@@ -220,6 +221,83 @@ def get_entanglement_df(run_ids):
         sub_df_a.loc[it, "seed"] = int(client.get_run(run_id).data.params["seed"])
 
         sub_df_b = get_csv_artifact(run_id, "entangling_capability_noise")
+        df = pd.concat(
+            [df, pd.merge(sub_df_a.iloc[[-1]], sub_df_b, how="cross")]
+        ).reset_index(drop=True)
+
+    return df
+
+
+def get_coeffs_df(run_ids):
+    df = pd.DataFrame(
+        columns=[
+            "run_id",
+            "ansatz",
+            "qubits",
+            "seed",
+            "BitFlip",
+            "PhaseFlip",
+            "AmplitudeDamping",
+            "PhaseDamping",
+            "Depolarizing",
+            "coeffs_abs_var",
+            "coeffs_abs_mean",
+        ]
+    )
+
+    def converter(s):
+        s = s.replace("\n", "")
+        s = s.replace("[", "")
+        s = s.replace("]", "")
+        return np.fromstring(s, dtype=float, sep=" ")
+
+    def mean_converter(s):
+        values = converter(s)
+        return np.mean(values)
+
+    def var_converter(s):
+        values = converter(s)
+        return np.var(values)
+
+    for it, run_id in track(
+        enumerate(run_ids),
+        description="Collecting coefficients data..",
+        total=len(run_ids),
+    ):
+        client = mlflow.tracking.MlflowClient()
+        if client.get_run(run_id).info.status != "FINISHED":
+            print(f"Run {run_id} not finished")
+            continue
+
+        sub_df_a = pd.DataFrame(
+            columns=[
+                "run_id",
+                "ansatz",
+                "qubits",
+                "seed",
+            ]
+        )
+
+        sub_df_a.loc[it, "run_id"] = run_id
+
+        sub_df_a.loc[it, "ansatz"] = client.get_run(run_id).data.params[
+            "model.circuit_type"
+        ]
+        sub_df_a.loc[it, "qubits"] = int(
+            client.get_run(run_id).data.params["model.n_qubits"]
+        )
+
+        sub_df_a.loc[it, "seed"] = int(client.get_run(run_id).data.params["seed"])
+
+        sub_df_b = get_csv_artifact(
+            run_id,
+            "coefficients_noise",
+            converters={
+                "coeffs_abs_var": var_converter,
+                "coeffs_abs_mean": mean_converter,
+            },
+        )
+
         df = pd.concat(
             [df, pd.merge(sub_df_a.iloc[[-1]], sub_df_b, how="cross")]
         ).reset_index(drop=True)
