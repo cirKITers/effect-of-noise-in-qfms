@@ -249,16 +249,11 @@ def iterate_noise(
 
                 progress.update(sample_coeff_task, advance=1)
 
-            coeffs_plr = coeffs_pl.real
-            coeffs_pli = coeffs_pl.imag
-
-            coeffs_abs = np.sqrt(coeffs_plr**2 + coeffs_pli**2)
-
             for n, v in part_noise_params.items():
                 df.loc[step, n] = v
             df.loc[step, "noise_level"] = step / noise_steps
-            df.loc[step, "coeffs_abs_var"] = coeffs_abs.var(axis=0)
-            df.loc[step, "coeffs_abs_mean"] = coeffs_abs.mean(axis=0)
+            df.loc[step, "coeffs_abs_var"] = np.abs(coeffs_pl.var(axis=0))
+            df.loc[step, "coeffs_abs_mean"] = np.abs(coeffs_pl.mean(axis=0))
 
             progress.advance(noise_it_task)
 
