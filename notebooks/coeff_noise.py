@@ -71,7 +71,7 @@ for metric in ["coeffs_abs_var", "coeffs_abs_mean"]:
     fig.update_layout(
         title=f"{title} for Different Ansaetze over Noise Level",
         template="plotly_white",
-        yaxis=dict(title="Coefficients Mean"),
+        yaxis=dict(title=f"{title}"),
         xaxis=dict(title="Noise Level"),
     )
 
