@@ -1,6 +1,6 @@
 from qml_essentials.model import Model
 from qml_essentials.coefficients import Coefficients
-import numpy as np
+import pennylane.numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
 from rich.progress import Progress, Task
@@ -80,7 +80,7 @@ def iterate_layers(
 
 
 def iterate_noise_and_layers(
-    model: Model, noise_params: Dict[str, float], noise_steps: int, samples: int
+    model: Model, noise_params: Dict[str, float], noise_steps: int, n_samples: int
 ) -> None:
     """
     Iterate over noise params and plot the variance of coefficients for each layer.
@@ -130,7 +130,7 @@ def iterate_noise_and_layers(
             "Iterating noise levels...", total=noise_steps + 1
         )
         layer_it_task = progress.add_task("Iterating layers...", total=model.n_layers)
-        sample_coeff_task = progress.add_task("Sampling...", total=samples)
+        sample_coeff_task = progress.add_task("Sampling...", total=n_samples)
 
         colors = px.colors.qualitative.Dark2
         for step in range(noise_steps + 1):  # +1 to go for 100%
@@ -140,7 +140,7 @@ def iterate_noise_and_layers(
                 n_qubits=model.n_qubits,
                 n_layers=model.n_layers,
                 ansatz=model.pqc.__class__.__name__,
-                samples=samples,
+                samples=n_samples,
                 noise_params=part_noise_params,
                 progress=progress,
                 layer_it_task=layer_it_task,
@@ -183,3 +183,83 @@ def iterate_noise_and_layers(
     mlflow.log_figure(fig, "coefficients.html")
 
     return {"coefficients_noise_layers": df}
+
+
+def iterate_noise(
+    model: Model,
+    noise_params: Dict[str, float],
+    noise_steps: int,
+    n_samples: int,
+    seed: int,
+) -> None:
+    class NoiseDict(Dict[str, float]):
+        """
+        A dictionary subclass for noise params.
+        """
+
+        def __truediv__(self, other: float) -> "NoiseDict":
+            """
+            Divide all values by a scalar.
+            """
+            return NoiseDict({k: v / other for k, v in self.items()})
+
+        def __mul__(self, other: float) -> "NoiseDict":
+            """
+            Multiply all values by a scalar.
+            """
+            return NoiseDict({k: v * other for k, v in self.items()})
+
+    noise_params = NoiseDict(noise_params)
+
+    df = pd.DataFrame(
+        columns=[
+            *[n for n in noise_params.keys()],
+            "noise_level",
+            "coeffs_abs_var",
+            "coeffs_abs_mean",
+        ]
+    )
+
+    rng = np.random.default_rng(seed)
+    with Progress() as progress:
+        noise_it_task = progress.add_task(
+            "Iterating noise levels...", total=noise_steps + 1
+        )
+        sample_coeff_task = progress.add_task("Sampling...", total=n_samples)
+
+        coeffs_pl = np.ndarray((n_samples), dtype=complex)
+
+        for step in range(noise_steps + 1):  # +1 to go for 100%
+            progress.reset(sample_coeff_task)
+            part_noise_params = noise_params * (step / noise_steps)
+            coeffs_pl = np.ndarray((n_samples, model.degree), dtype=complex)
+
+            for s in range(n_samples):
+                # Re-initialize model, because it triggers new sampling
+                model.initialize_params(rng=rng)
+                model.noise_params = part_noise_params
+
+                coeffs = Coefficients.sample_coefficients(model=model)
+
+                coeff_z = coeffs[0]  # let's not consider the zero coeff for now
+                coeffs_nz = coeffs[1:]
+                coeffs_p = coeffs_nz[len(coeffs_nz) // 2 :]
+                # coeffs_pl[s] = coeffs_p[-1]
+                coeffs_pl[s] = coeffs_p
+
+                progress.update(sample_coeff_task, advance=1)
+
+            coeffs_plr = coeffs_pl.real
+            coeffs_pli = coeffs_pl.imag
+
+            coeffs_abs = np.sqrt(coeffs_plr**2 + coeffs_pli**2)
+
+            for n, v in part_noise_params.items():
+                df.loc[step, n] = v
+            df.loc[step, "noise_level"] = step / noise_steps
+            df.loc[step, "coeffs_abs_var"] = coeffs_abs.var(axis=0)
+            df.loc[step, "coeffs_abs_mean"] = coeffs_abs.mean(axis=0)
+
+            progress.advance(noise_it_task)
+
+    return {"coefficients_noise": df}

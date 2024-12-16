@@ -56,6 +56,7 @@ kedro-mlflow = "^0.13.3"
 kedro-viz = "^10.1.0"
 qml-essentials = "^0.1.18"
 kaleido = "0.2.1"
+pandas = "^2.2.3"
 
 [tool.kedro_telemetry]
 project_id = "9afb68ff0fe045cf975e94fc0ede1279"

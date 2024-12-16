@@ -31,3 +31,9 @@ entangling_capability_noise:
   dataset:
     type: pandas.CSVDataset
     filepath: "entangling_capability_noise.csv"
+
+coefficients_noise:
+  type: kedro_mlflow.io.artifacts.MlflowArtifactDataset
+  dataset:
+    type: pandas.CSVDataset
+    filepath: "coefficients_noise.csv"
