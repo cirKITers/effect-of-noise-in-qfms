@@ -25,6 +25,7 @@ def create_pipeline() -> Pipeline:
                     "noise_steps": "params:model.noise_steps",
                     "n_samples": "params:coefficients.n_samples",
                     "seed": "params:seed",
+                    "zero_coefficient": "params:coefficients.zero_coefficient",
                 },
                 outputs={"coefficients_noise": "coefficients_noise"},
                 name="coefficients_iterate_noise",

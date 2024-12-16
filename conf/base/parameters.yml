@@ -34,7 +34,7 @@ expressibility:
 
 coefficients:
   # Coefficients Params
-  n_samples: 300
+  zero_coefficient: True
 
 training:
   steps: 1000

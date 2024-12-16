@@ -191,6 +191,7 @@ def iterate_noise(
     noise_steps: int,
     n_samples: int,
     seed: int,
+    zero_coefficient: bool,
 ) -> None:
     class NoiseDict(Dict[str, float]):
         """
@@ -232,7 +233,11 @@ def iterate_noise(
         for step in range(noise_steps + 1):  # +1 to go for 100%
             progress.reset(sample_coeff_task)
             part_noise_params = noise_params * (step / noise_steps)
-            coeffs_pl = np.ndarray((n_samples, model.degree), dtype=complex)
+
+            if zero_coefficient:
+                coeffs_pl = np.ndarray((n_samples, model.degree + 1), dtype=complex)
+            else:
+                coeffs_pl = np.ndarray((n_samples, model.degree), dtype=complex)
 
             for s in range(n_samples):
                 # Re-initialize model, because it triggers new sampling
@@ -241,12 +246,14 @@ def iterate_noise(
 
                 coeffs = Coefficients.sample_coefficients(model=model)
 
-                coeff_z = coeffs[0]  # let's not consider the zero coeff for now
+                coeff_z = coeffs[0]
                 coeffs_nz = coeffs[1:]
                 coeffs_p = coeffs_nz[len(coeffs_nz) // 2 :]
                 # coeffs_pl[s] = coeffs_p[-1]
-                coeffs_pl[s] = coeffs_p
-
+                if zero_coefficient:
+                    coeffs_pl[s] = np.array([coeff_z, *coeffs_p])
+                else:
+                    coeffs_pl[s] = np.array(coeffs_p)
                 progress.update(sample_coeff_task, advance=1)
 
             for n, v in part_noise_params.items():
