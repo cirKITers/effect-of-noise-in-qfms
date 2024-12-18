@@ -79,7 +79,7 @@ for metric in ["coeffs_abs_mean"]:
             title=f"{title} over Noise Level",
             template="plotly_white",
             yaxis=dict(title=f"{title}"),
-            xaxis=dict(title="Noise Level"),
+            xaxis=dict(title="Noise Level (%)"),
         )
 
     save_fig(fig, f"{metric}_noise_level_{ansatz.lower()}", run_ids, experiment_id)
