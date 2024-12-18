@@ -3,6 +3,7 @@
 logs/*
 mlruns
 session_store.db
+results/*
 
 grads.csv
 params.csv
