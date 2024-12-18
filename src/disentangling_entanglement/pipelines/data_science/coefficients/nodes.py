@@ -259,8 +259,8 @@ def iterate_noise(
             for n, v in part_noise_params.items():
                 df.loc[step, n] = v
             df.loc[step, "noise_level"] = step / noise_steps
-            df.loc[step, "coeffs_abs_var"] = np.abs(coeffs_pl.var(axis=0))
-            df.loc[step, "coeffs_abs_mean"] = np.abs(coeffs_pl.mean(axis=0))
+            df.loc[step, "coeffs_abs_var"] = np.abs(coeffs_pl).var(axis=0)
+            df.loc[step, "coeffs_abs_mean"] = np.abs(coeffs_pl).mean(axis=0)
 
             progress.advance(noise_it_task)
 
