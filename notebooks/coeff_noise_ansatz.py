@@ -18,7 +18,7 @@ coeffs_df = assign_ansatz_id(coeffs_df)
 ansaetze = coeffs_df.ansatz.unique()
 
 
-for metric in ["coeffs_abs_mean"]:
+for metric in ["coeffs_abs_mean", "coeffs_abs_var"]:
     fig = go.Figure()
     main_colors_it, sec_colors_it = get_color_iterator()
     for ansatz in ansaetze:
@@ -71,7 +71,7 @@ for metric in ["coeffs_abs_mean"]:
     fig.update_layout(
         title=f"{title} for Different Ansaetze over Noise Level",
         template="plotly_white",
-        yaxis=dict(title=f"{title}"),
+        yaxis=dict(title=f"{title}", type="log"),
         xaxis=dict(title="Noise Level"),
     )
 
