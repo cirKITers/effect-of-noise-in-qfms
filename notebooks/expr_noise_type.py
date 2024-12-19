@@ -77,7 +77,7 @@ for ansatz in ansaetze:
         title=f"KL Divergence Mean over Noise Level",
         template="plotly_white",
         yaxis=dict(title="KL Divergence"),
-        xaxis=dict(title="Noise Level (%)"),
+        xaxis=dict(title="Noise Level"),
     )
 
     save_fig(fig, f"expr_noise_level_{ansatz.lower()}", run_ids, experiment_id)

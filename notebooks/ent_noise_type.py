@@ -77,7 +77,7 @@ for ansatz in ansaetze:
         title=f"Entangling Capability over Noise Level",
         template="plotly_white",
         yaxis=dict(title="Entangling Capability"),
-        xaxis=dict(title="Noise Level (%)"),
+        xaxis=dict(title="Noise Level"),
     )
 
     save_fig(fig, f"ent_noise_level_{ansatz.lower()}", run_ids, experiment_id)
