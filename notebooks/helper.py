@@ -258,7 +258,7 @@ def get_coeffs_df(run_ids):
 
     def var_converter(s):
         values = converter(s)
-        return np.var(values)
+        return np.mean(values)
 
     for it, run_id in track(
         enumerate(run_ids),
