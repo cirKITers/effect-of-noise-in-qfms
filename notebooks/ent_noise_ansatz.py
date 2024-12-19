@@ -1,6 +1,6 @@
 import plotly.graph_objects as go
 import plotly.io as pio
-from runs.entanglement_runs import run_ids, experiment_id
+from runs.entanglement_ansatz_runs import run_ids, experiment_id
 from helper import (
     save_fig,
     get_entanglement_df,
@@ -12,7 +12,7 @@ from helper import (
 pio.kaleido.scope.mathjax = None
 
 ent_df = get_entanglement_df(run_ids)
-ent_df.sort_values(by="qubits", inplace=True)
+ent_df.sort_values(by="ansatz", inplace=True)
 ent_df = assign_ansatz_id(ent_df)
 
 ansaetze = ent_df.ansatz.unique()

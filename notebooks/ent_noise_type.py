@@ -1,6 +1,6 @@
 import plotly.graph_objects as go
 import plotly.io as pio
-from runs.entanglement_runs import run_ids, experiment_id
+from runs.entanglement_noise_runs import run_ids, experiment_id
 from helper import (
     save_fig,
     get_entanglement_df,

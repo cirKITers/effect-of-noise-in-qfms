@@ -1,6 +1,6 @@
 import plotly.graph_objects as go
 import plotly.io as pio
-from runs.coefficient_runs import run_ids, experiment_id
+from runs.coefficient_noise_runs import run_ids, experiment_id
 from helper import (
     save_fig,
     get_coeffs_df,

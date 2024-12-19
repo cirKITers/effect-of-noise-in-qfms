@@ -1,6 +1,6 @@
 import plotly.graph_objects as go
 import plotly.io as pio
-from runs.expressibility_runs import run_ids, experiment_id
+from runs.expressibility_noise_runs import run_ids, experiment_id
 from helper import (
     save_fig,
     get_expressibility_df,

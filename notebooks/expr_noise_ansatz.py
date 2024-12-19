@@ -1,6 +1,6 @@
 import plotly.graph_objects as go
 import plotly.io as pio
-from runs.expressibility_runs import run_ids, experiment_id
+from runs.expressibility_ansatz_runs import run_ids, experiment_id
 from helper import (
     save_fig,
     get_expressibility_df,
@@ -12,7 +12,7 @@ from helper import (
 pio.kaleido.scope.mathjax = None
 
 expr_df = get_expressibility_df(run_ids)
-expr_df.sort_values(by="qubits", inplace=True)
+expr_df.sort_values(by="ansatz", inplace=True)
 expr_df = assign_ansatz_id(expr_df)
 
 ansaetze = expr_df.ansatz.unique()

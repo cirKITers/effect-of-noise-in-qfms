@@ -1,6 +1,6 @@
 import plotly.graph_objects as go
 import plotly.io as pio
-from runs.coefficient_runs import run_ids, experiment_id
+from runs.coefficient_ansatz_runs import run_ids, experiment_id
 from helper import (
     save_fig,
     get_coeffs_df,
@@ -12,13 +12,13 @@ from helper import (
 pio.kaleido.scope.mathjax = None
 
 coeffs_df = get_coeffs_df(run_ids)
-coeffs_df.sort_values(by="qubits", inplace=True)
+coeffs_df.sort_values(by="ansatz", inplace=True)
 coeffs_df = assign_ansatz_id(coeffs_df)
 
 ansaetze = coeffs_df.ansatz.unique()
 
 
-for metric in ["coeffs_abs_var", "coeffs_abs_mean"]:
+for metric in ["coeffs_abs_mean"]:
     fig = go.Figure()
     main_colors_it, sec_colors_it = get_color_iterator()
     for ansatz in ansaetze:
