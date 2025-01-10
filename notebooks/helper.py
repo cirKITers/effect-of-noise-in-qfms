@@ -10,12 +10,13 @@ from rich.progress import track
 from typing import Union, List
 
 
-def save_fig(fig, name, run_ids, experiment_id):
+def save_fig(fig, name, run_ids, experiment_id, font_size=16, scale=1):
     hs = generate_hash(run_ids)
     path = f"results/{experiment_id}/{hs}/"
     os.makedirs(path, exist_ok=True)
-    print(f"Saving figure to {path}{name}.png")
-    fig.write_image(f"{path}{name}.png")
+    print(f"Saving figure to {path}{name}.pdf")
+    fig.update_layout(font=dict(size=font_size))
+    fig.write_image(f"{path}{name}.pdf", scale=scale)
 
 
 def get_color_iterator():
@@ -257,7 +258,7 @@ def get_coeffs_df(run_ids):
 
     def var_converter(s):
         values = converter(s)
-        return np.var(values)
+        return np.mean(values)
 
     for it, run_id in track(
         enumerate(run_ids),

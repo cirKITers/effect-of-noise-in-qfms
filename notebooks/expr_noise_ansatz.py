@@ -1,9 +1,9 @@
 import plotly.graph_objects as go
 import plotly.io as pio
-from runs.entanglement_runs import run_ids, experiment_id
+from runs.expressibility_ansatz_runs import run_ids, experiment_id
 from helper import (
     save_fig,
-    get_entanglement_df,
+    get_expressibility_df,
     rgb_to_rgba,
     get_color_iterator,
     assign_ansatz_id,
@@ -11,11 +11,11 @@ from helper import (
 
 pio.kaleido.scope.mathjax = None
 
-ent_df = get_entanglement_df(run_ids)
-ent_df.sort_values(by="qubits", inplace=True)
-ent_df = assign_ansatz_id(ent_df)
+expr_df = get_expressibility_df(run_ids)
+expr_df.sort_values(by="ansatz", inplace=True)
+expr_df = assign_ansatz_id(expr_df)
 
-ansaetze = ent_df.ansatz.unique()
+ansaetze = expr_df.ansatz.unique()
 
 main_colors_it, sec_colors_it = get_color_iterator()
 
@@ -25,9 +25,9 @@ for ansatz in ansaetze:
     sec_color_sel = rgb_to_rgba(next(sec_colors_it), 0.2)
 
     metric_values = (
-        ent_df[ent_df.ansatz == ansatz]
+        expr_df[expr_df.ansatz == ansatz]
         .groupby("noise_level")
-        .entangling_capability.agg(["mean", "min", "max"])
+        .expressibility.agg(["mean", "min", "max"])
     )
 
     fig.add_trace(
@@ -67,10 +67,10 @@ for ansatz in ansaetze:
     )
 
 fig.update_layout(
-    title=f"Entangling Capability for Different Ansaetze over Noise Level",
+    title=f"KL Divergence Mean for Different Ansaetze over Noise Level",
     template="plotly_white",
-    yaxis=dict(title="Entangling Capability"),
+    yaxis=dict(title="KL Divergence Mean"),
     xaxis=dict(title="Noise Level"),
 )
 
-save_fig(fig, "ent_noise_level", run_ids, experiment_id)
+save_fig(fig, "expr_noise_level", run_ids, experiment_id)
