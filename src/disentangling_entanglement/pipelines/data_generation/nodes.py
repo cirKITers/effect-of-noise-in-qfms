@@ -60,7 +60,7 @@ def sample_domain(domain: List[float], omegas: List[List[float]]) -> np.ndarray:
     dimensions = 1  # len(omega)
 
     if isinstance(omegas, int):
-        omegas = [o for o in range(omegas)]
+        omegas = [o for o in range(omegas + 1)]
     # using the max of all dimensions because we want uniform sampling
     n_d = int(np.ceil(2 * np.max(np.abs(domain)) * np.max(omegas)))
 
@@ -92,7 +92,7 @@ def generate_fourier_series(
         Fourier series representation of the function.
     """
     if not isinstance(omegas, list):
-        omegas = [o for o in range(omegas)]
+        omegas = [o for o in range(omegas + 1)]
     if not isinstance(coefficients, list):
         coefficients = [coefficients for _ in omegas]
 
