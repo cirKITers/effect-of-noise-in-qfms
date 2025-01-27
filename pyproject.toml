@@ -54,7 +54,7 @@ pytest = "^8.2.2"
 kedro = "^0.19.10"
 kedro-mlflow = "^0.13.3"
 kedro-viz = "^10.1.0"
-qml-essentials = "^0.1.19"
+qml-essentials = "^0.1.20"
 kaleido = "0.2.1"
 pandas = "^2.2.3"
 
