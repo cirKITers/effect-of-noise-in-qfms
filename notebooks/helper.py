@@ -290,14 +290,18 @@ def get_coeffs_df(run_ids):
 
         sub_df_a.loc[it, "seed"] = int(client.get_run(run_id).data.params["seed"])
 
-        sub_df_b = get_csv_artifact(
-            run_id,
-            "coefficients_noise",
-            converters={
-                "coeffs_abs_var": var_converter,
-                "coeffs_abs_mean": mean_converter,
-            },
-        )
+        try:
+            sub_df_b = get_csv_artifact(
+                run_id,
+                "coefficients_noise",
+                converters={
+                    "coeffs_abs_var": var_converter,
+                    "coeffs_abs_mean": mean_converter,
+                },
+            )
+        except:
+            print(f"No coefficients for run {run_id}")
+            sub_df_b = pd.DataFrame()
 
         df = pd.concat(
             [df, pd.merge(sub_df_a.iloc[[-1]], sub_df_b, how="cross")]
