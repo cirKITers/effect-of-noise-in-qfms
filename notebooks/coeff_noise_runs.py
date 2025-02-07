@@ -10,6 +10,7 @@ from helper import (
     assign_ansatz_id,
 )
 import pandas as pd
+import numpy as np
 
 pio.kaleido.scope.mathjax = None
 
@@ -35,26 +36,6 @@ for ansatz in ansaetze:
             main_color_sel = next(main_colors_it)
             sec_color_sel = rgb_to_rgba(next(sec_colors_it), 0.2)
 
-            # # metric_values_grid = pd.DataFrame(columns=[qubit for qubit in qubits])
-            # metric_values = (
-            #     coeffs_df[
-            #         (coeffs_df.ansatz == ansatz) & (coeffs_df.qubits == qubit)
-            #     ]
-            #     .groupby(noise)[metric]
-            #     .agg(["mean", "min", "max"])
-            # ).iloc[
-            #     1:
-            # ]  # Don't show noise level 0
-
-            # metric_values_grid[qubit] = metric_values["mean"]
-
-            # fig.add_surface(
-            #     # x=metric_values.index,
-            #     # y=qubits,
-            #     z=metric_values_grid,
-            #     name=f"{noise}-{ansatz}",
-            # )
-
             coeff_mean_metric_values = (
                 coeffs_df[(coeffs_df.ansatz == ansatz) & (coeffs_df.qubits == qubit)]
                 .groupby(noise)["coeffs_abs_mean"]
@@ -70,6 +51,12 @@ for ansatz in ansaetze:
             ).iloc[
                 1:
             ]  # Don't show noise level 0
+
+            coeff_mean_metric_values = (
+                coeffs_df[(coeffs_df.ansatz == ansatz) & (coeffs_df.qubits == qubit)]
+                .groupby(noise)["coeffs_abs_mean"]
+                .apply(np.hstack)
+            )
 
             fig.add_trace(
                 go.Scatter(
