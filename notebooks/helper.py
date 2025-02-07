@@ -260,6 +260,10 @@ def get_coeffs_df(run_ids):
         values = converter(s)
         return np.mean(values)
 
+    print(
+        "\nThis a hint that there is some very inefficient code.. :) Checkout a xkcd comic while waiting: https://c.xkcd.com/random/comic/\n"
+    )
+
     for it, run_id in track(
         enumerate(run_ids),
         description="Collecting coefficients data..",
@@ -295,8 +299,8 @@ def get_coeffs_df(run_ids):
                 run_id,
                 "coefficients_noise",
                 converters={
-                    "coeffs_abs_var": var_converter,
-                    "coeffs_abs_mean": mean_converter,
+                    "coeffs_abs_mean": converter,
+                    "coeffs_abs_var": converter,
                 },
             )
         except:
@@ -306,6 +310,21 @@ def get_coeffs_df(run_ids):
         df = pd.concat(
             [df, pd.merge(sub_df_a.iloc[[-1]], sub_df_b, how="cross")]
         ).reset_index(drop=True)
+
+    return df
+
+
+def expand_coeffs(df, metric):
+
+    qubits = sorted(df.qubits.unique())
+    n_qubits = max(qubits)
+
+    for freq in range(n_qubits + 1):
+        df[f"{metric}_{freq}"] = np.nan
+
+    for idx in df.index:
+        for freq in range(df.loc[idx].qubits + 1):
+            df.loc[idx, f"{metric}_{freq}"] = df.loc[idx, metric][freq].item()
 
     return df
 
