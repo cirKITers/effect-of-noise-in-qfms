@@ -23,6 +23,14 @@ coeffs_df = expand_coeffs(coeffs_df, "coeffs_abs_var")
 ansaetze = coeffs_df.ansatz.unique()
 qubits = sorted(coeffs_df.qubits.unique())
 
+enabled_noise = [
+    # "BitFlip",
+    # "PhaseFlip",
+    "AmplitudeDamping",
+    "PhaseDamping",
+    # "Depolarizing",
+]
+
 for ansatz in ansaetze:
     for metric in ["coeffs_abs_mean", "coeffs_abs_var"]:
         fig = make_subplots(specs=[[{"secondary_y": True}]])
@@ -30,13 +38,7 @@ for ansatz in ansaetze:
         for qubit in qubits:
             main_colors_it, sec_colors_it = get_color_iterator()
             symbol = next(symbols)
-            for noise in [
-                "BitFlip",
-                "PhaseFlip",
-                "AmplitudeDamping",
-                "PhaseDamping",
-                # "Depolarizing",
-            ]:
+            for noise in enabled_noise:
                 main_color_sel = next(main_colors_it)
                 sec_color_sel = rgb_to_rgba(next(sec_colors_it), 0.2)
 
@@ -95,7 +97,7 @@ for ansatz in ansaetze:
         )
         save_fig(
             fig,
-            f"{metric}_{ansatz.lower()}_{qubit}_noise_level",
+            f"{metric}_{ansatz.lower()}_{qubit}_{enabled_noise}_level",
             run_ids,
             experiment_id,
         )
