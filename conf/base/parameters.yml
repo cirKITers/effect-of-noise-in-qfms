@@ -34,8 +34,10 @@ expressibility:
 
 coefficients:
   # Coefficients Params
-  n_samples: 30
+  n_samples: 300
   zero_coefficient: True
+  oversampling: 10
+  selective_noise: "iec"
 
 training:
   steps: 1000
