@@ -37,3 +37,9 @@ coefficients_noise:
   dataset:
     type: pandas.CSVDataset
     filepath: "coefficients_noise.csv"
+
+coefficients_noise_samples:
+  type: kedro_mlflow.io.artifacts.MlflowArtifactDataset
+  dataset:
+    type: pandas.CSVDataset
+    filepath: "coefficients_noise_samples.csv"
