@@ -1,5 +1,6 @@
 from qml_essentials.model import Model
 from qml_essentials.coefficients import Coefficients
+from qml_essentials.ansaetze import Gates
 import pennylane.numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
@@ -11,6 +12,24 @@ import pandas as pd
 import logging
 
 log = logging.getLogger(__name__)
+
+
+class NoiseDict(Dict[str, float]):
+    """
+    A dictionary subclass for noise params.
+    """
+
+    def __truediv__(self, other: float) -> "NoiseDict":
+        """
+        Divide all values by a scalar.
+        """
+        return NoiseDict({k: v / other for k, v in self.items()})
+
+    def __mul__(self, other: float) -> "NoiseDict":
+        """
+        Multiply all values by a scalar.
+        """
+        return NoiseDict({k: v * other for k, v in self.items()})
 
 
 def iterate_layers(
@@ -96,23 +115,6 @@ def iterate_noise_and_layers(
     """
     fig = go.Figure()
 
-    class NoiseDict(Dict[str, float]):
-        """
-        A dictionary subclass for noise params.
-        """
-
-        def __truediv__(self, other: float) -> "NoiseDict":
-            """
-            Divide all values by a scalar.
-            """
-            return NoiseDict({k: v / other for k, v in self.items()})
-
-        def __mul__(self, other: float) -> "NoiseDict":
-            """
-            Multiply all values by a scalar.
-            """
-            return NoiseDict({k: v * other for k, v in self.items()})
-
     noise_params = NoiseDict(noise_params)
 
     df = pd.DataFrame(
@@ -192,24 +194,9 @@ def iterate_noise(
     n_samples: int,
     seed: int,
     zero_coefficient: bool,
+    oversampling: int = 1,
+    selective_noise: str = "both",
 ) -> None:
-    class NoiseDict(Dict[str, float]):
-        """
-        A dictionary subclass for noise params.
-        """
-
-        def __truediv__(self, other: float) -> "NoiseDict":
-            """
-            Divide all values by a scalar.
-            """
-            return NoiseDict({k: v / other for k, v in self.items()})
-
-        def __mul__(self, other: float) -> "NoiseDict":
-            """
-            Multiply all values by a scalar.
-            """
-            return NoiseDict({k: v * other for k, v in self.items()})
-
     noise_params = NoiseDict(noise_params)
 
     df = pd.DataFrame(
@@ -220,6 +207,27 @@ def iterate_noise(
             "coeffs_abs_mean",
         ]
     )
+
+    enc = model._enc
+
+    def enc_noise_free(*args, **kwargs):
+        kwargs["noise_params"] = None
+        return enc(*args, **kwargs)
+
+    pqc = model.pqc
+
+    def pqc_noise_free(*args, **kwargs):
+        kwargs["noise_params"] = None
+        return pqc(*args, **kwargs)
+
+    if selective_noise == "iec":
+        model.pqc = pqc_noise_free
+    elif selective_noise == "pqc":
+        model._enc = enc_noise_free
+    elif selective_noise != "both":
+        raise ValueError(
+            f"selective_noise must be 'both', 'iec' or 'pqc', got {selective_noise}"
+        )
 
     rng = np.random.default_rng(seed)
     with Progress() as progress:
@@ -233,25 +241,36 @@ def iterate_noise(
             part_noise_params = noise_params * (step / noise_steps)
 
             if zero_coefficient:
-                coeffs_pl = np.ndarray((n_samples, model.degree + 1), dtype=complex)
+                coeffs_pl = np.ndarray(
+                    (n_samples, oversampling // 2 * model.degree + 1), dtype=complex
+                )
             else:
-                coeffs_pl = np.ndarray((n_samples, model.degree), dtype=complex)
+                coeffs_pl = np.ndarray(
+                    (n_samples, oversampling // 2 * model.degree), dtype=complex
+                )
 
             for s in range(n_samples):
                 # Re-initialize model, because it triggers new sampling
                 model.initialize_params(rng=rng)
                 model.noise_params = part_noise_params
 
-                coeffs = Coefficients.sample_coefficients(model=model)
+                coeffs = Coefficients.sample_coefficients(
+                    model=model, mfs=oversampling, shift=True
+                )
 
-                coeff_z = coeffs[0]
-                coeffs_nz = coeffs[1:]
-                coeffs_p = coeffs_nz[len(coeffs_nz) // 2 :]
-                # coeffs_pl[s] = coeffs_p[-1]
+                # --- fftshift
+                # coeffs = np.fft.fftshift(coeffs)
+                # coeff_z = coeffs[0]
+                # coeffs_nz = coeffs[1:]
+                # coeffs_p = coeffs_nz[len(coeffs_nz) // 2 :]
                 if zero_coefficient:
-                    coeffs_pl[s] = np.array([coeff_z, *coeffs_p])
+                    # coeffs_pl[s] = np.array([coeff_z, *coeffs_p])
+                    coeffs_pl[s] = coeffs[len(coeffs) // 2 :]
                 else:
-                    coeffs_pl[s] = np.array(coeffs_p)
+                    # coeffs_pl[s] = np.array(coeffs_p)
+                    coeffs_pl[s] = coeffs[len(coeffs) // 2 + 1 :]
+                # --- fftshift
+
                 progress.update(sample_coeff_task, advance=1)
 
             for n, v in part_noise_params.items():
