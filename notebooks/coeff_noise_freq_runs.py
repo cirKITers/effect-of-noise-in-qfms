@@ -6,7 +6,7 @@ from helper import (
     save_fig,
     get_coeffs_df,
     rgb_to_rgba,
-    get_color_iterator,
+    get_qual_color_iterator,
     assign_ansatz_id,
     expand_coeffs,
     get_symbol_iterator,
@@ -36,7 +36,7 @@ for ansatz in ansaetze:
         fig = make_subplots(specs=[[{"secondary_y": True}]])
         symbols = get_symbol_iterator()
         for qubit in qubits:
-            main_colors_it, sec_colors_it = get_color_iterator()
+            main_colors_it, sec_colors_it = get_qual_color_iterator()
             symbol = next(symbols)
             for noise in enabled_noise:
                 main_color_sel = next(main_colors_it)

@@ -5,7 +5,7 @@ from helper import (
     save_fig,
     get_coeffs_df,
     rgb_to_rgba,
-    get_color_iterator,
+    get_qual_color_iterator,
     assign_ansatz_id,
 )
 
@@ -21,7 +21,7 @@ ansaetze = coeffs_df.ansatz.unique()
 for metric in ["coeffs_abs_mean", "coeffs_abs_var"]:
     for ansatz in ansaetze:
         fig = go.Figure()
-        main_colors_it, sec_colors_it = get_color_iterator()
+        main_colors_it, sec_colors_it = get_qual_color_iterator()
         for noise in [
             "BitFlip",
             "PhaseFlip",
