@@ -5,7 +5,7 @@ from helper import (
     save_fig,
     get_expressibility_df,
     rgb_to_rgba,
-    get_color_iterator,
+    get_qual_color_iterator,
     assign_ansatz_id,
 )
 
@@ -17,7 +17,7 @@ expr_df = assign_ansatz_id(expr_df)
 
 ansaetze = expr_df.ansatz.unique()
 
-main_colors_it, sec_colors_it = get_color_iterator()
+main_colors_it, sec_colors_it = get_qual_color_iterator()
 
 fig = go.Figure()
 for ansatz in ansaetze:
