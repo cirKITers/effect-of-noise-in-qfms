@@ -2,6 +2,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import plotly.io as pio
 from runs.coefficient_runs import run_ids, experiment_id
+from qml_essentials.coefficients import Coefficients
 from helper import (
     save_fig,
     get_coeffs_df,
@@ -15,7 +16,9 @@ from helper import (
 pio.kaleido.scope.mathjax = None
 
 experiment_id = "939685904901998130"
-run_ids = ["3ab3418ae8af4c85acbe8b5d6a7caca2"]
+run_ids = [
+    "4fa428fad91446179dd3ac82909d16d5"
+]  # ["81bddb7a81c245b8bac4c5afaadf00f0"]  #   b4d0a4dd9ba243ba8569809ffc4676b9
 
 coeffs_df = get_coeffs_df(run_ids)
 coeffs_df.sort_values(by="ansatz", inplace=True)
@@ -25,7 +28,6 @@ coeffs_df = assign_ansatz_id(coeffs_df)
 ansaetze = coeffs_df.ansatz.unique()
 qubits = sorted(coeffs_df.qubits.unique())
 noise_levels = sorted(coeffs_df.noise_level.unique())
-
 
 enabled_noise = [
     "BitFlip",
@@ -41,6 +43,8 @@ for ansatz in ansaetze:
         n_samples = len(coeffs_df[coeffs_df.qubits == qubit].coeffs_abs_mean[0])
 
         main_colors_it = get_seq_color_iterator(len(noise_levels))
+
+        last_coeffs = None
         for n_it, noise_level in enumerate(noise_levels):
             symbols = get_symbol_iterator()
             main_color_sel = next(main_colors_it)
@@ -57,10 +61,19 @@ for ansatz in ansaetze:
                     .groupby(noise)[f"coeffs_abs_mean"]
                     .agg(["mean", "min", "max"])
                 )
+                frequencies_mean_metric_values = (
+                    coeffs_df[
+                        (coeffs_df.ansatz == ansatz)
+                        & (coeffs_df.qubits == qubit)
+                        & (coeffs_df.noise_level == noise_level)
+                    ]
+                    .groupby(noise)[f"frequencies"]
+                    .agg(["mean"])
+                )
 
                 fig.add_trace(
                     go.Scatter(
-                        # x=coeff_mean_metric_values["mean"][0].size,
+                        x=frequencies_mean_metric_values["mean"].item(),
                         y=coeff_mean_metric_values["mean"].item(),
                         name=f"{qubit} Qubits - {noise} Mean - {noise_level:.2f}",
                         mode="lines",
@@ -99,14 +112,9 @@ for ansatz in ansaetze:
         fig.update_layout(
             title=f"{ansatz.title()} - {qubit} Qubits - Spectrogram",
             template="plotly_white",
-            # yaxis_type="log",
-            legend=dict(x=1.2),
+            yaxis_type="log",
+            # legend=dict(x=1.2),
             width=1200,
-            # xaxis=dict(
-            #     tickmode="array",
-            #     tickvals=[q * (n_samples - 1) / qubit for q in range(qubit + 1)],
-            #     ticktext=[q for q in range(qubit + 1)],
-            # ),
         )
         fig.show()
         save_fig(
