@@ -315,6 +315,7 @@ def get_coeffs_df(run_ids):
                 converters={
                     "coeffs_abs_mean": converter,
                     "coeffs_abs_var": converter,
+                    "frequencies": converter,
                 },
             )
         except:
