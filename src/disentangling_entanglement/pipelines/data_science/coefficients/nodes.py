@@ -205,6 +205,7 @@ def iterate_noise(
             "noise_level",
             "coeffs_abs_var",
             "coeffs_abs_mean",
+            "frequencies",
         ]
     )
 
@@ -240,36 +241,26 @@ def iterate_noise(
             progress.reset(sample_coeff_task)
             part_noise_params = noise_params * (step / noise_steps)
 
-            if zero_coefficient:
-                coeffs_pl = np.ndarray(
-                    (n_samples, oversampling // 2 * model.degree + 1), dtype=complex
-                )
-            else:
-                coeffs_pl = np.ndarray(
-                    (n_samples, oversampling // 2 * model.degree), dtype=complex
-                )
-
-            for s in range(n_samples):
+            coeffs_pl = []
+            freqs_pl = []
+            for _ in range(n_samples):
                 # Re-initialize model, because it triggers new sampling
                 model.initialize_params(rng=rng)
-                model.noise_params = part_noise_params
 
-                coeffs = Coefficients.sample_coefficients(
-                    model=model, mfs=oversampling, shift=True
+                coeffs, freqs = Coefficients.get_spectrum(
+                    model=model,
+                    mts=oversampling,
+                    shift=True,
+                    trim=True,
+                    noise_params=part_noise_params,
                 )
 
-                # --- fftshift
-                # coeffs = np.fft.fftshift(coeffs)
-                # coeff_z = coeffs[0]
-                # coeffs_nz = coeffs[1:]
-                # coeffs_p = coeffs_nz[len(coeffs_nz) // 2 :]
                 if zero_coefficient:
-                    # coeffs_pl[s] = np.array([coeff_z, *coeffs_p])
-                    coeffs_pl[s] = coeffs[len(coeffs) // 2 :]
+                    coeffs_pl.append(coeffs[len(coeffs) // 2 :])
+                    freqs_pl.append(freqs[len(freqs) // 2 :])
                 else:
-                    # coeffs_pl[s] = np.array(coeffs_p)
-                    coeffs_pl[s] = coeffs[len(coeffs) // 2 + 1 :]
-                # --- fftshift
+                    coeffs_pl.append(coeffs[len(coeffs) // 2 + 1 :])
+                    freqs_pl.append(freqs[len(freqs) // 2 + 1 :])
 
                 progress.update(sample_coeff_task, advance=1)
 
@@ -278,6 +269,7 @@ def iterate_noise(
             df.loc[step, "noise_level"] = step / noise_steps
             df.loc[step, "coeffs_abs_var"] = np.abs(coeffs_pl).var(axis=0)
             df.loc[step, "coeffs_abs_mean"] = np.abs(coeffs_pl).mean(axis=0)
+            df.loc[step, "frequencies"] = np.array(freqs_pl).mean(axis=0)
 
             progress.advance(noise_it_task)
 
