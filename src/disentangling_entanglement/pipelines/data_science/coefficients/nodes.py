@@ -237,7 +237,7 @@ def iterate_noise(
         )
         sample_coeff_task = progress.add_task("Sampling...", total=n_samples)
 
-        for step in range(noise_steps + 1):  # +1 to go for 100%
+        for step in range(0, noise_steps + 1):  # +1 to go for 100%
             progress.reset(sample_coeff_task)
             part_noise_params = noise_params * (step / noise_steps)
 
