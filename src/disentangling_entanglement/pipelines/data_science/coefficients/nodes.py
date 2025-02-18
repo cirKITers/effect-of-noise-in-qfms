@@ -129,7 +129,7 @@ def iterate_noise_and_layers(
 
     with Progress() as progress:
         noise_it_task = progress.add_task(
-            "Iterating noise levels...", total=noise_steps + 1
+            "Iterating noise levels...", total=noise_steps
         )
         layer_it_task = progress.add_task("Iterating layers...", total=model.n_layers)
         sample_coeff_task = progress.add_task("Sampling...", total=n_samples)
@@ -208,8 +208,16 @@ def iterate_noise(
             "frequencies",
         ]
     )
+    rng = np.random.default_rng(seed)
 
     enc = model._enc
+
+    def enc_gate_error(inputs, wires, noise_params):
+        inputs = inputs % (2 * np.pi)
+        if noise_params is not None:
+            noise = rng.normal(0, noise_params["GateError"], inputs.size)
+            inputs += noise
+        return enc(inputs, wires, noise_params)
 
     def enc_noise_free(*args, **kwargs):
         kwargs["noise_params"] = None
@@ -223,6 +231,7 @@ def iterate_noise(
 
     if selective_noise == "iec":
         model.pqc = pqc_noise_free
+        model._enc = enc_gate_error
     elif selective_noise == "pqc":
         model._enc = enc_noise_free
     elif selective_noise != "both":
@@ -230,7 +239,6 @@ def iterate_noise(
             f"selective_noise must be 'both', 'iec' or 'pqc', got {selective_noise}"
         )
 
-    rng = np.random.default_rng(seed)
     with Progress() as progress:
         noise_it_task = progress.add_task(
             "Iterating noise levels...", total=noise_steps + 1
