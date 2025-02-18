@@ -1,5 +1,7 @@
 *.csv
-*tar.gz
+*tar
+*.tar.gz
+info.log.*
 logs/*
 mlruns
 session_store.db
