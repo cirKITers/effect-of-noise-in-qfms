@@ -1446,25 +1446,26 @@ yaml-yamldataset = ["PyYAML (>=4.2,<7.0)", "kedro-datasets[pandas-base]"]
 
 [[package]]
 name = "kedro-mlflow"
-version = "0.13.4"
+version = "0.14.3"
 description = "A kedro-plugin to use mlflow in your kedro projects"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "kedro_mlflow-0.13.4-py3-none-any.whl", hash = "sha256:721c74a586f93701f0100ec390edf028a99a31582f3134beec40723ca341bb86"},
-    {file = "kedro_mlflow-0.13.4.tar.gz", hash = "sha256:62c30ba7bfa6d35a31d823ebb0e0be1332d22ee8dc8876ac7803bde803af0e2b"},
+    {file = "kedro_mlflow-0.14.3-py3-none-any.whl", hash = "sha256:5047357fbde9c480f3f97e8a0f16aa3fa9d68ebacbedd7d91aae03bc9643981d"},
+    {file = "kedro_mlflow-0.14.3.tar.gz", hash = "sha256:9fab112c7dcb140f32b12edfb63a8d8e4213ceb5de5dc5b4f87654eb995b8b08"},
 ]
 
 [package.dependencies]
 kedro = ">=0.19.0,<0.20.0"
-kedro-datasets = "*"
-mlflow = ">=1.29.0,<3.0.0"
+kedro_datasets = "*"
+mlflow = ">=2.7.0,<3.0.0"
 pydantic = ">=1.0.0,<3.0.0"
 
 [package.extras]
+all = ["kedro_mlflow[dev,doc,test]"]
 dev = ["jupyter (>=1.0.0,<2.0.0)", "pre-commit (>=2.0.0,<5.0.0)"]
-doc = ["myst-parser (>=0.17.2,<4.1.0)", "sphinx (>=4.5.0,<9.0.0)", "sphinx-click (>=3.1,<6.1)", "sphinx-copybutton (>=0.5.0,<0.6.0)", "sphinx-markdown-tables (>=0.0.15,<0.1.0)", "sphinx-rtd-theme (>=1.0,<3.1)"]
-test = ["kedro-datasets[pandas-csvdataset]", "pytest (>=5.4.0,<9.0.0)", "pytest-cov (>=2.8.0,<7.0.0)", "pytest-lazy-fixtures (>=1.0.0,<2.0.0)", "pytest-mock (>=3.1.0,<4.0.0)", "ruff (>=0.5.0,<0.9.0)", "scikit-learn (>=0.23.0,<1.7.0)"]
+doc = ["myst-parser (>=0.17.2,<4.1.0)", "pydata-sphinx-theme (>=0.16.0,<0.17.0)", "sphinx (>=4.5.0,<9.0.0)", "sphinx-click (>=3.1,<6.1)", "sphinx-markdown-tables (>=0.0.15,<0.1.0)", "sphinx_copybutton (>=0.5.0,<0.6.0)", "sphinx_design (>=0.6.0,<0.7.0)"]
+test = ["kedro-datasets[pandas-csvdataset]", "pytest (>=5.4.0,<9.0.0)", "pytest-cov (>=2.8.0,<7.0.0)", "pytest-lazy-fixtures (>=1.0.0,<2.0.0)", "pytest-mock (>=3.1.0,<4.0.0)", "pytest-xdist (>=3.0.0,<4.0.0)", "ruff (>=0.5.0,<0.10.0)", "scikit-learn (>=0.23.0,<1.7.0)"]
 
 [[package]]
 name = "kedro-telemetry"
@@ -4126,4 +4127,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.12"
-content-hash = "77c00b9d7108e5885ba120259d8f226c8859f5e41dc5d0d03b668b5089acfb5d"
+content-hash = "d5de041855252624f6eb565de2a0feff9e735fd7503dce4e4af64d3d872281ff"
