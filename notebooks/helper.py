@@ -20,11 +20,15 @@ def save_fig(fig, name, run_ids, experiment_id, font_size=16, scale=1):
     fig.write_image(f"{path}{name}.pdf", scale=scale)
 
 
-def get_color_iterator():
+def get_qual_color_iterator():
     main_colors_it = iter(plotly.colors.qualitative.Dark2)
     sec_colors_it = iter(plotly.colors.qualitative.Pastel2)
 
     return main_colors_it, sec_colors_it
+
+
+def get_seq_color_iterator(n=10):
+    return iter(plotly.colors.sample_colorscale(plotly.colors.sequential.Emrld, n))
 
 
 def generate_hash(run_ids):
@@ -311,6 +315,7 @@ def get_coeffs_df(run_ids):
                 converters={
                     "coeffs_abs_mean": converter,
                     "coeffs_abs_var": converter,
+                    "frequencies": converter,
                 },
             )
         except:
@@ -329,11 +334,11 @@ def expand_coeffs(df, metric):
     qubits = sorted(df.qubits.unique())
     n_qubits = max(qubits)
 
-    for freq in range(n_qubits + 1):
-        df[f"{metric}_{freq}"] = np.nan
+    # for freq in range(n_qubits + 1):
+    #     df[f"{metric}_{freq}"] = np.nan
 
     for idx in df.index:
-        for freq in range(df.loc[idx].qubits + 1):
+        for freq in range(df.loc[idx, metric].size):
             df.loc[idx, f"{metric}_{freq}"] = df.loc[idx, metric][freq].item()
 
     return df

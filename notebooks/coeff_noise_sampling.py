@@ -2,11 +2,12 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import plotly.io as pio
 from runs.coefficient_runs import run_ids, experiment_id
+from qml_essentials.coefficients import Coefficients
 from helper import (
     save_fig,
     get_coeffs_df,
     rgb_to_rgba,
-    get_qual_color_iterator,
+    get_seq_color_iterator,
     assign_ansatz_id,
     expand_coeffs,
     get_symbol_iterator,
@@ -14,50 +15,70 @@ from helper import (
 
 pio.kaleido.scope.mathjax = None
 
+experiment_id = "939685904901998130"
+run_ids = [
+    "4fa428fad91446179dd3ac82909d16d5"
+]  # ["81bddb7a81c245b8bac4c5afaadf00f0"]  #   b4d0a4dd9ba243ba8569809ffc4676b9
+
 coeffs_df = get_coeffs_df(run_ids)
 coeffs_df.sort_values(by="ansatz", inplace=True)
 coeffs_df = assign_ansatz_id(coeffs_df)
-coeffs_df = expand_coeffs(coeffs_df, "coeffs_abs_mean")
-coeffs_df = expand_coeffs(coeffs_df, "coeffs_abs_var")
+# coeffs_df = expand_coeffs(coeffs_df, "coeffs_abs_mean")
 
 ansaetze = coeffs_df.ansatz.unique()
 qubits = sorted(coeffs_df.qubits.unique())
+noise_levels = sorted(coeffs_df.noise_level.unique())
 
 enabled_noise = [
-    # "BitFlip",
+    "BitFlip",
     # "PhaseFlip",
-    "AmplitudeDamping",
-    "PhaseDamping",
+    # "AmplitudeDamping",
+    # "PhaseDamping",
     # "Depolarizing",
 ]
 
 for ansatz in ansaetze:
-    for metric in ["coeffs_abs_mean", "coeffs_abs_var"]:
-        fig = make_subplots(specs=[[{"secondary_y": True}]])
-        symbols = get_symbol_iterator()
-        for qubit in qubits:
-            main_colors_it, sec_colors_it = get_qual_color_iterator()
-            symbol = next(symbols)
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
+    for qubit in qubits:
+        n_samples = len(coeffs_df[coeffs_df.qubits == qubit].coeffs_abs_mean[0])
+
+        main_colors_it = get_seq_color_iterator(len(noise_levels))
+
+        last_coeffs = None
+        for n_it, noise_level in enumerate(noise_levels):
+            symbols = get_symbol_iterator()
+            main_color_sel = next(main_colors_it)
+            # sec_color_sel = rgb_to_rgba(next(sec_colors_it), 0.2)
             for noise in enabled_noise:
-                main_color_sel = next(main_colors_it)
-                sec_color_sel = rgb_to_rgba(next(sec_colors_it), 0.2)
+                symbol = next(symbols)
 
                 coeff_mean_metric_values = (
                     coeffs_df[
-                        (coeffs_df.ansatz == ansatz) & (coeffs_df.qubits == qubit)
+                        (coeffs_df.ansatz == ansatz)
+                        & (coeffs_df.qubits == qubit)
+                        & (coeffs_df.noise_level == noise_level)
                     ]
-                    .groupby(noise)[f"{metric}_{qubit}"]
+                    .groupby(noise)[f"coeffs_abs_mean"]
                     .agg(["mean", "min", "max"])
+                )
+                frequencies_mean_metric_values = (
+                    coeffs_df[
+                        (coeffs_df.ansatz == ansatz)
+                        & (coeffs_df.qubits == qubit)
+                        & (coeffs_df.noise_level == noise_level)
+                    ]
+                    .groupby(noise)[f"frequencies"]
+                    .agg(["mean"])
                 )
 
                 fig.add_trace(
                     go.Scatter(
-                        x=coeff_mean_metric_values.index,
-                        y=coeff_mean_metric_values["mean"],
-                        name=f"{qubit} Qubits - {noise} Mean",
-                        mode="lines+markers",
+                        x=frequencies_mean_metric_values["mean"].item(),
+                        y=coeff_mean_metric_values["mean"].item(),
+                        name=f"{qubit} Qubits - {noise} Mean - {noise_level:.2f}",
+                        mode="lines",
                         line=dict(color=main_color_sel),
-                        marker=dict(color=main_color_sel, symbol=symbol),
+                        marker=dict(color=main_color_sel),
                     )
                 )
                 # fig.add_trace(
@@ -86,18 +107,19 @@ for ansatz in ansaetze:
                 #     )
                 # )
 
-        fig.update_yaxes(title_text=f"{metric.title()}", secondary_y=False)
-        fig.update_xaxes(title_text="Noise Level")
+        fig.update_yaxes(title_text=f"Magnitude", secondary_y=False)
+        fig.update_xaxes(title_text="Frequency")
         fig.update_layout(
-            title=f"{ansatz.title()} - {metric.title()} over Noise Level",
+            title=f"{ansatz.title()} - {qubit} Qubits - Spectrogram",
             template="plotly_white",
             yaxis_type="log",
-            legend=dict(x=1.2),
-            width=900,
+            # legend=dict(x=1.2),
+            width=1200,
         )
+        fig.show()
         save_fig(
             fig,
-            f"{metric}_{ansatz.lower()}_{qubit}_{enabled_noise}_level",
+            f"{qubit}_{ansatz.lower()}_level",
             run_ids,
             experiment_id,
         )
