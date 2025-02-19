@@ -19,6 +19,12 @@ model:
     AmplitudeDamping: 0.0
     PhaseDamping: 0.0
     Depolarizing: 0.0
+    StatePreparation: 0.0
+    Measurement: 0.0
+    ThermalRelaxation:
+      T1: 18000.0
+      T2: 10000.0
+      t_factor: 5
   noise_steps: 6
 
 seed: 1000
