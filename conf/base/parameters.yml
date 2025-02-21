@@ -1,10 +1,10 @@
 data:
   domain: [-3.1415, 3.1415] # domain of x values
-  omegas: 3
+  omegas: 5
   amplitude: 0.5
 
 model:
-  n_qubits: 3
+  n_qubits: 5
   n_layers: 1
   circuit_type: "Circuit_15" # Circuit_1, Circuit_5, Circuit_9, Circuit_15, Circuit_18, Circuit_19, Hardware_Efficient, Strongly_Entangling, No_Entangling
   data_reupload: True
@@ -13,7 +13,7 @@ model:
   initialization_domain: [0, 6.283185307179586]
   shots: -1 # number or -1 if expectation value should be used
   noise_params:
-    GateError: 0.5
+    GateError: 0.0
     BitFlip: 0.0
     PhaseFlip: 0.0
     AmplitudeDamping: 0.0
@@ -35,10 +35,10 @@ expressibility:
 
 coefficients:
   # Coefficients Params
-  n_samples: 200
+  n_samples: 300
   zero_coefficient: True
-  oversampling: 40
-  selective_noise: "iec" # "both", "iec", "pqc" (where to apply noise)
+  oversampling: 1
+  selective_noise: "both" # "both", "iec", "pqc" (where to apply noise)
 
 training:
   steps: 1000
