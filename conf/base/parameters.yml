@@ -13,12 +13,16 @@ model:
   initialization_domain: [0, 6.283185307179586]
   shots: -1 # number or -1 if expectation value should be used
   noise_params:
-    GateError: 0.0
+    GateError: 0.06
     BitFlip: 0.0
     PhaseFlip: 0.0
     AmplitudeDamping: 0.0
     PhaseDamping: 0.0
     Depolarizing: 0.0
+    Measurement: 0.0
+    StatePreparation: 0.0
+    ThermalRelaxation: 0.0
+
   noise_steps: 6
 
 seed: 1000
@@ -35,10 +39,10 @@ expressibility:
 
 coefficients:
   # Coefficients Params
-  n_samples: 300
+  n_samples: 30
   zero_coefficient: True
-  oversampling: 1
-  selective_noise: "both" # "both", "iec", "pqc" (where to apply noise)
+  oversampling: 5
+  selective_noise: "iec" # "both", "iec", "pqc" (where to apply noise)
 
 training:
   steps: 1000
