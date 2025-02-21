@@ -212,13 +212,6 @@ def iterate_noise(
 
     enc = model._enc
 
-    def enc_gate_error(inputs, wires, noise_params):
-        inputs = inputs % (2 * np.pi)
-        if noise_params is not None:
-            noise = rng.normal(0, noise_params["GateError"], inputs.size)
-            inputs += noise
-        return enc(inputs, wires, noise_params)
-
     def enc_noise_free(*args, **kwargs):
         kwargs["noise_params"] = None
         return enc(*args, **kwargs)
@@ -231,7 +224,6 @@ def iterate_noise(
 
     if selective_noise == "iec":
         model.pqc = pqc_noise_free
-        model._enc = enc_gate_error
     elif selective_noise == "pqc":
         model._enc = enc_noise_free
     elif selective_noise != "both":
