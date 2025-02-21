@@ -17,7 +17,7 @@ pio.kaleido.scope.mathjax = None
 
 experiment_id = "939685904901998130"
 run_ids = [
-    "4fa428fad91446179dd3ac82909d16d5"
+    "90b725e91197435c8c6c69fffb22c2a5"
 ]  # ["81bddb7a81c245b8bac4c5afaadf00f0"]  #   b4d0a4dd9ba243ba8569809ffc4676b9
 
 coeffs_df = get_coeffs_df(run_ids)
@@ -30,7 +30,8 @@ qubits = sorted(coeffs_df.qubits.unique())
 noise_levels = sorted(coeffs_df.noise_level.unique())
 
 enabled_noise = [
-    "BitFlip",
+    "GateError",
+    # "BitFlip",
     # "PhaseFlip",
     # "AmplitudeDamping",
     # "PhaseDamping",
@@ -45,7 +46,7 @@ for ansatz in ansaetze:
         main_colors_it = get_seq_color_iterator(len(noise_levels))
 
         last_coeffs = None
-        for n_it, noise_level in enumerate(noise_levels):
+        for n_it, noise_level in enumerate(noise_levels[1:]):
             symbols = get_symbol_iterator()
             main_color_sel = next(main_colors_it)
             # sec_color_sel = rgb_to_rgba(next(sec_colors_it), 0.2)
