@@ -6,6 +6,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 from rich.progress import Progress, Task
 from typing import Dict, Tuple, Optional
+from copy import copy
 import mlflow
 import pandas as pd
 
@@ -23,13 +24,23 @@ class NoiseDict(Dict[str, float]):
         """
         Divide all values by a scalar.
         """
-        return NoiseDict({k: v / other for k, v in self.items()})
+        noise = {k: v / other for k, v in self.items() if k != "ThermalRelaxation"}
+        tr = copy(self["ThermalRelaxation"])
+        if tr and isinstance(tr, dict):
+            tr["f_factor"] /= other
+        noise.update({"ThermalRelaxation": tr})
+        return NoiseDict(noise)
 
     def __mul__(self, other: float) -> "NoiseDict":
         """
         Multiply all values by a scalar.
         """
-        return NoiseDict({k: v * other for k, v in self.items()})
+        noise = {k: v * other for k, v in self.items() if k != "ThermalRelaxation"}
+        tr = copy(self["ThermalRelaxation"])
+        if tr and isinstance(tr, dict):
+            tr["t_factor"] *= other
+        noise.update({"ThermalRelaxation": tr})
+        return NoiseDict(noise)
 
 
 def iterate_layers(
@@ -264,8 +275,14 @@ def iterate_noise(
 
                 progress.update(sample_coeff_task, advance=1)
 
-            for n in noise_params.keys():
-                df.loc[step, n] = part_noise_params[n]
+            for n, v in part_noise_params.items():
+                if n == "ThermalRelaxation":
+                    if isinstance(v, dict):
+                        df.loc[step, "ThermalRelaxation"] = v["t_factor"]
+                    else:
+                        df.loc[step, "ThermalRelaxation"] = 0.0
+                else:
+                    df.loc[step, n] = v
             df.loc[step, "noise_level"] = step / noise_steps
             df.loc[step, "coeffs_abs_var"] = np.abs(coeffs_pl).var(axis=0)
             df.loc[step, "coeffs_abs_mean"] = np.abs(coeffs_pl).mean(axis=0)
