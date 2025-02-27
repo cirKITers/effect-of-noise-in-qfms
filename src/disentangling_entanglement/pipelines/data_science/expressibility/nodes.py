@@ -9,6 +9,8 @@ import pandas as pd
 from qml_essentials.model import Model
 from qml_essentials.expressibility import Expressibility
 
+from disentangling_entanglement.helpers.utils import NoiseDict
+
 log = logging.getLogger(__name__)
 
 
@@ -85,23 +87,6 @@ def iterate_noise(
         A dictionary containing a DataFrame with the calculated expressibility
         and noise levels for each step.
     """
-
-    class NoiseDict(Dict[str, float]):
-        """
-        A dictionary subclass for noise params.
-        """
-
-        def __truediv__(self, other: float) -> "NoiseDict":
-            """
-            Divide all values by a scalar.
-            """
-            return NoiseDict({k: v / other for k, v in self.items()})
-
-        def __mul__(self, other: float) -> "NoiseDict":
-            """
-            Multiply all values by a scalar.
-            """
-            return NoiseDict({k: v * other for k, v in self.items()})
 
     noise_params = NoiseDict(noise_params)
 

@@ -6,6 +6,8 @@ from typing import Dict
 import mlflow
 import logging
 
+from disentangling_entanglement.helpers.utils import NoiseDict
+
 log = logging.getLogger(__name__)
 
 
@@ -50,23 +52,6 @@ def iterate_noise(
         A dictionary containing a DataFrame with the calculated entangling capability
         and noise levels for each step.
     """
-
-    class NoiseDict(Dict[str, float]):
-        """
-        A dictionary subclass for noise params.
-        """
-
-        def __truediv__(self, other: float) -> "NoiseDict":
-            """
-            Divide all values by a scalar.
-            """
-            return NoiseDict({k: v / other for k, v in self.items()})
-
-        def __mul__(self, other: float) -> "NoiseDict":
-            """
-            Multiply all values by a scalar.
-            """
-            return NoiseDict({k: v * other for k, v in self.items()})
 
     noise_params = NoiseDict(noise_params)
 
