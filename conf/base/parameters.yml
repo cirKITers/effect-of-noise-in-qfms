@@ -13,7 +13,7 @@ model:
   initialization_domain: [0, 6.283185307179586]
   shots: -1 # number or -1 if expectation value should be used
   noise_params:
-    GateError: 0.06
+    GateError: 0.0
     BitFlip: 0.0
     PhaseFlip: 0.0
     AmplitudeDamping: 0.0
