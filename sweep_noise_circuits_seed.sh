@@ -3,7 +3,7 @@
 # first argument: seed
 
 # run experiments with all different circuits
-for noise in BitFlip PhaseFlip AmplitudeDamping PhaseDamping Depolarizing
+for noise in BitFlip PhaseFlip AmplitudeDamping PhaseDamping Depolarizing GateError Measurement
 do
     echo "Running with noise type $noise"
 
