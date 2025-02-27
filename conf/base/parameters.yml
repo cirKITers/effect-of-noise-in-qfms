@@ -41,7 +41,7 @@ expressibility:
 
 coefficients:
   # Coefficients Params
-  n_samples: 30
+  n_samples: 300
   zero_coefficient: True
   oversampling: 5
   selective_noise: "iec" # "both", "iec", "pqc" (where to apply noise)
