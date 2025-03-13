@@ -71,10 +71,18 @@ d_coeffs <- d_coeffs %>%
                 "Environmental"
             )
         ),
+        sd_mean = ifelse(is.na(sd_mean), 0, sd_mean),
+        sd_var = ifelse(is.na(sd_var), 0, sd_var)
+    ) %>%
+    mutate(
         upper_bound_mean = mean_mean + sd_mean,
         upper_bound_var = mean_var + sd_var,
         lower_bound_mean = mean_mean - sd_mean,
         lower_bound_var = mean_var - sd_var
+    ) %>%
+    mutate(
+        lower_bound_var = ifelse(lower_bound_var < 0, 0, lower_bound_var),
+        lower_bound_mean = ifelse(lower_bound_mean < 0, 0, lower_bound_mean)
     )
 
 d_coeffs$noise_category <- factor(d_coeffs$noise_category, levels = c("Gate", "SPAM", "Environmental"))
@@ -97,11 +105,7 @@ single_qubit_freq_stuff <- function(g) {
         ) +
         scale_x_continuous("Noise Probability", labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.02)) +
         theme_paper() +
-        guides(colour = guide_legend(nrow = 1)) +
-        scale_y_log10("Coefficient Mean [log]",
-            breaks = scales::trans_breaks("log10", function(x) 10^x),
-            labels = trans_format("log10", math_format(10^.x))
-        )
+        guides(colour = guide_legend(nrow = 1))
     return(g)
 }
 
@@ -109,7 +113,11 @@ g <- ggplot(
     d_7_qubits,
     aes(x = noise_value, y = mean_mean, colour = frequency)
 ) +
-    geom_ribbon(aes(ymin = lower_bound_mean, ymax = upper_bound_mean, fill = frequency), alpha = 0.5, colour = NA)
+    geom_ribbon(aes(ymin = lower_bound_mean, ymax = upper_bound_mean, fill = frequency), alpha = 0.5, colour = NA) +
+    scale_y_log10("Coefficient Mean [log]",
+        breaks = scales::trans_breaks("log10", function(x) 10^x),
+        labels = trans_format("log10", math_format(10^.x))
+    )
 g <- single_qubit_freq_stuff(g)
 save_name <- str_c("coeff_mean_7_qubits")
 create_plot(g, save_name, TEXTWIDTH, 0.3 * HEIGHT)
@@ -118,7 +126,11 @@ g <- ggplot(
     d_7_qubits,
     aes(x = noise_value, y = mean_var, colour = frequency)
 ) +
-    geom_ribbon(aes(ymin = lower_bound_var, ymax = upper_bound_var, fill = frequency), alpha = 0.5, colour = NA)
+    geom_ribbon(aes(ymin = lower_bound_var, ymax = upper_bound_var, fill = frequency), alpha = 0.5, colour = NA) +
+    scale_y_log10("Coefficient Mean [log]",
+        breaks = scales::trans_breaks("log10", function(x) 10^x),
+        labels = trans_format("log10", math_format(10^.x))
+    )
 g <- single_qubit_freq_stuff(g)
 save_name <- str_c("coeff_var_7_qubits")
 create_plot(g, save_name, TEXTWIDTH, 0.3 * HEIGHT)
