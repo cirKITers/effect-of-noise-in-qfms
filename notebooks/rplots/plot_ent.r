@@ -40,11 +40,15 @@ d_ent <- d_ent %>%
   group_by(noise_type, noise_value, ansatz, qubits) %>%
   summarise(
     mean_ent = mean(entangling_capability),
-    sd_ent = sd(entangling_capability)
+    sd_ent = sd(entangling_capability),
+    max_ent = max(entangling_capability),
+    min_ent = min(entangling_capability)
   ) %>%
   mutate(
-    upper_bound = mean_ent + sd_ent,
-    lower_bound = mean_ent - sd_ent
+    #upper_bound = mean_ent + sd_ent,
+    #lower_bound = mean_ent - sd_ent
+    upper_bound = max_ent,
+    lower_bound = min_ent
   )
 
 d_ent$noise_type <- factor(d_ent$noise_type,

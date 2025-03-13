@@ -58,8 +58,12 @@ d_coeffs <- d_coeffs %>%
     summarise(
         mean_mean = mean(coeffs_abs_mean),
         sd_mean = sd(coeffs_abs_mean),
+        max_mean = max(coeffs_abs_mean),
+        min_mean = min(coeffs_abs_mean),
         mean_var = mean(coeffs_abs_var),
         sd_var = sd(coeffs_abs_var),
+        max_var = max(coeffs_abs_var),
+        min_var = min(coeffs_abs_var)
     ) %>%
     mutate(
         noise_category = ifelse(
@@ -75,15 +79,19 @@ d_coeffs <- d_coeffs %>%
         sd_var = ifelse(is.na(sd_var), 0, sd_var)
     ) %>%
     mutate(
-        upper_bound_mean = mean_mean + sd_mean,
-        upper_bound_var = mean_var + sd_var,
-        lower_bound_mean = mean_mean - sd_mean,
-        lower_bound_var = mean_var - sd_var
-    ) %>%
-    mutate(
-        lower_bound_var = ifelse(lower_bound_var < 0, 0, lower_bound_var),
-        lower_bound_mean = ifelse(lower_bound_mean < 0, 0, lower_bound_mean)
-    )
+        # upper_bound_mean = mean_mean + sd_mean,
+        # upper_bound_var = mean_var + sd_var,
+        # lower_bound_mean = mean_mean - sd_mean,
+        # lower_bound_var = mean_var - sd_var
+        upper_bound_mean = max_mean,
+        upper_bound_var = max_var,
+        lower_bound_mean = min_mean,
+        lower_bound_var = min_var
+    ) # %>%
+    # mutate(
+    #     lower_bound_var = ifelse(lower_bound_var < 0, 0, lower_bound_var),
+    #     lower_bound_mean = ifelse(lower_bound_mean < 0, 0, lower_bound_mean)
+    # )
 
 d_coeffs$noise_category <- factor(d_coeffs$noise_category, levels = c("Gate", "SPAM", "Environmental"))
 

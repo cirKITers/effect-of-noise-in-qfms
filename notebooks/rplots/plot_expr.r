@@ -40,11 +40,15 @@ d_expr <- d_expr %>%
   group_by(noise_type, noise_value, ansatz, qubits) %>%
   summarise(
     mean_expr = mean(expressibility),
-    sd_expr = sd(expressibility)
+    sd_expr = sd(expressibility),
+    min_expr = min(expressibility),
+    max_expr = max(expressibility)
   ) %>%
   mutate(
-    upper_bound = mean_expr + sd_expr,
-    lower_bound = mean_expr - sd_expr
+    #upper_bound = mean_expr + sd_expr,
+    #lower_bound = mean_expr - sd_expr
+    upper_bound = max_expr,
+    lower_bound = min_expr
   )
 
 d_expr$noise_type <- factor(d_expr$noise_type,
