@@ -127,7 +127,7 @@ g <- ggplot(
     aes(x = noise_value, y = mean_var, colour = frequency)
 ) +
     geom_ribbon(aes(ymin = lower_bound_var, ymax = upper_bound_var, fill = frequency), alpha = 0.5, colour = NA) +
-    scale_y_log10("Coefficient Mean [log]",
+    scale_y_log10("Coefficient Variance [log]",
         breaks = scales::trans_breaks("log10", function(x) 10^x),
         labels = trans_format("log10", math_format(10^.x))
     )
