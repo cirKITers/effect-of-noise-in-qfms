@@ -189,8 +189,14 @@ def iterate_noise(
         columns=[
             *[n for n in noise_params.keys()],
             "noise_level",
-            "coeffs_abs_var",
-            "coeffs_abs_mean",
+            "coeffs_abs_var",  # Variance of the absolute coefficients
+            "coeffs_var",  # Variance of complex coefficients
+            "coeffs_co_var_real_imag",  # Covariance of real and imaginary part
+            "coeffs_real_var",  # Variance of real parts only
+            "coeffs_imag_var",  # Variance of imaginary parts only
+            "coeffs_abs_mean",  # Mean absolute coefficient
+            "coeffs_real_mean",  # Mean of real part only
+            "coeffs_imag_mean",  # Mean of imaginary part only
             "frequencies",
         ]
     )
@@ -259,8 +265,22 @@ def iterate_noise(
                 else:
                     df.loc[step, n] = v
             df.loc[step, "noise_level"] = step / noise_steps
+
+            mean_real = np.real(coeffs_pl).mean(axis=0)
+            mean_imag = np.imag(coeffs_pl).mean(axis=0)
+            co_variance_real_imag = np.mean(
+                (np.real(coeffs_pl) - mean_real) * (np.real(coeffs_pl) - mean_imag),
+                axis=0,
+            )
+
             df.loc[step, "coeffs_abs_var"] = np.abs(coeffs_pl).var(axis=0)
+            df.loc[step, "coeffs_var"] = np.array(coeffs_pl).var(axis=0)
+            df.loc[step, "coeffs_co_var_real_imag"] = co_variance_real_imag
+            df.loc[step, "coeffs_real_var"] = np.real(coeffs_pl).var(axis=0)
+            df.loc[step, "coeffs_imag_var"] = np.imag(coeffs_pl).var(axis=0)
             df.loc[step, "coeffs_abs_mean"] = np.abs(coeffs_pl).mean(axis=0)
+            df.loc[step, "coeffs_real_mean"] = mean_real
+            df.loc[step, "coeffs_imag_mean"] = mean_imag
             df.loc[step, "frequencies"] = np.array(freqs_pl).mean(axis=0)
 
             progress.advance(noise_it_task)
