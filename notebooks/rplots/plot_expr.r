@@ -115,7 +115,7 @@ g <- ggplot(
 ) +
   geom_point(size = POINT.SIZE) +
   geom_line(linewidth = LINE.SIZE) +
-  geom_ribbon(aes(ymin = lower_bound, ymax = upper_bound, fill = as.factor(qubits)), size = POINT.SIZE, alpha = 0.5, colour = NA) +
+  geom_ribbon(aes(ymin = lower_bound, ymax = upper_bound, fill = as.factor(qubits)), alpha = 0.5, colour = NA) +
   scale_colour_manual(ifelse(use_tikz, "\\# Qubits", "# Qubits"), values = COLOURS.LIST) +
   scale_fill_manual(ifelse(use_tikz, "\\# Qubits", "# Qubits"), values = COLOURS.LIST) +
   facet_nested(ansatz ~ noise_category + noise_type,

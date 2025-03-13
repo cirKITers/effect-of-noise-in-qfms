@@ -77,7 +77,7 @@ g <- ggplot(
   aes(x = noise_value, colour = as.factor(qubits))
 ) +
   geom_point(aes(y = mean_ent), size = POINT.SIZE) +
-  geom_ribbon(aes(ymin = lower_bound, ymax = upper_bound, fill = as.factor(qubits)), size = POINT.SIZE, alpha = 0.5, colour = NA) +
+  geom_ribbon(aes(ymin = lower_bound, ymax = upper_bound, fill = as.factor(qubits)), alpha = 0.5, colour = NA) +
   geom_line(aes(y = mean_ent), linewidth = LINE.SIZE) +
   scale_colour_manual(ifelse(use_tikz, "\\# Qubits", "# Qubits"), values = COLOURS.LIST) +
   scale_fill_manual(ifelse(use_tikz, "\\# Qubits", "# Qubits"), values = COLOURS.LIST) +

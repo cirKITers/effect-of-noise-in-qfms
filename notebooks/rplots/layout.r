@@ -6,8 +6,8 @@ HEIGHT <- 23.61475 * INCH.PER.CM
 OUTDIR_PDF <- "img-pdf/"
 OUTDIR_TIKZ <- "img-tikz/"
 COLOURS.LIST <- c("black", "#E69F00", "#999999", "#009371", "#beaed4", "#ed665a", "#1f78b4", "#CC79A7")
-POINT.SIZE <- 0.4
-LINE.SIZE <- 1
+POINT.SIZE <- 0.3
+LINE.SIZE <- 0.5
 
 use_tikz <- TRUE
 
