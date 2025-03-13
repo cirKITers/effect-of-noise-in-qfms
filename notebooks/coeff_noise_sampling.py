@@ -46,7 +46,9 @@ for ansatz in ansaetze:
         main_colors_it = get_seq_color_iterator(len(noise_levels))
 
         last_coeffs = None
-        for n_it, noise_level in enumerate(noise_levels[1:]):
+        for n_it, noise_level in enumerate(noise_levels):
+            if n_it != 0:
+                continue
             symbols = get_symbol_iterator()
             main_color_sel = next(main_colors_it)
             # sec_color_sel = rgb_to_rgba(next(sec_colors_it), 0.2)
