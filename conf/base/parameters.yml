@@ -31,11 +31,11 @@ seed: 1000
 
 entanglement:
   # Entanglement Params
-  n_samples: 300
+  n_samples: 250
 
 expressibility:
   # Expressibility Params
-  n_samples: 300
+  n_samples: 250
   n_input_samples: 0
   n_bins: 75
 
