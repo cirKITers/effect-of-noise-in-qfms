@@ -197,6 +197,8 @@ def iterate_noise(
             "coeffs_abs_mean",  # Mean absolute coefficient
             "coeffs_real_mean",  # Mean of real part only
             "coeffs_imag_mean",  # Mean of imaginary part only
+            "coeffs_full_real",  # All coefficients real part
+            "coeffs_full_imag",  # All coefficients imaginary part
             "frequencies",
         ]
     )
@@ -281,6 +283,8 @@ def iterate_noise(
             df.loc[step, "coeffs_abs_mean"] = np.abs(coeffs_pl).mean(axis=0)
             df.loc[step, "coeffs_real_mean"] = mean_real
             df.loc[step, "coeffs_imag_mean"] = mean_imag
+            df.loc[step, "coeffs_full_real"] = np.array(coeffs_pl).T.real
+            df.loc[step, "coeffs_full_imag"] = np.array(coeffs_pl).T.imag
             df.loc[step, "frequencies"] = np.array(freqs_pl).mean(axis=0)
 
             progress.advance(noise_it_task)
