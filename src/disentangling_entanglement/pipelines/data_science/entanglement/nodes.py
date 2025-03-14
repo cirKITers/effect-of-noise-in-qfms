@@ -1,6 +1,6 @@
 from qml_essentials.model import Model
 from qml_essentials.entanglement import Entanglement
-from rich.progress import Progress, Task
+from rich.progress import Progress
 import pandas as pd
 from typing import Dict
 import mlflow
@@ -19,6 +19,7 @@ def calculate_entanglement(
         model=model,
         n_samples=samples,
         seed=seed,
+        scale=True,
         inputs=None,
         noise_params=noise_params,
     )
