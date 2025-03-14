@@ -21,10 +21,10 @@ model:
     Depolarizing: 0.0
     StatePreparation: 0.0
     Measurement: 0.0
-    ThermalRelaxation:
-      T1: 18000.0
-      T2: 10000.0
-      t_factor: 5
+    ThermalRelaxation: 0.0
+      # T1: 18000.0
+      # T2: 10000.0
+      # t_factor: 5
   noise_steps: 6
 
 seed: 1000
@@ -43,8 +43,8 @@ coefficients:
   # Coefficients Params
   n_samples: 300
   zero_coefficient: True
-  oversampling: 5
-  selective_noise: "iec" # "both", "iec", "pqc" (where to apply noise)
+  oversampling: 1
+  selective_noise: "both" # "both", "iec", "pqc" (where to apply noise)
 
 training:
   steps: 1000

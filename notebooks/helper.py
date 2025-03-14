@@ -138,6 +138,9 @@ def get_expressibility_df(run_ids):
             "AmplitudeDamping",
             "PhaseDamping",
             "Depolarizing",
+            "ThermalRelaxation",
+            "StatePreparation",
+            "Measurement",
             "expressibility",
         ]
     )
@@ -192,6 +195,9 @@ def get_entanglement_df(run_ids):
             "AmplitudeDamping",
             "PhaseDamping",
             "Depolarizing",
+            "ThermalRelaxation",
+            "StatePreparation",
+            "Measurement",
             "entangling_capability",
         ]
     )
@@ -255,6 +261,9 @@ def get_coeffs_df(run_ids):
             "AmplitudeDamping",
             "PhaseDamping",
             "Depolarizing",
+            "ThermalRelaxation",
+            "StatePreparation",
+            "Measurement",
             "coeffs_abs_var",
             "coeffs_abs_mean",
         ]
@@ -348,3 +357,7 @@ def assign_ansatz_id(df):
     # add a column with name "ansatz_id" where each ansatz has a unique id
     df["ansatz_id"] = df["ansatz"].factorize()[0]
     return df
+
+
+def run_ids_from_experiment_id(experiment_ids: Union[List[str], str]):
+    return mlflow.search_runs(experiment_ids)["run_id"].to_list()
