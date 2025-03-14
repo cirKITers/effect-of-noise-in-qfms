@@ -266,6 +266,14 @@ def get_coeffs_df(run_ids):
             "Measurement",
             "coeffs_abs_var",
             "coeffs_abs_mean",
+            "coeffs_real_mean",
+            "coeffs_imag_mean",
+            "coeffs_var",
+            "coeffs_real_var",
+            "coeffs_imag_var",
+            "coeffs_co_var_real_imag",
+            "coeffs_full_real",
+            "coeffs_full_imag",
         ]
     )
 
@@ -324,7 +332,15 @@ def get_coeffs_df(run_ids):
                 converters={
                     "coeffs_abs_mean": converter,
                     "coeffs_abs_var": converter,
+                    "coeffs_real_mean": converter,
+                    "coeffs_imag_mean": converter,
+                    "coeffs_var": converter,
+                    "coeffs_real_var": converter,
+                    "coeffs_imag_var": converter,
+                    "coeffs_co_var_real_imag": converter,
                     "frequencies": converter,
+                    # "coeffs_full_real": deep_arr_converter,
+                    # "coeffs_full_imag": deep_arr_converter,
                 },
             )
         except:
