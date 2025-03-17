@@ -9,6 +9,7 @@ import numpy as np
 import os
 from rich.progress import track
 from typing import Union, List
+import ast
 
 
 def save_fig(fig, name, run_ids, experiment_id, font_size=16, scale=1):
@@ -274,6 +275,7 @@ def get_coeffs_df(run_ids):
             "coeffs_co_var_real_imag",
             "coeffs_full_real",
             "coeffs_full_imag",
+            "frequencies",
         ]
     )
 
@@ -282,6 +284,9 @@ def get_coeffs_df(run_ids):
         s = s.replace("[", "")
         s = s.replace("]", "")
         return np.fromstring(s, dtype=float, sep=" ")
+
+    def list_converter(s):
+        return np.array(ast.literal_eval(s), dtype=float)
 
     def mean_converter(s):
         values = converter(s)
@@ -295,12 +300,14 @@ def get_coeffs_df(run_ids):
         "\nThis a hint that there is some very inefficient code.. :) Checkout a xkcd comic while waiting: https://c.xkcd.com/random/comic/\n"
     )
 
+    client = mlflow.tracking.MlflowClient()
+    broken = set()
+    not_broken = set()
     for it, run_id in track(
         enumerate(run_ids),
         description="Collecting coefficients data..",
         total=len(run_ids),
     ):
-        client = mlflow.tracking.MlflowClient()
         if client.get_run(run_id).info.status != "FINISHED":
             print(f"Run {run_id} not finished")
             continue
@@ -330,17 +337,17 @@ def get_coeffs_df(run_ids):
                 run_id,
                 "coefficients_noise",
                 converters={
-                    "coeffs_abs_mean": converter,
-                    "coeffs_abs_var": converter,
-                    "coeffs_real_mean": converter,
-                    "coeffs_imag_mean": converter,
-                    "coeffs_var": converter,
-                    "coeffs_real_var": converter,
-                    "coeffs_imag_var": converter,
-                    "coeffs_co_var_real_imag": converter,
-                    "frequencies": converter,
-                    # "coeffs_full_real": deep_arr_converter,
-                    # "coeffs_full_imag": deep_arr_converter,
+                    "coeffs_abs_mean": list_converter,
+                    "coeffs_abs_var": list_converter,
+                    "coeffs_real_mean": list_converter,
+                    "coeffs_imag_mean": list_converter,
+                    "coeffs_var": list_converter,
+                    "coeffs_real_var": list_converter,
+                    "coeffs_imag_var": list_converter,
+                    "coeffs_co_var_real_imag": list_converter,
+                    "frequencies": list_converter,
+                    "coeffs_full_real": list_converter,
+                    "coeffs_full_imag": list_converter,
                 },
             )
         except:
