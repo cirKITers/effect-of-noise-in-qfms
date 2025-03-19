@@ -250,34 +250,90 @@ def get_symbol_iterator():
     return iter(symbols)
 
 
-def get_coeffs_df(run_ids):
-    df = pd.DataFrame(
-        columns=[
-            "run_id",
-            "ansatz",
-            "qubits",
-            "seed",
-            "BitFlip",
-            "PhaseFlip",
-            "AmplitudeDamping",
-            "PhaseDamping",
-            "Depolarizing",
-            "ThermalRelaxation",
-            "StatePreparation",
-            "Measurement",
-            "coeffs_abs_var",
-            "coeffs_abs_mean",
-            "coeffs_real_mean",
-            "coeffs_imag_mean",
-            "coeffs_var",
-            "coeffs_real_var",
-            "coeffs_imag_var",
-            "coeffs_co_var_real_imag",
-            "coeffs_full_real",
-            "coeffs_full_imag",
-            "frequencies",
-        ]
-    )
+def init_all_cfg_dict():
+    all_cfgs = dict()
+    for circuit_type in [
+        "Hardware_Efficient",
+        "Strongly_Entangling",
+        "Circuit_15",
+        "Circuit_19",
+    ]:
+        all_cfgs[circuit_type] = dict()
+        for n_qubits in [3, 4, 5, 6, 7]:
+            all_cfgs[circuit_type][n_qubits] = dict()
+            for seed in range(1000, 1005):
+                all_cfgs[circuit_type][n_qubits][seed] = dict()
+                for noise in [
+                    "BitFlip",
+                    "PhaseFlip",
+                    "AmplitudeDamping",
+                    "PhaseDamping",
+                    "Depolarizing",
+                    "StatePreparation",
+                    "Measurement",
+                    "GateError",
+                ]:
+                    all_cfgs[circuit_type][n_qubits][seed][noise] = 0
+    return all_cfgs
+
+
+def check_complete(all_cfgs: dict):
+    for circuit_type in [
+        "Hardware_Efficient",
+        "Strongly_Entangling",
+        "Circuit_15",
+        "Circuit_19",
+    ]:
+        for n_qubits in [3, 4, 5, 6, 7]:
+            for seed in range(1000, 1005):
+                for noise in [
+                    "BitFlip",
+                    "PhaseFlip",
+                    "AmplitudeDamping",
+                    "PhaseDamping",
+                    "Depolarizing",
+                    "StatePreparation",
+                    "Measurement",
+                    "GateError",
+                ]:
+                    if all_cfgs[circuit_type][n_qubits][seed][noise] != 1:
+                        print(
+                            f"Got {all_cfgs[circuit_type][n_qubits][seed][noise]} for "
+                            f"{circuit_type}, {n_qubits}, {seed}, {noise}"
+                        )
+
+
+def get_coeffs_df(run_ids, export_full_coeffs=False):
+    columns = [
+        "run_id",
+        "ansatz",
+        "qubits",
+        "seed",
+        "BitFlip",
+        "PhaseFlip",
+        "AmplitudeDamping",
+        "PhaseDamping",
+        "Depolarizing",
+        "StatePreparation",
+        "Measurement",
+        "GateError",
+    ]
+    array_cols = [
+        "coeffs_abs_var",
+        "coeffs_abs_mean",
+        "coeffs_real_mean",
+        "coeffs_imag_mean",
+        "coeffs_var",
+        "coeffs_real_var",
+        "coeffs_imag_var",
+        "coeffs_co_var_real_imag",
+        "frequencies",
+    ]
+    big_array_cols = ["coeffs_full_real", "coeffs_full_imag"]
+    columns.extend(array_cols)
+    if export_full_coeffs:
+        columns.extend(big_array_cols)
+    df = pd.DataFrame(columns=columns)
 
     def converter(s):
         s = s.replace("\n", "")
@@ -301,8 +357,9 @@ def get_coeffs_df(run_ids):
     )
 
     client = mlflow.tracking.MlflowClient()
-    broken = set()
-    not_broken = set()
+
+    all_cfgs = init_all_cfg_dict()
+
     for it, run_id in track(
         enumerate(run_ids),
         description="Collecting coefficients data..",
@@ -323,33 +380,34 @@ def get_coeffs_df(run_ids):
 
         sub_df_a.loc[it, "run_id"] = run_id
 
-        sub_df_a.loc[it, "ansatz"] = client.get_run(run_id).data.params[
-            "model.circuit_type"
-        ]
-        sub_df_a.loc[it, "qubits"] = int(
-            client.get_run(run_id).data.params["model.n_qubits"]
-        )
+        ansatz = client.get_run(run_id).data.params["model.circuit_type"]
+        sub_df_a.loc[it, "ansatz"] = ansatz
 
-        sub_df_a.loc[it, "seed"] = int(client.get_run(run_id).data.params["seed"])
+        qubits = int(client.get_run(run_id).data.params["model.n_qubits"])
+        sub_df_a.loc[it, "qubits"] = qubits
+
+        seed = int(client.get_run(run_id).data.params["seed"])
+        sub_df_a.loc[it, "seed"] = seed
+
+        noise_params = client.get_run(run_id).data.params["model.noise_params"]
+        noise = [
+            k for k, v in ast.literal_eval(noise_params).items() if float(v) > 0.0
+        ][0]
+        all_cfgs[ansatz][qubits][seed][noise] += 1
+
+        if export_full_coeffs:
+            converter_dict = {c: list_converter for c in array_cols + big_array_cols}
+        else:
+            converter_dict = {c: list_converter for c in array_cols}
 
         try:
             sub_df_b = get_csv_artifact(
                 run_id,
                 "coefficients_noise",
-                converters={
-                    "coeffs_abs_mean": list_converter,
-                    "coeffs_abs_var": list_converter,
-                    "coeffs_real_mean": list_converter,
-                    "coeffs_imag_mean": list_converter,
-                    "coeffs_var": list_converter,
-                    "coeffs_real_var": list_converter,
-                    "coeffs_imag_var": list_converter,
-                    "coeffs_co_var_real_imag": list_converter,
-                    "frequencies": list_converter,
-                    "coeffs_full_real": list_converter,
-                    "coeffs_full_imag": list_converter,
-                },
+                converters=converter_dict,
             )
+            if not export_full_coeffs:
+                sub_df_b.drop(big_array_cols)
         except:
             print(f"No coefficients for run {run_id}")
             sub_df_b = pd.DataFrame()
@@ -357,6 +415,8 @@ def get_coeffs_df(run_ids):
         df = pd.concat(
             [df, pd.merge(sub_df_a.iloc[[-1]], sub_df_b, how="cross")]
         ).reset_index(drop=True)
+
+    check_complete(all_cfgs)
 
     return df
 

@@ -10,7 +10,7 @@ from helper import (
 )
 
 coeff_run_ids = run_ids_from_experiment_id(coeff_eids)
-coeffs_df = get_coeffs_df(coeff_run_ids)
+coeffs_df = get_coeffs_df(coeff_run_ids, export_full_coeffs=True)
 
 array_columns = [
     "coeffs_abs_mean",
@@ -40,9 +40,13 @@ for ac in big_array_columns:
     coeffs_df[ac] = coeffs_df[ac].apply(list)
 
 coeffs_df["original_coeff_idx"] = coeffs_df.index
-coeffs_df = coeffs_df.explode(big_array_columns, ignore_index=True)
-coeffs_df["sample_idx"] = coeffs_df.groupby("original_coeff_idx").cumcount()
+coeffs_df_full = coeffs_df.explode(big_array_columns, ignore_index=True)
+coeffs_df_full["sample_idx"] = coeffs_df_full.groupby("original_coeff_idx").cumcount()
 
+coeffs_df_full.to_csv("notebooks/rplots/csv_data/coeffs_full.csv", index=False)
+print("Exported Full Coefficient Data")
+
+coeffs_df = coeffs_df.drop(columns=big_array_columns)
 coeffs_df.to_csv("notebooks/rplots/csv_data/coeffs.csv", index=False)
 print("Exported Coefficient Data")
 
