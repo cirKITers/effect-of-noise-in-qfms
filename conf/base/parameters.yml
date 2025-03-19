@@ -6,7 +6,7 @@ data:
 model:
   n_qubits: 5
   n_layers: 1
-  circuit_type: "Circuit_15" # Circuit_1, Circuit_5, Circuit_9, Circuit_15, Circuit_18, Circuit_19, Hardware_Efficient, Strongly_Entangling, No_Entangling
+  circuit_type: "Circuit_15" # Circuit_1, Circuit_5, Circuit_9, Circuit_15, Circuit_18, Circuit_19, Hardware_Efficient, Strongly_Entangling, No_Entangling, Strongly_Entangling_Plus
   data_reupload: True
   output_qubit: -1
   initialization: "random" # random, zero, zero-controlled, pi-controlled

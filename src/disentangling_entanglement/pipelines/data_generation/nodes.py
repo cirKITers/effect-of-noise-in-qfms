@@ -1,4 +1,5 @@
 from qml_essentials.model import Model
+from pennylane import Hadamard
 
 from typing import List
 import numpy as np
@@ -23,6 +24,12 @@ def create_model(
         f"Creating model with {n_qubits} qubits, {n_layers} layers, and {circuit_type} circuit."
     )
 
+    if circuit_type[-5:] == "_Plus":
+        circuit_type = circuit_type[:-5]
+        sp = [lambda wires, **kwargs: Hadamard(wires)]
+    else:
+        sp = None
+
     model = Model(
         n_qubits=n_qubits,
         n_layers=n_layers,
@@ -33,6 +40,7 @@ def create_model(
         initialization_domain=initialization_domain,
         shots=shots,
         random_seed=seed,
+        state_preparation=sp,
     )
     return model
 
