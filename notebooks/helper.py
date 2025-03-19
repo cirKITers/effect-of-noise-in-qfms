@@ -146,6 +146,8 @@ def get_expressibility_df(run_ids):
         ]
     )
 
+    all_cfgs = init_all_cfg_dict()
+
     for it, run_id in track(
         enumerate(run_ids),
         description="Collecting coefficients data..",
@@ -167,19 +169,32 @@ def get_expressibility_df(run_ids):
 
         sub_df_a.loc[it, "run_id"] = run_id
 
-        sub_df_a.loc[it, "ansatz"] = client.get_run(run_id).data.params[
-            "model.circuit_type"
-        ]
-        sub_df_a.loc[it, "qubits"] = int(
-            client.get_run(run_id).data.params["model.n_qubits"]
-        )
 
-        sub_df_a.loc[it, "seed"] = int(client.get_run(run_id).data.params["seed"])
+        ansatz = client.get_run(run_id).data.params["model.circuit_type"]
+        sub_df_a.loc[it, "ansatz"] = ansatz
+
+        qubits = int(client.get_run(run_id).data.params["model.n_qubits"])
+        sub_df_a.loc[it, "qubits"] = qubits
+
+        seed = client.get_run(run_id).data.params["seed"]
+        if seed is None or seed == "None":
+            print("seed is None?")
+            continue
+        seed = int(seed)
+        sub_df_a.loc[it, "seed"] = seed
+
+        noise_params = client.get_run(run_id).data.params["model.noise_params"]
+        noise = [
+            k for k, v in ast.literal_eval(noise_params).items() if float(v) > 0.0
+        ][0]
+        all_cfgs[ansatz][qubits][seed][noise] += 1
 
         sub_df_b = get_csv_artifact(run_id, "expressibility_noise")
         df = pd.concat(
             [df, pd.merge(sub_df_a.iloc[[-1]], sub_df_b, how="cross")]
         ).reset_index(drop=True)
+
+    check_complete(all_cfgs)
 
     return df
 
@@ -261,7 +276,7 @@ def init_all_cfg_dict():
         all_cfgs[circuit_type] = dict()
         for n_qubits in [3, 4, 5, 6, 7]:
             all_cfgs[circuit_type][n_qubits] = dict()
-            for seed in range(1000, 1005):
+            for seed in range(1000, 1010):
                 all_cfgs[circuit_type][n_qubits][seed] = dict()
                 for noise in [
                     "BitFlip",

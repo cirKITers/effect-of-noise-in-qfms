@@ -27,11 +27,13 @@ index_labeller <- function(layer) {
 
 # d_expr$ansatz <- gsub("_", " ", d_expr$ansatz)
 d_expr$ansatz <- factor(d_expr$ansatz, labels = c("Strongly_Entangling" = "SEA", "Hardware_Efficient" = "HEA", "Circuit_15" = "Circuit 15", "Circuit_19" = "Circuit 19"))
+
 d_expr <- d_expr %>%
+  filter(seed < 1005) %>%
   pivot_longer(
     c(
       BitFlip, PhaseFlip, Depolarizing,
-      AmplitudeDamping, PhaseDamping, ThermalRelaxation,
+      AmplitudeDamping, PhaseDamping, GateError,
       StatePreparation, Measurement,
     ),
     names_to = "noise_type", values_to = "noise_value"
@@ -51,27 +53,41 @@ d_expr <- d_expr %>%
     lower_bound = min_expr
   )
 
-d_expr$noise_type <- factor(d_expr$noise_type,
-  levels = c(
-    "BitFlip", "PhaseFlip", "Depolarizing",
-    "AmplitudeDamping", "PhaseDamping", "ThermalRelaxation",
-    "StatePreparation", "Measurement"
-  )
-)
-d_expr <- d_expr[!is.na(d_expr$noise_value), ] %>% filter(noise_type != "ThermalRelaxation")
-
 d_expr <- d_expr %>%
-  mutate(noise_category = ifelse(
-    noise_type %in% c("BitFlip", "PhaseFlip", "Depolarizing"),
-    "Gate",
-    ifelse(
-      noise_type %in% c("Measurement", "StatePreparation"),
-      "SPAM",
-      "Environmental"
+    filter(!is.na(noise_value)) %>%
+    filter(noise_value <= 0.03) %>%
+    mutate(
+        noise_category = ifelse(
+            noise_type %in% c("BitFlip", "PhaseFlip", "Depolarizing"),
+            "Decoherent Gate",
+            ifelse(
+                noise_type %in% c("StatePreparation", "Measurement"),
+                "SPAM",
+                ifelse(
+                    noise_type %in% c("AmplitudeDamping", "PhaseDamping"),
+                    "Damping",
+                    "Coherent"
+                )
+            )
+        ),
     )
-  ))
 
-d_expr$noise_category <- factor(d_expr$noise_category, levels = c("Gate", "SPAM", "Environmental"))
+d_expr$noise_category <- factor(d_expr$noise_category, levels = c("Decoherent Gate", "Coherent", "SPAM", "Damping"))
+
+d_expr$noise_type <- factor(d_expr$noise_type,
+    levels = c(
+        "Noiseless", "BitFlip", "PhaseFlip", "Depolarizing",
+        "AmplitudeDamping", "PhaseDamping",
+        "StatePreparation", "Measurement",
+        "GateError"
+    ),
+    labels = c(
+        "Noiseless", "Bit Flip", "Phase Flip", "Depolarising",
+        "Amplitude Damping", "Phase Damping",
+        "State Preparation", "Measurement",
+        "Gate Error"
+    ),
+)
 
 d_7_qubits <- d_expr %>%
   filter(qubits == 7)
@@ -135,13 +151,14 @@ g <- ggplot(
   guides(colour = guide_legend(nrow = 1)) +
   facetted_pos_scales(
     y = list(
-      noise_type == "BitFlip" ~ gate_noise_scale,
-      noise_type == "PhaseFlip" ~ gate_noise_scale_no_guide,
-      noise_type == "Depolarizing" ~ gate_noise_scale_no_guide,
-      noise_type == "StatePreparation" ~ spam_noise_scale,
+      noise_type == "Bit Flip" ~ gate_noise_scale,
+      noise_type == "Phase Flip" ~ gate_noise_scale_no_guide,
+      noise_type == "Depolarising" ~ gate_noise_scale_no_guide,
+      noise_type == "Gate Error" ~ spam_noise_scale,
+      noise_type == "State Preparation" ~ spam_noise_scale_no_guide,
       noise_type == "Measurement" ~ spam_noise_scale_no_guide,
-      noise_type == "AmplitudeDamping" ~ spam_noise_scale_no_guide,
-      noise_type == "PhaseDamping" ~ spam_noise_scale_no_guide
+      noise_type == "Amplitude Damping" ~ spam_noise_scale_no_guide,
+      noise_type == "Phase Damping" ~ spam_noise_scale_no_guide
     )
   )
 
