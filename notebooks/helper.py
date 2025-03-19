@@ -176,17 +176,18 @@ def get_expressibility_df(run_ids):
         qubits = int(client.get_run(run_id).data.params["model.n_qubits"])
         sub_df_a.loc[it, "qubits"] = qubits
 
-        seed = client.get_run(run_id).data.params["seed"]
-        if seed is None or seed == "None":
-            print("seed is None?")
-            continue
-        seed = int(seed)
-        sub_df_a.loc[it, "seed"] = seed
-
         noise_params = client.get_run(run_id).data.params["model.noise_params"]
         noise = [
             k for k, v in ast.literal_eval(noise_params).items() if float(v) > 0.0
         ][0]
+
+        seed = client.get_run(run_id).data.params["seed"]
+        if seed is None or seed == "None":
+            print(f"Seed is None for ansatz={ansatz}, qubits={qubits}, noise={noise_params}?")
+            continue
+        seed = int(seed)
+        sub_df_a.loc[it, "seed"] = seed
+
         all_cfgs[ansatz][qubits][seed][noise] += 1
 
         sub_df_b = get_csv_artifact(run_id, "expressibility_noise")
@@ -217,6 +218,7 @@ def get_entanglement_df(run_ids):
             "entangling_capability",
         ]
     )
+    all_cfgs = init_all_cfg_dict()
 
     for it, run_id in track(
         enumerate(run_ids),
@@ -239,19 +241,31 @@ def get_entanglement_df(run_ids):
 
         sub_df_a.loc[it, "run_id"] = run_id
 
-        sub_df_a.loc[it, "ansatz"] = client.get_run(run_id).data.params[
-            "model.circuit_type"
-        ]
-        sub_df_a.loc[it, "qubits"] = int(
-            client.get_run(run_id).data.params["model.n_qubits"]
-        )
+        ansatz = client.get_run(run_id).data.params["model.circuit_type"]
+        sub_df_a.loc[it, "ansatz"] = ansatz
 
-        sub_df_a.loc[it, "seed"] = int(client.get_run(run_id).data.params["seed"])
+        qubits = int(client.get_run(run_id).data.params["model.n_qubits"])
+        sub_df_a.loc[it, "qubits"] = qubits
 
-        sub_df_b = get_csv_artifact(run_id, "entangling_capability_noise")
+        seed = int(client.get_run(run_id).data.params["seed"])
+        sub_df_a.loc[it, "seed"] = seed
+
+        noise_params = client.get_run(run_id).data.params["model.noise_params"]
+        noise = [
+            k for k, v in ast.literal_eval(noise_params).items() if not isinstance(v, dict) and float(v) > 0.0
+        ][0]
+        all_cfgs[ansatz][qubits][seed][noise] += 1
+
+        try:
+            sub_df_b = get_csv_artifact(run_id, "entangling_capability_noise")
+        except:
+            print(f"No entanglement for run {run_id}")
+            sub_df_b = pd.DataFrame()
         df = pd.concat(
             [df, pd.merge(sub_df_a.iloc[[-1]], sub_df_b, how="cross")]
         ).reset_index(drop=True)
+
+    check_complete(all_cfgs)
 
     return df
 

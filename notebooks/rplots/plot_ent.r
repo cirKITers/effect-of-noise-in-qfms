@@ -31,7 +31,7 @@ d_ent <- d_ent %>%
   pivot_longer(
     c(
       BitFlip, PhaseFlip, Depolarizing,
-      AmplitudeDamping, PhaseDamping, ThermalRelaxation,
+      AmplitudeDamping, PhaseDamping, GateError,
       StatePreparation, Measurement,
     ),
     names_to = "noise_type", values_to = "noise_value"
@@ -51,27 +51,41 @@ d_ent <- d_ent %>%
     lower_bound = min_ent
   )
 
-d_ent$noise_type <- factor(d_ent$noise_type,
-  levels = c(
-    "BitFlip", "PhaseFlip", "Depolarizing",
-    "AmplitudeDamping", "PhaseDamping", "ThermalRelaxation",
-    "StatePreparation", "Measurement"
-  )
-)
-d_ent <- d_ent[!is.na(d_ent$noise_value), ] %>% filter(noise_type != "ThermalRelaxation")
-
 d_ent <- d_ent %>%
-  mutate(noise_category = ifelse(
-    noise_type %in% c("BitFlip", "PhaseFlip", "Depolarizing"),
-    "Gate",
-    ifelse(
-      noise_type %in% c("Measurement", "StatePreparation"),
-      "SPAM",
-      "Environmental"
+    filter(!is.na(noise_value)) %>%
+    mutate(
+        noise_category = ifelse(
+            noise_type %in% c("BitFlip", "PhaseFlip", "Depolarizing"),
+            "Decoherent Gate",
+            ifelse(
+                noise_type %in% c("StatePreparation", "Measurement"),
+                "SPAM",
+                ifelse(
+                    noise_type %in% c("AmplitudeDamping", "PhaseDamping"),
+                    "Damping",
+                    "Coherent"
+                )
+            )
+        ),
     )
-  ))
 
-d_ent$noise_category <- factor(d_ent$noise_category, levels = c("Gate", "SPAM", "Environmental"))
+d_ent$noise_category <- factor(d_ent$noise_category, levels = c("Decoherent Gate", "Coherent", "SPAM", "Damping"))
+
+d_ent$noise_type <- factor(d_ent$noise_type,
+    levels = c(
+        "Noiseless", "BitFlip", "PhaseFlip", "Depolarizing",
+        "AmplitudeDamping", "PhaseDamping",
+        "StatePreparation", "Measurement",
+        "GateError"
+    ),
+    labels = c(
+        "Noiseless", "Bit Flip", "Phase Flip", "Depolarising",
+        "Amplitude Damping", "Phase Damping",
+        "State Preparation", "Measurement",
+        "Gate Error"
+    ),
+)
+
 
 d_7_qubits <- d_ent %>%
   filter(qubits == 7)
