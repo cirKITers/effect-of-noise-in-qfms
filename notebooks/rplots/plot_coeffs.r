@@ -27,10 +27,14 @@ index_labeller <- function(layer) {
     paste0("i = ", layer)
 }
 
-d_coeffs_full$ansatz <- factor(d_coeffs_full$ansatz, labels = c("Strongly_Entangling" = "SEA", "Hardware_Efficient" = "HEA", "Circuit_15" = "Circuit 15", "Circuit_19" = "Circuit 19"))
+d_coeffs_full$ansatz <- factor(d_coeffs_full$ansatz,
+  levels = c("Strongly_Entangling", "Strongly_Entangling_Plus", "Hardware_Efficient", "Circuit_15", "Circuit_19"),
+  labels = c("SEA", "SEA+", "HEA", "Circuit 15", "Circuit 19")
+)
 d_coeffs_full$frequencies <- as.factor(d_coeffs_full$frequencies)
 
 d_coeffs_full <- d_coeffs_full %>%
+    filter(ansatz != "SEA+") %>%
     mutate(
         coeffs_abs = sqrt(coeffs_full_real^2 + coeffs_full_imag^2),
         coeffs_abs_real = abs(coeffs_full_real),
@@ -71,6 +75,7 @@ for (n_qubits in list(3, 4, 5, 6, 7)) {
         )
 
     d_coeffs_summarised <- d_coeffs %>%
+        filter(noise_value <= 0.03) %>%
         group_by(noise_type, noise_value, noise_category, ansatz, qubits, frequencies) %>%
         summarise(
             mean_abs = mean(coeffs_abs),
@@ -156,7 +161,7 @@ for (n_qubits in list(3, 4, 5, 6, 7)) {
 
 
     d_coeffs_ansatz <- d_coeffs %>%
-        filter(noise_value %in% c(0, 0.03))
+        filter(noise_value %in% c(0, 0.1))
     d_coeffs_ansatz$noise_type[d_coeffs_ansatz$noise_value == 0] <- "Noiseless"
     d_coeffs_ansatz$noise_category[d_coeffs_ansatz$noise_value == 0] <- ""
     d_coeffs_ansatz <- d_coeffs_ansatz %>% distinct(noise_type, noise_value, ansatz, qubits, frequencies, seed, sample_idx, .keep_all = TRUE)

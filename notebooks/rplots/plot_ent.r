@@ -26,7 +26,10 @@ index_labeller <- function(layer) {
 }
 
 # d_ent$ansatz <- gsub("_", " ", d_ent$ansatz)
-d_ent$ansatz <- factor(d_ent$ansatz, labels = c("Strongly_Entangling" = "SEA", "Hardware_Efficient" = "HEA", "Circuit_15" = "Circuit 15", "Circuit_19" = "Circuit 19"))
+d_ent$ansatz <- factor(d_ent$ansatz,
+  levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_15", "Circuit_19"),
+  labels = c("SEA", "HEA", "Circuit 15", "Circuit 19")
+)
 d_ent <- d_ent %>%
   pivot_longer(
     c(
@@ -105,7 +108,7 @@ g <- ggplot(
       qubits = qubit_labeller,
     ),
   ) +
-  scale_x_continuous("Noise Probability", labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.02)) +
+  scale_x_continuous("Noise Probability", labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.01)) +
   scale_y_continuous("Entangling Capability") +
   theme_paper() +
   guides(colour = guide_legend(nrow = 1))
