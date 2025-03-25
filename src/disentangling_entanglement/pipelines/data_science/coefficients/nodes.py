@@ -235,26 +235,32 @@ def iterate_noise(
             progress.reset(sample_coeff_task)
             part_noise_params = noise_params * (step / noise_steps)
 
-            coeffs_pl = []
-            freqs_pl = []
+            coeffs = []
+            freqs = []
             for _ in range(n_samples):
                 # Re-initialize model, because it triggers new sampling
                 model.initialize_params(rng=rng)
 
-                coeffs, freqs = Coefficients.get_spectrum(
+                c, f = Coefficients.get_spectrum(
                     model=model,
                     mts=oversampling,
                     shift=True,
                     trim=True,
                     noise_params=part_noise_params,
                 )
-
-                if zero_coefficient:
-                    coeffs_pl.append(coeffs[len(coeffs) // 2 :])
-                    freqs_pl.append(freqs[len(freqs) // 2 :])
+                if model.n_input_feat == 1:
+                    if zero_coefficient:
+                        coeffs.append(coeffs[len(c) // 2 :])
+                        freqs.append(freqs[len(f) // 2 :])
+                    else:
+                        coeffs.append(coeffs[len(c) // 2 + 1 :])
+                        freqs.append(freqs[len(f) // 2 + 1 :])
                 else:
-                    coeffs_pl.append(coeffs[len(coeffs) // 2 + 1 :])
-                    freqs_pl.append(freqs[len(freqs) // 2 + 1 :])
+                    coeffs.append(c)
+                    f = np.stack(np.meshgrid(*[f] * model.n_input_feat)).T.reshape(
+                        *c.shape, model.n_input_feat
+                    )
+                    freqs.append(f)
 
                 progress.update(sample_coeff_task, advance=1)
 
@@ -268,24 +274,24 @@ def iterate_noise(
                     df.loc[step, n] = v
             df.loc[step, "noise_level"] = step / noise_steps
 
-            mean_real = np.real(coeffs_pl).mean(axis=0)
-            mean_imag = np.imag(coeffs_pl).mean(axis=0)
+            mean_real = np.real(coeffs).mean(axis=0)
+            mean_imag = np.imag(coeffs).mean(axis=0)
             co_variance_real_imag = np.mean(
-                (np.real(coeffs_pl) - mean_real) * (np.real(coeffs_pl) - mean_imag),
+                (np.real(coeffs) - mean_real) * (np.real(coeffs) - mean_imag),
                 axis=0,
             )
 
-            df.loc[step, "coeffs_abs_var"] = np.abs(coeffs_pl).var(axis=0).tolist()
-            df.loc[step, "coeffs_var"] = np.array(coeffs_pl).var(axis=0).tolist()
+            df.loc[step, "coeffs_abs_var"] = np.abs(coeffs).var(axis=0).tolist()
+            df.loc[step, "coeffs_var"] = np.array(coeffs).var(axis=0).tolist()
             df.loc[step, "coeffs_co_var_real_imag"] = co_variance_real_imag.tolist()
-            df.loc[step, "coeffs_real_var"] = np.real(coeffs_pl).var(axis=0).tolist()
-            df.loc[step, "coeffs_imag_var"] = np.imag(coeffs_pl).var(axis=0).tolist()
-            df.loc[step, "coeffs_abs_mean"] = np.abs(coeffs_pl).mean(axis=0).tolist()
+            df.loc[step, "coeffs_real_var"] = np.real(coeffs).var(axis=0).tolist()
+            df.loc[step, "coeffs_imag_var"] = np.imag(coeffs).var(axis=0).tolist()
+            df.loc[step, "coeffs_abs_mean"] = np.abs(coeffs).mean(axis=0).tolist()
             df.loc[step, "coeffs_real_mean"] = mean_real.tolist()
             df.loc[step, "coeffs_imag_mean"] = mean_imag.tolist()
-            df.loc[step, "coeffs_full_real"] = np.array(coeffs_pl).T.real.tolist()
-            df.loc[step, "coeffs_full_imag"] = np.array(coeffs_pl).T.imag.tolist()
-            df.loc[step, "frequencies"] = np.array(freqs_pl).mean(axis=0).tolist()
+            df.loc[step, "coeffs_full_real"] = np.array(coeffs).T.real.tolist()
+            df.loc[step, "coeffs_full_imag"] = np.array(coeffs).T.imag.tolist()
+            df.loc[step, "frequencies"] = freqs[0].tolist()
 
             progress.advance(noise_it_task)
 
