@@ -149,7 +149,7 @@ g <- ggplot(
     scale = "free_y",
     independent = "y",
   ) +
-  scale_x_continuous("Noise Probability", labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.02)) +
+  scale_x_continuous("Noise Probability", labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.01)) +
   theme_paper() +
   guides(colour = guide_legend(nrow = 1)) +
   facetted_pos_scales(

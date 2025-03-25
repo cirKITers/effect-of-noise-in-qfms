@@ -183,12 +183,17 @@ def get_expressibility_df(run_ids):
 
         seed = client.get_run(run_id).data.params["seed"]
         if seed is None or seed == "None":
-            print(f"Seed is None for ansatz={ansatz}, qubits={qubits}, noise={noise_params}?")
+            print(
+                f"Seed is None for ansatz={ansatz}, qubits={qubits}, noise={noise_params}?"
+            )
             continue
+        noise_value = [
+            v for k, v in ast.literal_eval(noise_params).items() if float(v) > 0.0
+        ][0]
         seed = int(seed)
         sub_df_a.loc[it, "seed"] = seed
 
-        all_cfgs[ansatz][qubits][seed][noise] += 1
+        all_cfgs[ansatz][qubits][seed][noise][str(noise_value)] += 1
 
         sub_df_b = get_csv_artifact(run_id, "expressibility_noise")
         df = pd.concat(
@@ -252,18 +257,24 @@ def get_entanglement_df(run_ids):
 
         noise_params = client.get_run(run_id).data.params["model.noise_params"]
         noise = [
-            k for k, v in ast.literal_eval(noise_params).items() if not isinstance(v, dict) and float(v) > 0.0
+            k
+            for k, v in ast.literal_eval(noise_params).items()
+            if not isinstance(v, dict) and float(v) > 0.0
         ][0]
-        all_cfgs[ansatz][qubits][seed][noise] += 1
+        noise_value = [
+            v for k, v in ast.literal_eval(noise_params).items() if float(v) > 0.0
+        ][0]
+        all_cfgs[ansatz][qubits][seed][noise][str(noise_value)] += 1
 
         try:
             sub_df_b = get_csv_artifact(run_id, "entangling_capability_noise")
+            df = pd.concat(
+                [df, pd.merge(sub_df_a.iloc[[-1]], sub_df_b, how="cross")]
+            ).reset_index(drop=True)
         except:
             print(f"No entanglement for run {run_id}")
             sub_df_b = pd.DataFrame()
-        df = pd.concat(
-            [df, pd.merge(sub_df_a.iloc[[-1]], sub_df_b, how="cross")]
-        ).reset_index(drop=True)
+            all_cfgs[ansatz][qubits][seed][noise][str(noise_value)] -= 1
 
     check_complete(all_cfgs)
 
@@ -284,6 +295,7 @@ def init_all_cfg_dict():
     for circuit_type in [
         "Hardware_Efficient",
         "Strongly_Entangling",
+        "Strongly_Entangling_Plus",
         "Circuit_15",
         "Circuit_19",
     ]:
@@ -302,7 +314,9 @@ def init_all_cfg_dict():
                     "Measurement",
                     "GateError",
                 ]:
-                    all_cfgs[circuit_type][n_qubits][seed][noise] = 0
+                    all_cfgs[circuit_type][n_qubits][seed][noise] = dict()
+                    for noise_value in ["0.03", "0.06", "0.1"]:
+                        all_cfgs[circuit_type][n_qubits][seed][noise][noise_value] = 0
     return all_cfgs
 
 
@@ -312,9 +326,10 @@ def check_complete(all_cfgs: dict):
         "Strongly_Entangling",
         "Circuit_15",
         "Circuit_19",
+        # "Strongly_Entangling_Plus",
     ]:
         for n_qubits in [3, 4, 5, 6, 7]:
-            for seed in range(1000, 1005):
+            for seed in [1000, 1001, 1002]: #, 1003, 1004]:
                 for noise in [
                     "BitFlip",
                     "PhaseFlip",
@@ -325,11 +340,15 @@ def check_complete(all_cfgs: dict):
                     "Measurement",
                     "GateError",
                 ]:
-                    if all_cfgs[circuit_type][n_qubits][seed][noise] != 1:
-                        print(
-                            f"Got {all_cfgs[circuit_type][n_qubits][seed][noise]} for "
-                            f"{circuit_type}, {n_qubits}, {seed}, {noise}"
-                        )
+                    for noise_value in ["0.03"]:
+                        if (
+                            all_cfgs[circuit_type][n_qubits][seed][noise][noise_value]
+                            != 1
+                        ):
+                            print(
+                                f"Got {all_cfgs[circuit_type][n_qubits][seed][noise][noise_value]} for "
+                                f"{circuit_type}, {n_qubits}, {seed}, {noise}"
+                            )
 
 
 def get_coeffs_df(run_ids, export_full_coeffs=False):
@@ -418,11 +437,17 @@ def get_coeffs_df(run_ids, export_full_coeffs=False):
         seed = int(client.get_run(run_id).data.params["seed"])
         sub_df_a.loc[it, "seed"] = seed
 
+        n_input_feat = int(client.get_run(run_id).data.params.get("model.n_input_feat", 1))
+        sub_df_a.loc[it, "n_input_feat"] = n_input_feat
+
         noise_params = client.get_run(run_id).data.params["model.noise_params"]
         noise = [
             k for k, v in ast.literal_eval(noise_params).items() if float(v) > 0.0
         ][0]
-        all_cfgs[ansatz][qubits][seed][noise] += 1
+        noise_value = [
+            v for k, v in ast.literal_eval(noise_params).items() if float(v) > 0.0
+        ][0]
+        all_cfgs[ansatz][qubits][seed][noise][str(noise_value)] += 1
 
         if export_full_coeffs:
             converter_dict = {c: list_converter for c in array_cols + big_array_cols}

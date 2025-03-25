@@ -1,6 +1,6 @@
 from runs.coefficient_runs import experiment_ids as coeff_eids
 from runs.expressibility_runs import experiment_ids as expr_eids
-from runs.entanglement_runs import experiment_id as ent_eids
+from runs.entanglement_runs import experiment_ids as ent_eids
 import pandas as pd
 from helper import (
     get_coeffs_df,
@@ -10,7 +10,7 @@ from helper import (
 )
 
 coeff_run_ids = run_ids_from_experiment_id(coeff_eids)
-coeffs_df = get_coeffs_df(coeff_run_ids, export_full_coeffs=True)
+all_coeffs_df = get_coeffs_df(coeff_run_ids, export_full_coeffs=True)
 
 array_columns = [
     "coeffs_abs_mean",
@@ -29,26 +29,39 @@ big_array_columns = [
     "coeffs_full_imag",
 ]
 
-for ac in array_columns + big_array_columns:
-    coeffs_df[ac] = coeffs_df[ac].apply(list)
+for n_dims in range(1, 3):
+    coeffs_df = all_coeffs_df[all_coeffs_df["n_input_feat"] == n_dims]
+    if coeffs_df.size == 0:
+        continue
 
-coeffs_df["original_idx"] = coeffs_df.index
-coeffs_df = coeffs_df.explode(array_columns + big_array_columns, ignore_index=True)
-coeffs_df["coeff_idx"] = coeffs_df.groupby("original_idx").cumcount()
+    for d in range(n_dims):
+        for ac in array_columns + big_array_columns:
+            coeffs_df[ac] = coeffs_df[ac].apply(list)
 
-for ac in big_array_columns:
-    coeffs_df[ac] = coeffs_df[ac].apply(list)
+        coeffs_df["original_idx"] = coeffs_df.index
+        coeffs_df = coeffs_df.explode(
+            array_columns + big_array_columns, ignore_index=True
+        )
+        coeffs_df[f"coeff{d}_idx"] = coeffs_df.groupby("original_idx").cumcount()
 
-coeffs_df["original_coeff_idx"] = coeffs_df.index
-coeffs_df_full = coeffs_df.explode(big_array_columns, ignore_index=True)
-coeffs_df_full["sample_idx"] = coeffs_df_full.groupby("original_coeff_idx").cumcount()
+    coeffs_df[[f"freq{d+1}" for d in range(n_dims)]] = pd.DataFrame(
+        coeffs_df["frequencies"].to_list(), index=coeffs_df.index
+    )
+    coeffs_df = coeffs_df.drop(columns=["frequencies"])
 
-coeffs_df_full.to_csv("notebooks/rplots/csv_data/coeffs_full.csv", index=False)
-print("Exported Full Coefficient Data")
+    for ac in big_array_columns:
+        coeffs_df[ac] = coeffs_df[ac].apply(list)
 
-coeffs_df = coeffs_df.drop(columns=big_array_columns)
-coeffs_df.to_csv("notebooks/rplots/csv_data/coeffs.csv", index=False)
-print("Exported Coefficient Data")
+    coeffs_df["original_coeff_idx"] = coeffs_df.index
+    coeffs_df_full = coeffs_df.explode(big_array_columns, ignore_index=True)
+    coeffs_df_full["sample_idx"] = coeffs_df_full.groupby(
+        "original_coeff_idx"
+    ).cumcount()
+
+    coeffs_df_full.to_csv(
+        f"notebooks/rplots/csv_data/coeffs_full_dims{n_dims}.csv", index=False
+    )
+    print(f"Exported Full Coefficient Data for {n_dims} dims")
 
 expr_run_ids = run_ids_from_experiment_id(expr_eids)
 expr_df = get_expressibility_df(expr_run_ids)
