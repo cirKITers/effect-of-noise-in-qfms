@@ -12,14 +12,21 @@ log = logging.getLogger(__name__)
 
 
 def calculate_entanglement(
-    model: Model, samples: int, seed: int, noise_params: Dict, iterator=None
+    model: Model,
+    samples: int,
+    sigmas: int,
+    scale: bool,
+    seed: int,
+    noise_params: Dict,
+    iterator=None,
 ):
 
-    entangling_capability = Entanglement.meyer_wallach(
+    entangling_capability = Entanglement.relative_entropy(
         model=model,
         n_samples=samples,
+        n_sigmas=sigmas,
         seed=seed,
-        scale=True,
+        scale=scale,
         inputs=None,
         noise_params=noise_params,
     )
@@ -36,6 +43,8 @@ def iterate_noise(
     noise_params: Dict[str, float],
     noise_steps: int,
     n_samples: int,
+    n_sigmas: int,
+    scale: bool,
     seed: int,
 ) -> None:
     """
@@ -75,6 +84,8 @@ def iterate_noise(
             entangling_capability = calculate_entanglement(
                 model=model,
                 samples=n_samples,
+                sigmas=n_sigmas,
+                scale=scale,
                 seed=seed,
                 noise_params=part_noise_params,
                 iterator=step,

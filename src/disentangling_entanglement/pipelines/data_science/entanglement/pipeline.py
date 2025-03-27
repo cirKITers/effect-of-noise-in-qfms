@@ -11,6 +11,8 @@ def create_pipeline() -> Pipeline:
                 inputs={
                     "model": "model",
                     "samples": "params:entanglement.n_samples",
+                    "sigmas": "params:entanglement.n_sigmas",
+                    "scale": "params:entanglement.scale",
                     "noise_params": "params:model.noise_params",
                     "seed": "params:seed",
                 },
@@ -24,6 +26,8 @@ def create_pipeline() -> Pipeline:
                     "noise_params": "params:model.noise_params",
                     "noise_steps": "params:model.noise_steps",
                     "n_samples": "params:entanglement.n_samples",
+                    "n_sigmas": "params:entanglement.n_sigmas",
+                    "scale": "params:entanglement.scale",
                     "seed": "params:seed",
                 },
                 outputs={"entangling_capability_noise": "entangling_capability_noise"},
