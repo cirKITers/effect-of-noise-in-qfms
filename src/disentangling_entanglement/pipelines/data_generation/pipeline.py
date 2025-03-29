@@ -15,6 +15,7 @@ def create_pipeline() -> Pipeline:
                     "data_reupload": "params:model.data_reupload",
                     "initialization": "params:model.initialization",
                     "initialization_domain": "params:model.initialization_domain",
+                    "encoding": "params:model.encoding",
                     "shots": "params:model.shots",
                     "output_qubit": "params:model.output_qubit",
                     "n_input_feat": "params:model.n_input_feat",

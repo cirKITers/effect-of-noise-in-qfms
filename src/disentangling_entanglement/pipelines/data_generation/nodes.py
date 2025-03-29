@@ -17,6 +17,7 @@ def create_model(
     data_reupload: bool,
     initialization: str,
     initialization_domain: List[float],
+    encoding: str,
     shots: int,
     output_qubit: int,
     seed: int,
@@ -32,7 +33,7 @@ def create_model(
     else:
         sp = None
 
-    encoding = (["RX", "RY", "RZ"] * (n_input_feat // 3 + 1))[:n_input_feat]
+    # encoding = (["RX", "RY", "RZ"] * (n_input_feat // 3 + 1))[:n_input_feat]
 
     model = Model(
         n_qubits=n_qubits,
