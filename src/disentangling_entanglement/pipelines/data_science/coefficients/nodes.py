@@ -250,11 +250,11 @@ def iterate_noise(
                 )
                 if model.n_input_feat == 1:
                     if zero_coefficient:
-                        coeffs.append(coeffs[len(c) // 2 :])
-                        freqs.append(freqs[len(f) // 2 :])
+                        coeffs.append(c[len(c) // 2 :])
+                        freqs.append(f[len(f) // 2 :])
                     else:
-                        coeffs.append(coeffs[len(c) // 2 + 1 :])
-                        freqs.append(freqs[len(f) // 2 + 1 :])
+                        coeffs.append(c[len(c) // 2 + 1 :])
+                        freqs.append(f[len(f) // 2 + 1 :])
                 else:
                     coeffs.append(c)
                     f = np.stack(np.meshgrid(*[f] * model.n_input_feat)).T.reshape(
