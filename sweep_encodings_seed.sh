@@ -4,11 +4,10 @@
 
 # run experiments with all different circuits
 # Hardware_Efficient Circuit_19 Strongly_Entangling Circuit_15
-for circuit in Hardware_Efficient Circuit_19 Strongly_Entangling Circuit_15
+for encoding in RX RY RZ
 do
-    echo "Running with Ansatz $circuit"
+    echo "Running with Encoding $encoding"
 
-    # ./sweep_noise_circuits_seed.sh $circuit $1
-    ./sweep_encoding_circuits_seed.sh $circuit $1
+    ./sweep_qubits_encoding_circuits_seed.sh $encoding $1 $2
     # ./sweep_qubits_noise_circuits_seed.sh "GateError" $circuit $1
 done    
