@@ -449,7 +449,6 @@ def get_coeffs_df(run_ids, export_full_coeffs=False):
         sub_df_a.loc[it, "qubits"] = qubits
 
         seed = int(client.get_run(run_id).data.params["seed"])
-        seeds.add(seed)
         sub_df_a.loc[it, "seed"] = seed
 
         n_input_feat = int(
