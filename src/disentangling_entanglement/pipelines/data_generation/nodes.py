@@ -33,7 +33,7 @@ def create_model(
     else:
         sp = None
 
-    # encoding = (["RX", "RY", "RZ"] * (n_input_feat // 3 + 1))[:n_input_feat]
+    encoding = (["RX", "RY", "RZ"] * (n_input_feat // 3 + 1))[:n_input_feat]
 
     model = Model(
         n_qubits=n_qubits,
