@@ -8,7 +8,7 @@ import mlflow
 import numpy as np
 import os
 from rich.progress import track
-from typing import Union, List
+from typing import Union, List, Optional
 import ast
 
 
@@ -194,6 +194,8 @@ def get_expressibility_df(run_ids):
         sub_df_a.loc[it, "seed"] = seed
 
         all_cfgs[ansatz][qubits][seed][noise][str(noise_value)] += 1
+        if all_cfgs[ansatz][qubits][seed][noise][str(noise_value)] > 1 or qubits == 7:
+            continue
 
         sub_df_b = get_csv_artifact(run_id, "expressibility_noise")
         df = pd.concat(
@@ -461,10 +463,11 @@ def get_coeffs_df(run_ids, export_full_coeffs=False):
                 converters=converter_dict,
             )
             if not export_full_coeffs:
-                sub_df_b.drop(big_array_cols)
+                sub_df_b.drop(columns=big_array_cols)
         except:
             print(f"No coefficients for run {run_id}")
             sub_df_b = pd.DataFrame()
+            all_cfgs[ansatz][qubits][seed][noise][str(noise_value)] -= 1
 
         df = pd.concat(
             [df, pd.merge(sub_df_a.iloc[[-1]], sub_df_b, how="cross")]
@@ -496,5 +499,9 @@ def assign_ansatz_id(df):
     return df
 
 
-def run_ids_from_experiment_id(experiment_ids: Union[List[str], str]):
-    return mlflow.search_runs(experiment_ids)["run_id"].to_list()
+def run_ids_from_experiment_id(
+    experiment_ids: Union[List[str], str], existing_run_ids: Optional[List[str]]
+):
+    runs = mlflow.search_runs(experiment_ids)["run_id"].to_list()
+    runs = [r for r in runs if r not in existing_run_ids]
+    return runs
