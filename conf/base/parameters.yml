@@ -12,7 +12,6 @@ model:
   initialization: "random" # random, zero, zero-controlled, pi-controlled
   initialization_domain: [0, 6.283185307179586]
   shots: -1 # number or -1 if expectation value should be used
-  n_input_feat: 1
   encoding: "RX"
   noise_params:
     GateError: 0.0
@@ -23,7 +22,8 @@ model:
     Depolarizing: 0.0
     StatePreparation: 0.0
     Measurement: 0.0
-    ThermalRelaxation: 0.0
+    ThermalRelaxation:
+      0.0
       # T1: 18000.0
       # T2: 10000.0
       # t_factor: 5
