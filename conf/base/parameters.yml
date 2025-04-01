@@ -13,6 +13,7 @@ model:
   initialization_domain: [0, 6.283185307179586]
   shots: -1 # number or -1 if expectation value should be used
   n_input_feat: 1
+  encoding: "RX"
   noise_params:
     GateError: 0.0
     BitFlip: 0.0
