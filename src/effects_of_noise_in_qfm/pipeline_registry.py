@@ -5,23 +5,23 @@ from typing import Dict
 from kedro.framework.project import find_pipelines
 from kedro.pipeline import Pipeline
 
-from disentangling_entanglement.pipelines.data_generation.pipeline import (
+from effects_of_noise_in_qfm.pipelines.data_generation.pipeline import (
     create_pipeline as create_data_generation_pipeline,
 )
-from disentangling_entanglement.pipelines.data_science.entanglement.pipeline import (
+from effects_of_noise_in_qfm.pipelines.data_science.entanglement.pipeline import (
     create_pipeline as create_entanglement_pipeline,
 )
-from disentangling_entanglement.pipelines.data_science.training.pipeline import (
+from effects_of_noise_in_qfm.pipelines.data_science.training.pipeline import (
     create_pipeline as create_training_pipeline,
 )
-from disentangling_entanglement.pipelines.data_science.expressibility.pipeline import (
+from effects_of_noise_in_qfm.pipelines.data_science.expressibility.pipeline import (
     create_pipeline as create_expressibility_pipeline,
 )
-from disentangling_entanglement.pipelines.data_science.coefficients.pipeline import (
+from effects_of_noise_in_qfm.pipelines.data_science.coefficients.pipeline import (
     create_pipeline as create_coefficients_pipeline,
 )
 
-# from disentangling_entanglement.pipelines.visualization.pipeline import (
+# from effects_of_noise_in_qfm.pipelines.visualization.pipeline import (
 #     create_pipeline as create_visualization_pipeline,
 # )
 

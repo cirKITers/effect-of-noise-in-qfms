@@ -6,7 +6,7 @@ from typing import Dict
 import mlflow
 import logging
 
-from disentangling_entanglement.helpers.utils import NoiseDict
+from effects_of_noise_in_qfm.helpers.utils import NoiseDict
 
 log = logging.getLogger(__name__)
 

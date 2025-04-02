@@ -169,7 +169,6 @@ def get_expressibility_df(run_ids):
 
         sub_df_a.loc[it, "run_id"] = run_id
 
-
         ansatz = client.get_run(run_id).data.params["model.circuit_type"]
         sub_df_a.loc[it, "ansatz"] = ansatz
 
@@ -329,7 +328,7 @@ def check_complete(all_cfgs: dict):
         # "Strongly_Entangling_Plus",
     ]:
         for n_qubits in [3, 4, 5, 6, 7]:
-            for seed in [1000, 1001, 1002]: #, 1003, 1004]:
+            for seed in [1000, 1001, 1002]:  # , 1003, 1004]:
                 for noise in [
                     "BitFlip",
                     "PhaseFlip",
@@ -357,6 +356,7 @@ def get_coeffs_df(run_ids, export_full_coeffs=False):
         "ansatz",
         "qubits",
         "seed",
+        "encoding",
         "BitFlip",
         "PhaseFlip",
         "AmplitudeDamping",
@@ -437,17 +437,26 @@ def get_coeffs_df(run_ids, export_full_coeffs=False):
         seed = int(client.get_run(run_id).data.params["seed"])
         sub_df_a.loc[it, "seed"] = seed
 
-        n_input_feat = int(client.get_run(run_id).data.params.get("model.n_input_feat", 1))
+        encoding = client.get_run(run_id).data.params["model.encoding"]
+        sub_df_a.loc[it, "encoding"] = encoding
+
+        n_input_feat = int(
+            client.get_run(run_id).data.params.get("model.n_input_feat", 1)
+        )
         sub_df_a.loc[it, "n_input_feat"] = n_input_feat
 
         noise_params = client.get_run(run_id).data.params["model.noise_params"]
-        noise = [
+        noise_keys = [
             k for k, v in ast.literal_eval(noise_params).items() if float(v) > 0.0
-        ][0]
-        noise_value = [
-            v for k, v in ast.literal_eval(noise_params).items() if float(v) > 0.0
-        ][0]
-        all_cfgs[ansatz][qubits][seed][noise][str(noise_value)] += 1
+        ]
+        if len(noise_keys) > 0:
+            noise = [
+                k for k, v in ast.literal_eval(noise_params).items() if float(v) > 0.0
+            ][0]
+            noise_value = [
+                v for k, v in ast.literal_eval(noise_params).items() if float(v) > 0.0
+            ][0]
+            all_cfgs[ansatz][qubits][seed][noise][str(noise_value)] += 1
 
         if export_full_coeffs:
             converter_dict = {c: list_converter for c in array_cols + big_array_cols}

@@ -1,5 +1,5 @@
-"""disentangling-Entanglement file for ensuring the package is executable
-as `disentangling-entanglement` and `python -m disentangling_entanglement`
+"""effects_of_noise_in_qfm file for ensuring the package is executable
+as `effects_of_noise_in_qfm` and `python -m effects_of_noise_in_qfm`
 """
 
 import importlib

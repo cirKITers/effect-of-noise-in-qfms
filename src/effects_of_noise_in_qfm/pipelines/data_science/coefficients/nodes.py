@@ -1,18 +1,16 @@
 from qml_essentials.model import Model
 from qml_essentials.coefficients import Coefficients
-from qml_essentials.ansaetze import Gates
 import pennylane.numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
 from rich.progress import Progress, Task
 from typing import Dict, Tuple, Optional
-from copy import copy
 import mlflow
 import pandas as pd
 
 import logging
 
-from disentangling_entanglement.helpers.utils import NoiseDict
+from effects_of_noise_in_qfm.helpers.utils import NoiseDict
 
 
 log = logging.getLogger(__name__)

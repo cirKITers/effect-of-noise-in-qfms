@@ -4,16 +4,16 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [project]
-name = "disentangling_entanglement"
+name = "effects_of_noise_in_qfm"
 readme = "README.md"
 dynamic = [ "dependencies", "version",]
 
 [project.scripts]
-disentangling-entanglement = "disentangling_entanglement.__main__:main"
+effects_of_noise_in_qfm = "effects_of_noise_in_qfm.__main__:main"
 
 [tool.kedro]
-package_name = "disentangling_entanglement"
-project_name = "disentangling-Entanglement"
+package_name = "effects_of_noise_in_qfm"
+project_name = "effects_of_noise_in_qfm"
 kedro_init_version = "0.19.6"
 tools = [ "Testing", "Custom Logging", "Kedro Viz",]
 example_pipeline = "False"
@@ -22,7 +22,7 @@ source_dir = "src"
 [project.entry-points."kedro.hooks"]
 
 [tool.pytest.ini_options]
-addopts = "--cov-report term-missing --cov src/disentangling_entanglement -ra"
+addopts = "--cov-report term-missing --cov src/effects_of_noise_in_qfm -ra"
 
 [tool.coverage.report]
 fail_under = 0
@@ -33,14 +33,14 @@ exclude_lines = [ "pragma: no cover", "raise NotImplementedError",]
 file = "requirements.txt"
 
 [tool.setuptools.dynamic.version]
-attr = "disentangling_entanglement.__version__"
+attr = "effects_of_noise_in_qfm.__version__"
 
 [tool.setuptools.packages.find]
 where = [ "src",]
 namespaces = false
 
 [tool.poetry]
-name = "disentangling-entanglement-in-qml"
+name = "effects_of_noise_in_qfm"
 version = "0.1.0"
 description = ""
 authors = ["Melvin Strobl <lc3267@kit.edu>"]

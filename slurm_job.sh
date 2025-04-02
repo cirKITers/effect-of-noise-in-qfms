@@ -25,9 +25,9 @@
 #SBATCH --output="logs/slurm/slurm-%j-%x.out"
 
 module load devel/python/3.11.7
-~/disentangling-entanglement-in-qml/.venv/bin/python -m kedro run --pipeline coefficients --params=$1
-# ~/disentangling-entanglement-in-qml/.venv/bin/python -m kedro run --pipeline entanglement --params=$1
-# ~/disentangling-entanglement-in-qml/.venv/bin/python -m kedro run --pipeline expressibility --params=$1
+~/effects_of_noise_in_qfm/.venv/bin/python -m kedro run --pipeline coefficients --params=$1
+# ~/effects_of_noise_in_qfm/.venv/bin/python -m kedro run --pipeline entanglement --params=$1
+# ~/effects_of_noise_in_qfm/.venv/bin/python -m kedro run --pipeline expressibility --params=$1
 
 # Done
 exit 0

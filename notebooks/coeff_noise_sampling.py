@@ -17,10 +17,10 @@ pio.kaleido.scope.mathjax = None
 
 experiment_id = "939685904901998130"
 run_ids = [
-    "90b725e91197435c8c6c69fffb22c2a5"
+    "b8a5bc85e79c4b6f810b24ed9c69fc04"
 ]  # ["81bddb7a81c245b8bac4c5afaadf00f0"]  #   b4d0a4dd9ba243ba8569809ffc4676b9
 
-coeffs_df = get_coeffs_df(run_ids)
+coeffs_df = get_coeffs_df(run_ids, export_full_coeffs=True)
 coeffs_df.sort_values(by="ansatz", inplace=True)
 coeffs_df = assign_ansatz_id(coeffs_df)
 # coeffs_df = expand_coeffs(coeffs_df, "coeffs_abs_mean")
@@ -47,8 +47,6 @@ for ansatz in ansaetze:
 
         last_coeffs = None
         for n_it, noise_level in enumerate(noise_levels):
-            if n_it != 0:
-                continue
             symbols = get_symbol_iterator()
             main_color_sel = next(main_colors_it)
             # sec_color_sel = rgb_to_rgba(next(sec_colors_it), 0.2)
@@ -119,10 +117,10 @@ for ansatz in ansaetze:
             # legend=dict(x=1.2),
             width=1200,
         )
-        fig.show()
         save_fig(
             fig,
             f"{qubit}_{ansatz.lower()}_level",
             run_ids,
             experiment_id,
         )
+        fig.show()
