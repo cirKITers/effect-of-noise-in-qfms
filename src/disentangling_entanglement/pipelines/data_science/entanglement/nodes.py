@@ -21,34 +21,27 @@ def calculate_entanglement(
     measure: str,
     iterator=None,
 ):
+    kwargs = dict()
     if measure == "RE":
         ent_measure = Entanglement.relative_entropy
+        kwargs["n_sigmas"] = sigmas
     elif measure == "EF":
         ent_measure = Entanglement.entanglement_of_formation
+        kwargs["always_decompose"] = True
     elif measure == "MW":
         ent_measure = Entanglement.meyer_wallach
     else:
         exit(f"Unknown Entanglement Measure: {measure}")
 
-    if measure == "RE":
-        entangling_capability = ent_measure(
-            model=model,
-            n_samples=samples,
-            n_sigmas=sigmas,
-            seed=seed,
-            scale=scale,
-            inputs=None,
-            noise_params=noise_params,
-        )
-    else:
-        entangling_capability = ent_measure(
-            model=model,
-            n_samples=samples,
-            seed=seed,
-            scale=scale,
-            inputs=None,
-            noise_params=noise_params,
-        )
+    entangling_capability = ent_measure(
+        model=model,
+        n_samples=samples,
+        seed=seed,
+        scale=scale,
+        inputs=None,
+        noise_params=noise_params,
+        **kwargs,
+    )
 
     log.info(f"Calculated entangling capability: {entangling_capability}")
     if iterator is not None:
