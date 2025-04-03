@@ -44,6 +44,7 @@ def create_model(
         random_seed=seed,
         state_preparation=sp,
         encoding=encoding,
+        mp_threshold=1000,
     )
     return model
 
