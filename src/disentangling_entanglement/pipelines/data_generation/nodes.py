@@ -21,6 +21,7 @@ def create_model(
     shots: int,
     output_qubit: int,
     seed: int,
+    mp_threshold: int,
 ) -> Model:
     log.info(
         f"Creating model with {n_qubits} qubits, {n_layers} layers, and {circuit_type} circuit."
@@ -44,7 +45,7 @@ def create_model(
         random_seed=seed,
         state_preparation=sp,
         encoding=encoding,
-        mp_threshold=1000,
+        mp_threshold=mp_threshold,
     )
     return model
 

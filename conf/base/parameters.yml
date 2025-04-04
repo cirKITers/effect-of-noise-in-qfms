@@ -28,12 +28,13 @@ model:
       # T2: 10000.0
       # t_factor: 5
   noise_steps: 6
+  mp_threshold: 1000
 
 seed: 1000
 
 entanglement:
   # Entanglement Params
-  measure: "EF"  # Entanglement of Formation (EF), Meyer-Wallach (MW), Relative Entropy of Entanglement (RE)
+  measure: "EF" # Entanglement of Formation (EF), Meyer-Wallach (MW), Relative Entropy of Entanglement (RE)
   n_samples: 50
   n_sigmas: 5 # Only applies when entanlement.measure = "RE"
   scale: True
