@@ -57,6 +57,7 @@ kedro-viz = "^10.1.0"
 qml-essentials = "^0.1.30"
 kaleido = "0.2.1"
 pandas = "^2.2.3"
+pyyaml = "^6.0.2"
 
 [tool.kedro_telemetry]
 project_id = "9afb68ff0fe045cf975e94fc0ede1279"
