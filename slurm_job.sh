@@ -11,13 +11,13 @@
 #
 # expected duration of the job
 #              hh:mm:ss
-#SBATCH --time=5:00:00
+#SBATCH --time=15:00:00
 # 
 # partition the job will run on
 #SBATCH --partition single
 # 
 # expected memory requirements
-#SBATCH --mem=12000MB
+#SBATCH --mem=32000MB
 #
 # infos
 #
@@ -25,9 +25,9 @@
 #SBATCH --output="logs/slurm/slurm-%j-%x.out"
 
 module load devel/python/3.11.7
-~/disentangling-entanglement-in-qml/.venv/bin/python -m kedro run --pipeline coefficients --params=$1
+# ~/disentangling-entanglement-in-qml/.venv/bin/python -m kedro run --pipeline coefficients --params=$1
 # ~/disentangling-entanglement-in-qml/.venv/bin/python -m kedro run --pipeline entanglement --params=$1
-# ~/disentangling-entanglement-in-qml/.venv/bin/python -m kedro run --pipeline expressibility --params=$1
+~/disentangling-entanglement-in-qml/.venv/bin/python -m kedro run --pipeline expressibility --params=$1
 
 # Done
 exit 0
