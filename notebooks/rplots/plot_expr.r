@@ -57,8 +57,7 @@ d_expr <- d_expr %>%
     )
 
 d_expr <- d_expr %>%
-    filter(!is.na(noise_value)) %>%
-    filter(noise_value <= 0.03) %>%
+    filter(!is.na(noise_value) & noise_value <= 0.03) %>%
     mutate(
         noise_category = ifelse(
             noise_type %in% c("BitFlip", "PhaseFlip", "Depolarizing"),
@@ -69,13 +68,13 @@ d_expr <- d_expr %>%
                 ifelse(
                     noise_type %in% c("AmplitudeDamping", "PhaseDamping"),
                     "Damping",
-                    "Coherent"
+                    "Coh."
                 )
             )
         ),
     )
 
-d_expr$noise_category <- factor(d_expr$noise_category, levels = c("Decoherent Gate", "Coherent", "SPAM", "Damping"))
+d_expr$noise_category <- factor(d_expr$noise_category, levels = c("Decoherent Gate", "Coherent", "SPAM", "Damping", "Coh."))
 
 d_expr$noise_type <- factor(d_expr$noise_type,
     levels = c(
@@ -85,52 +84,12 @@ d_expr$noise_type <- factor(d_expr$noise_type,
         "GateError"
     ),
     labels = c(
-        "Noiseless", "BF", "PF", "Depol.",
+        "Noiseless", "BF", "PF", "DP",
         "AD", "PD",
-        "SP", "Meas.",
-        "Gate Error"
+        "SP", "ME",
+        "GE"
     ),
 )
-
-d_7_qubits <- d_expr %>%
-    filter(qubits == 7)
-
-gate_noise_scale <- scale_y_log10(
-    "KL-Divergence [log]",
-    breaks = scales::trans_breaks("log10", function(x) 10^x),
-    labels = trans_format("log10", math_format(10^.x)),
-    limits = c(10e-4, 130),
-)
-gate_noise_scale_no_guide <- scale_y_log10(
-    "KL-Divergence",
-    breaks = scales::trans_breaks("log10", function(x) 10^x),
-    labels = trans_format("log10", math_format(10^.x)),
-    limits = c(10e-4, 130),
-    guide = "none"
-)
-
-spam_noise_scale <- scale_y_log10(
-    "KL-Divergence [log]",
-    breaks = scales::trans_breaks("log10", function(x) 10^x),
-    labels = trans_format("log10", math_format(10^.x)),
-    limits = c(10e-4, 2)
-)
-
-spam_noise_scale_no_guide <- scale_y_log10(
-    guide = "none",
-    limits = c(10e-4, 2)
-)
-
-env_noise_scale <- scale_y_continuous(
-    "KL-Divergence",
-    limits = c(0, 1)
-)
-
-env_noise_scale_no_guide <- scale_y_continuous(
-    guide = "none",
-    limits = c(0, 1)
-)
-
 
 g <- ggplot(
     d_expr,
@@ -146,18 +105,20 @@ g <- ggplot(
             frequency = frequencies_labeller,
             qubits = qubit_labeller,
         ),
-        scale = "free_y",
-        #independent = "y",
     ) +
     scale_x_continuous("Noise Level", labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.01)) +
     theme_paper() +
     guides(colour = guide_legend(nrow = 1)) +
     scale_y_log10(
-        "KL-Divergence [log]",
-        breaks = scales::trans_breaks("log10", function(x) 10^(-3:3)),
+        ifelse(use_tikz, "\\scriptsize{more expressive} \\normalsize{$\\leftarrow\\qquad$ KL-Divergence [log] $\\qquad \\rightarrow$} \\scriptsize{less expressive}", "KL-Divergence [log]"),
+        breaks = c(1e-2, 1e0, 1e2),
         labels = trans_format("log10", math_format(10^.x)),
     ) +
-    theme(legend.margin = margin(b=-4))
+    theme(
+        legend.margin = margin(b = -4),
+        legend.key.height = unit(0.2, "cm"),
+        legend.key.width = unit(0.2, "cm")
+    )
 
 save_name <- str_c("expr")
-create_plot(g, save_name, COLWIDTH, 0.5 * HEIGHT)
+create_plot(g, save_name, COLWIDTH, 0.38 * HEIGHT)
