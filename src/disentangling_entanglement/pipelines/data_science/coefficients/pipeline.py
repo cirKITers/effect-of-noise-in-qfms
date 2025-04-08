@@ -28,6 +28,7 @@ def create_pipeline() -> Pipeline:
                     "zero_coefficient": "params:coefficients.zero_coefficient",
                     "oversampling": "params:coefficients.oversampling",
                     "selective_noise": "params:coefficients.selective_noise",
+                    "scale": "params:coefficients.scale",
                 },
                 outputs={"coefficients_noise": "coefficients_noise"},
                 name="coefficients_iterate_noise",

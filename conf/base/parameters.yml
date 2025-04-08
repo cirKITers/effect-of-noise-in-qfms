@@ -51,6 +51,7 @@ coefficients:
   zero_coefficient: True
   oversampling: 1
   selective_noise: "both" # "both", "iec", "pqc" (where to apply noise)
+  scale: True
 
 training:
   steps: 1000

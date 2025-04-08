@@ -182,6 +182,7 @@ def iterate_noise(
     zero_coefficient: bool,
     oversampling: int = 1,
     selective_noise: str = "both",
+    scale=False,
 ) -> None:
     noise_params = NoiseDict(noise_params)
 
@@ -224,6 +225,9 @@ def iterate_noise(
         raise ValueError(
             f"selective_noise must be 'both', 'iec' or 'pqc', got {selective_noise}"
         )
+
+    if scale:
+        n_samples = np.power(2, model.n_qubits) * n_samples
 
     with Progress() as progress:
         noise_it_task = progress.add_task(
