@@ -3,6 +3,7 @@ from runs.coefficient_runs import experiment_ids_encoding as coeff_enc_eids
 from runs.expressibility_runs import experiment_ids as expr_eids
 from runs.entanglement_runs import experiment_ids as ent_eids
 import pandas as pd
+import numpy as np
 import os
 from helper import (
     get_coeffs_df,
@@ -115,10 +116,12 @@ def export_coeff_data(export_full=True):
 
     coeff_run_ids = run_ids_from_experiment_id(
         coeff_eids, existing_run_ids=id_coeffs["run_id"].to_list()
-    )
+        )
     if len(coeff_run_ids) == 0:
         return
-    all_coeffs_df = get_coeffs_df(coeff_run_ids, export_full_coeffs=export_full)
+    all_coeffs_df = get_coeffs_df(coeff_run_ids, export_full_coeffs=export_full, skip_ry_circ15=True)
+    if all_coeffs_df.size == 0:
+        return
 
     array_columns = [
         "coeffs_abs_mean",
@@ -136,18 +139,26 @@ def export_coeff_data(export_full=True):
         "coeffs_full_real",
         "coeffs_full_imag",
     ]
+    cols = array_columns + big_array_columns if export_full else array_columns
 
     for n_dims in range(1, 3):
         coeffs_df = all_coeffs_df[all_coeffs_df["n_input_feat"] == n_dims]
         if coeffs_df.size == 0:
             continue
 
+        if n_dims == 2:
+            for ac in cols:
+                coeffs_df = coeffs_df.drop(coeffs_df[coeffs_df[ac].map(lambda x : len(x.shape)) == 0].index)
+                coeffs_df.reset_index()
+
         for d in range(n_dims):
-            cols = array_columns + big_array_columns if export_full else array_columns
+
+            coeffs_df["original_idx"] = coeffs_df.index
+
+
             for ac in cols:
                 coeffs_df[ac] = coeffs_df[ac].apply(list)
 
-            coeffs_df["original_idx"] = coeffs_df.index
             coeffs_df = coeffs_df.explode(cols, ignore_index=True)
             coeffs_df[f"coeff{d}_idx"] = coeffs_df.groupby("original_idx").cumcount()
 
