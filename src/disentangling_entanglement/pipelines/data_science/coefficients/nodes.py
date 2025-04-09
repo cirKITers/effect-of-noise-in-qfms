@@ -248,12 +248,12 @@ def iterate_noise(
                 model=model,
                 mts=oversampling,
                 shift=True,
-                trim=False,
+                trim=True,
                 noise_params=part_noise_params,
             )
 
             for it in range(n_samples):
-                c = cs[:, it]
+                c = cs[..., it]
                 if model.n_input_feat == 1:
                     if zero_coefficient:
                         coeffs.append(c[len(c) // 2 :])
@@ -263,10 +263,10 @@ def iterate_noise(
                         freqs.append(f[len(f) // 2 + 1 :])
                 else:
                     coeffs.append(c)
-                    f = np.stack(np.meshgrid(*[f] * model.n_input_feat)).T.reshape(
+                    _f = np.stack(np.meshgrid(*[f] * model.n_input_feat)).T.reshape(
                         *c.shape, model.n_input_feat
                     )
-                    freqs.append(f)
+                    freqs.append(_f)
 
                 progress.update(sample_coeff_task, advance=1)
 
