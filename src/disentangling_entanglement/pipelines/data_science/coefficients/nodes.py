@@ -227,7 +227,7 @@ def iterate_noise(
         )
 
     if scale:
-        n_samples = np.power(2, model.n_qubits) * n_samples
+        n_samples = int(np.power(2, model.n_qubits) * n_samples)
 
     with Progress() as progress:
         noise_it_task = progress.add_task(
@@ -241,17 +241,19 @@ def iterate_noise(
 
             coeffs = []
             freqs = []
-            for _ in range(n_samples):
-                # Re-initialize model, because it triggers new sampling
-                model.initialize_params(rng=rng)
+            # Re-initialize model, because it triggers new sampling
+            model.initialize_params(rng=rng, repeat=n_samples)
 
-                c, f = Coefficients.get_spectrum(
-                    model=model,
-                    mts=oversampling,
-                    shift=True,
-                    trim=True,
-                    noise_params=part_noise_params,
-                )
+            cs, f = Coefficients.get_spectrum(
+                model=model,
+                mts=oversampling,
+                shift=True,
+                trim=False,
+                noise_params=part_noise_params,
+            )
+
+            for it in range(n_samples):
+                c = cs[:, it]
                 if model.n_input_feat == 1:
                     if zero_coefficient:
                         coeffs.append(c[len(c) // 2 :])
