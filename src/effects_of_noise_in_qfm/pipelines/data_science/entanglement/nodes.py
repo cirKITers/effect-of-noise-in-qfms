@@ -18,17 +18,29 @@ def calculate_entanglement(
     scale: bool,
     seed: int,
     noise_params: Dict,
+    measure: str,
     iterator=None,
 ):
+    kwargs = dict()
+    if measure == "RE":
+        ent_measure = Entanglement.relative_entropy
+        kwargs["n_sigmas"] = sigmas
+    elif measure == "EF":
+        ent_measure = Entanglement.entanglement_of_formation
+        kwargs["always_decompose"] = True
+    elif measure == "MW":
+        ent_measure = Entanglement.meyer_wallach
+    else:
+        exit(f"Unknown Entanglement Measure: {measure}")
 
-    entangling_capability = Entanglement.relative_entropy(
+    entangling_capability = ent_measure(
         model=model,
         n_samples=samples,
-        n_sigmas=sigmas,
         seed=seed,
         scale=scale,
         inputs=None,
         noise_params=noise_params,
+        **kwargs,
     )
 
     log.info(f"Calculated entangling capability: {entangling_capability}")
@@ -46,6 +58,7 @@ def iterate_noise(
     n_sigmas: int,
     scale: bool,
     seed: int,
+    measure: str,
 ) -> None:
     """
     Iterates over different noise levels and calculates the entangling capability
@@ -89,6 +102,7 @@ def iterate_noise(
                 seed=seed,
                 noise_params=part_noise_params,
                 iterator=step,
+                measure=measure,
             )
 
             for n, v in part_noise_params.items():

@@ -47,13 +47,16 @@ qubit_labeller <- function(layer) {
   }
 }
 
+feature_labeller <- function(layer) {
+    paste0(ifelse(use_tikz, "$D$", "D"), " = ", layer)
+}
 
 circuit_labeller <- function(layer) {
   paste0("Circuit ", layer)
 }
 
 frequencies_labeller <- function(layer) {
-    paste0(ifelse(use_tikz, "\\omega\\_", "f"), " = ", layer)
+    paste0(ifelse(use_tikz, "$\\omega$", "f"), " = ", layer)
 }
 
 latex_percent <- function (x) {

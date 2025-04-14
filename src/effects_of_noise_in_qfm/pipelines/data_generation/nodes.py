@@ -17,10 +17,11 @@ def create_model(
     data_reupload: bool,
     initialization: str,
     initialization_domain: List[float],
+    encoding: str,
     shots: int,
     output_qubit: int,
     seed: int,
-    n_input_feat: Union[List[Gates], List[str]],
+    mp_threshold: int,
 ) -> Model:
     log.info(
         f"Creating model with {n_qubits} qubits, {n_layers} layers, and {circuit_type} circuit."
@@ -31,8 +32,6 @@ def create_model(
         sp = [lambda wires, **kwargs: Hadamard(wires)]
     else:
         sp = None
-
-    encoding = (["RX", "RY", "RZ"] * (n_input_feat // 3 + 1))[:n_input_feat]
 
     model = Model(
         n_qubits=n_qubits,
@@ -46,6 +45,7 @@ def create_model(
         random_seed=seed,
         state_preparation=sp,
         encoding=encoding,
+        mp_threshold=mp_threshold,
     )
     return model
 

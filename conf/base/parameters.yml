@@ -12,7 +12,7 @@ model:
   initialization: "random" # random, zero, zero-controlled, pi-controlled
   initialization_domain: [0, 6.283185307179586]
   shots: -1 # number or -1 if expectation value should be used
-  n_input_feat: 1
+  encoding: "RX"
   noise_params:
     GateError: 0.0
     BitFlip: 0.0
@@ -22,18 +22,21 @@ model:
     Depolarizing: 0.0
     StatePreparation: 0.0
     Measurement: 0.0
-    ThermalRelaxation: 0.0
+    ThermalRelaxation:
+      0.0
       # T1: 18000.0
       # T2: 10000.0
       # t_factor: 5
   noise_steps: 6
+  mp_threshold: 1000
 
 seed: 1000
 
 entanglement:
   # Entanglement Params
-  n_samples: 5
-  n_sigmas: 5
+  measure: "EF" # Entanglement of Formation (EF), Meyer-Wallach (MW), Relative Entropy of Entanglement (RE)
+  n_samples: 50
+  n_sigmas: 5 # Only applies when entanlement.measure = "RE"
   scale: True
 
 expressibility:
@@ -48,6 +51,7 @@ coefficients:
   zero_coefficient: True
   oversampling: 1
   selective_noise: "both" # "both", "iec", "pqc" (where to apply noise)
+  scale: True
 
 training:
   steps: 1000

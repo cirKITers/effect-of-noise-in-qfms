@@ -180,6 +180,7 @@ def iterate_noise(
     zero_coefficient: bool,
     oversampling: int = 1,
     selective_noise: str = "both",
+    scale=False,
 ) -> None:
     noise_params = NoiseDict(noise_params)
 
@@ -223,6 +224,9 @@ def iterate_noise(
             f"selective_noise must be 'both', 'iec' or 'pqc', got {selective_noise}"
         )
 
+    if scale:
+        n_samples = int(np.power(2, model.n_qubits) * n_samples)
+
     with Progress() as progress:
         noise_it_task = progress.add_task(
             "Iterating noise levels...", total=noise_steps + 1
@@ -235,17 +239,19 @@ def iterate_noise(
 
             coeffs = []
             freqs = []
-            for _ in range(n_samples):
-                # Re-initialize model, because it triggers new sampling
-                model.initialize_params(rng=rng)
+            # Re-initialize model, because it triggers new sampling
+            model.initialize_params(rng=rng, repeat=n_samples)
 
-                c, f = Coefficients.get_spectrum(
-                    model=model,
-                    mts=oversampling,
-                    shift=True,
-                    trim=True,
-                    noise_params=part_noise_params,
-                )
+            cs, f = Coefficients.get_spectrum(
+                model=model,
+                mts=oversampling,
+                shift=True,
+                trim=True,
+                noise_params=part_noise_params,
+            )
+
+            for it in range(n_samples):
+                c = cs[..., it]
                 if model.n_input_feat == 1:
                     if zero_coefficient:
                         coeffs.append(c[len(c) // 2 :])
@@ -255,10 +261,10 @@ def iterate_noise(
                         freqs.append(f[len(f) // 2 + 1 :])
                 else:
                     coeffs.append(c)
-                    f = np.stack(np.meshgrid(*[f] * model.n_input_feat)).T.reshape(
+                    _f = np.stack(np.meshgrid(*[f] * model.n_input_feat)).T.reshape(
                         *c.shape, model.n_input_feat
                     )
-                    freqs.append(f)
+                    freqs.append(_f)
 
                 progress.update(sample_coeff_task, advance=1)
 
@@ -275,7 +281,7 @@ def iterate_noise(
             mean_real = np.real(coeffs).mean(axis=0)
             mean_imag = np.imag(coeffs).mean(axis=0)
             co_variance_real_imag = np.mean(
-                (np.real(coeffs) - mean_real) * (np.real(coeffs) - mean_imag),
+                (np.real(coeffs) - mean_real) * (np.imag(coeffs) - mean_imag),
                 axis=0,
             )
 
