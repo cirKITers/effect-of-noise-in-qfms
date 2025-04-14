@@ -4,7 +4,7 @@ This repository contains the source code and additional results for our paper "O
 
 ## Results
 
-Looking for additional results beyond the scope of the paper? :eyes:
+Looking for supplementary results beyond the scope of the paper? :eyes:
 Head over to the [results page](plotting/RESULTS.md).
 
 ## Getting Started :rocket:
