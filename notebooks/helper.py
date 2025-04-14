@@ -169,7 +169,6 @@ def get_expressibility_df(run_ids):
 
         sub_df_a.loc[it, "run_id"] = run_id
 
-
         ansatz = client.get_run(run_id).data.params["model.circuit_type"]
         sub_df_a.loc[it, "ansatz"] = ansatz
 

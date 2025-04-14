@@ -116,10 +116,12 @@ def export_coeff_data(export_full=True):
 
     coeff_run_ids = run_ids_from_experiment_id(
         coeff_eids, existing_run_ids=id_coeffs["run_id"].to_list()
-        )
+    )
     if len(coeff_run_ids) == 0:
         return
-    all_coeffs_df = get_coeffs_df(coeff_run_ids, export_full_coeffs=export_full, skip_ry_circ15=True)
+    all_coeffs_df = get_coeffs_df(
+        coeff_run_ids, export_full_coeffs=export_full, skip_ry_circ15=True
+    )
     if all_coeffs_df.size == 0:
         return
 
@@ -148,13 +150,14 @@ def export_coeff_data(export_full=True):
 
         if n_dims == 2:
             for ac in cols:
-                coeffs_df = coeffs_df.drop(coeffs_df[coeffs_df[ac].map(lambda x : len(x.shape)) == 0].index)
+                coeffs_df = coeffs_df.drop(
+                    coeffs_df[coeffs_df[ac].map(lambda x: len(x.shape)) == 0].index
+                )
                 coeffs_df.reset_index()
 
         for d in range(n_dims):
 
             coeffs_df["original_idx"] = coeffs_df.index
-
 
             for ac in cols:
                 coeffs_df[ac] = coeffs_df[ac].apply(list)
