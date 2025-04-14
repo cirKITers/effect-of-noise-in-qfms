@@ -283,7 +283,7 @@ def iterate_noise(
             mean_real = np.real(coeffs).mean(axis=0)
             mean_imag = np.imag(coeffs).mean(axis=0)
             co_variance_real_imag = np.mean(
-                (np.real(coeffs) - mean_real) * (np.real(coeffs) - mean_imag),
+                (np.real(coeffs) - mean_real) * (np.imag(coeffs) - mean_imag),
                 axis=0,
             )
 
