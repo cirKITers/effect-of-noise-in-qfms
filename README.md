@@ -1,5 +1,11 @@
-# Disentangling Entanglement
+# Out of Tune: Demystifying Noise-Effects on Quantum Fourier Models
 
+This repository contains the source code and additional results for our paper "Out of Tune: Demystifying Noise-Effects on Quantum Fourier Models" submitted at QCE25.
+
+## Results
+
+Looking for additional results beyond the scope of the paper? :eyes:
+Head over to the [results page](plotting/RESULTS.md).
 
 ## Getting Started :rocket:
 
