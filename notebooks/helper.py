@@ -326,9 +326,9 @@ def init_all_cfg_dict():
                 ]:
                     all_cfgs[circuit_type][n_qubits][seed][noise] = dict()
                     for noise_value in ["0", "0.004", "0.03", "0.06", "0.1"]:
-                        all_cfgs[circuit_type][n_qubits][seed][noise][
-                            noise_value
-                        ] = dict()
+                        all_cfgs[circuit_type][n_qubits][seed][noise][noise_value] = (
+                            dict()
+                        )
                         for encoding in ["RX", "RY", "RZ", "RXRY"]:
                             all_cfgs[circuit_type][n_qubits][seed][noise][noise_value][
                                 encoding
@@ -337,29 +337,38 @@ def init_all_cfg_dict():
     return all_cfgs
 
 
-def check_complete(all_cfgs: dict):
+def check_complete(
+    all_cfgs: dict,
+    export_qubits: List[int] = [3, 4, 5, 6],
+    export_noise_types=[
+        "BitFlip",
+        "PhaseFlip",
+        "AmplitudeDamping",
+        "PhaseDamping",
+        "Depolarizing",
+        "StatePreparation",
+        "Measurement",
+        "GateError",
+    ],
+):
     for circuit_type in [
         "Hardware_Efficient",
         "Strongly_Entangling",
         "Circuit_15",
         "Circuit_19",
-        # "Strongly_Entangling_Plus",
     ]:
-        for n_qubits in range(3, 7):
+        for n_qubits in export_qubits:
             for seed in range(1000, 1005):
-                for noise in [
-                    "BitFlip",
-                    "PhaseFlip",
-                    "AmplitudeDamping",
-                    "PhaseDamping",
-                    "Depolarizing",
-                    "StatePreparation",
-                    "Measurement",
-                    "GateError",
-                    # "noiseless",
-                ]:
+                for noise in export_noise_types:
                     for noise_value in ["0.03"]:
-                        for encoding in ["RX"]:
+                        for encoding in ["RX", "RY"]:
+                            if (
+                                encoding == "RX"
+                                and circuit_type == "Circuit_15"
+                                or encoding == "RY"
+                                and circuit_type != "Circuit_15"
+                            ):
+                                continue
                             if (
                                 all_cfgs[circuit_type][n_qubits][seed][noise][
                                     noise_value
@@ -372,7 +381,22 @@ def check_complete(all_cfgs: dict):
                                 )
 
 
-def get_coeffs_df(run_ids, export_full_coeffs=False, skip_ry_circ15=False):
+def get_coeffs_df(
+    run_ids,
+    export_full_coeffs=False,
+    skip_rx_circ15=False,
+    export_qubits=[3, 4, 5, 6],
+    export_noise_types=[
+        "BitFlip",
+        "PhaseFlip",
+        "AmplitudeDamping",
+        "PhaseDamping",
+        "Depolarizing",
+        "StatePreparation",
+        "Measurement",
+        "GateError",
+    ],
+):
     columns = [
         "run_id",
         "ansatz",
@@ -459,11 +483,16 @@ def get_coeffs_df(run_ids, export_full_coeffs=False, skip_ry_circ15=False):
         qubits = int(client.get_run(run_id).data.params["model.n_qubits"])
         sub_df_a.loc[it, "qubits"] = qubits
 
+        if qubits not in export_qubits:
+            continue
+
         seed = int(client.get_run(run_id).data.params["seed"])
         sub_df_a.loc[it, "seed"] = seed
 
         noise_params = client.get_run(run_id).data.params["model.noise_params"]
         encoding = client.get_run(run_id).data.params.get("model.encoding", "RX")
+        scale = client.get_run(run_id).data.params.get("coefficients.scale", False)
+        sub_df_a.loc[it, "scale"] = scale
 
         n_input_feat = int(
             client.get_run(run_id).data.params.get("model.n_input_feat", 1)
@@ -487,12 +516,16 @@ def get_coeffs_df(run_ids, export_full_coeffs=False, skip_ry_circ15=False):
             noise_value = [
                 v for k, v in ast.literal_eval(noise_params).items() if float(v) > 0.0
             ][0]
+
+        if noise not in export_noise_types:
+            continue
+
         if n_input_feat == 2 and noise_value > 0.03:
             continue
 
         all_cfgs[ansatz][qubits][seed][noise][str(noise_value)][encoding] += 1
         if (
-            skip_ry_circ15
+            skip_rx_circ15
             and encoding != "RY"
             and ansatz == "Circuit_15"
             and n_input_feat == 1
@@ -511,28 +544,24 @@ def get_coeffs_df(run_ids, export_full_coeffs=False, skip_ry_circ15=False):
                 "coefficients_noise",
                 converters=converter_dict,
             )
+            if all_cfgs[ansatz][qubits][seed][noise][str(noise_value)][encoding] == 1:
+                df = pd.concat(
+                    [df, pd.merge(sub_df_a.iloc[[-1]], sub_df_b, how="cross")]
+                ).reset_index(drop=True)
+
         except:
             print(f"No coefficients for run {run_id}")
             sub_df_b = pd.DataFrame()
             all_cfgs[ansatz][qubits][seed][noise][str(noise_value)][encoding] -= 1
 
-        if all_cfgs[ansatz][qubits][seed][noise][str(noise_value)][encoding] == 1:
-            df = pd.concat(
-                [df, pd.merge(sub_df_a.iloc[[-1]], sub_df_b, how="cross")]
-            ).reset_index(drop=True)
-
-    check_complete(all_cfgs)
+    check_complete(all_cfgs, export_qubits, export_noise_types)
 
     return df
 
 
 def expand_coeffs(df, metric):
-
     qubits = sorted(df.qubits.unique())
     n_qubits = max(qubits)
-
-    # for freq in range(n_qubits + 1):
-    #     df[f"{metric}_{freq}"] = np.nan
 
     for idx in df.index:
         for freq in range(df.loc[idx, metric].size):

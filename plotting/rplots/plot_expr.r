@@ -21,18 +21,12 @@ if (length(args) == 1) {
 coeffs_path <- "csv_data/expr.csv"
 d_expr <- read_csv(coeffs_path)
 
-index_labeller <- function(layer) {
-    paste0("i = ", layer)
-}
-
-# d_expr$ansatz <- gsub("_", " ", d_expr$ansatz)
 d_expr$ansatz <- factor(d_expr$ansatz,
     levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_15", "Circuit_19"),
     labels = c("SEA", "HEA", "Circuit 15", "Circuit 19")
 )
 
 d_expr <- d_expr %>%
-    filter(seed < 1005) %>%
     pivot_longer(
         c(
             BitFlip, PhaseFlip, Depolarizing,
@@ -50,8 +44,6 @@ d_expr <- d_expr %>%
         max_expr = max(expressibility)
     ) %>%
     mutate(
-        # upper_bound = mean_expr + sd_expr,
-        # lower_bound = mean_expr - sd_expr
         upper_bound = max_expr,
         lower_bound = min_expr
     )
@@ -110,7 +102,7 @@ g <- ggplot(
     theme_paper() +
     guides(colour = guide_legend(nrow = 1)) +
     scale_y_log10(
-        ifelse(use_tikz, "\\scriptsize{more expressive} \\normalsize{$\\leftarrow\\qquad$ KL-Divergence [log] $\\qquad \\rightarrow$} \\scriptsize{less expressive}", "KL-Divergence [log]"),
+        ifelse(use_tikz, "\\small{more expressive} \\normalsize{$\\leftarrow\\qquad$ KL-Divergence [log] $\\qquad \\rightarrow$} \\small{less expressive}", "KL-Divergence [log]"),
         breaks = c(1e-2, 1e0, 1e2),
         labels = trans_format("log10", math_format(10^.x)),
     ) +

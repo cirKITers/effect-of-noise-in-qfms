@@ -124,38 +124,8 @@ g <- ggplot(
     ))) +
     theme(
         legend.margin = margin(b = -4),
-        # legend.box = "vertical",
         legend.key.height = unit(0.2, "cm"),
         legend.key.width = unit(0.2, "cm")
     )
 save_name <- str_c("n_freqs")
 create_plot(g, save_name, COLWIDTH, 0.17 * HEIGHT)
-
-g <- ggplot(
-    d_coeffs,
-    aes(x = noise_value, y = mean_abs, colour = as.factor(qubits))
-) +
-    geom_point(size = POINT.SIZE) +
-    geom_line(linewidth = LINE.SIZE) +
-    scale_colour_manual(ifelse(use_tikz, "\\# Qubits", "# Qubits"), values = COLOURS.LIST) +
-    scale_fill_manual(ifelse(use_tikz, "\\# Qubits", "# Qubits"), values = COLOURS.LIST) +
-    facet_nested(n_input_feat ~ ansatz,
-        labeller = labeller(
-            n_input_feat = feature_labeller,
-            qubits = qubit_labeller,
-        ),
-        scale = "free_y"
-    ) +
-    scale_x_continuous("Noise Level", labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.02)) +
-    scale_y_log10(ifelse(use_tikz, "$\\bar{\\lvert{c}\\rvert}$ [log]", "|c| Mean [log]"),
-        breaks = scales::trans_breaks("log10", function(x) 10^x),
-        labels = trans_format("log10", math_format(10^.x))
-    ) +
-    theme_paper() +
-    guides(colour = guide_legend(nrow = 1)) +
-    theme(
-        legend.margin = margin(b = -4),
-        legend.key.width = unit(0.3, "cm")
-    )
-save_name <- str_c("coeff_abs_mean_coherent")
-create_plot(g, save_name, 0.5 * COLWIDTH, 0.2 * HEIGHT)

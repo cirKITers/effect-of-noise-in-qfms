@@ -7,7 +7,6 @@ mlruns
 session_store.db
 results/*
 img-tikz/
-img-gen/
 img-pdf/
 
 grads.csv
