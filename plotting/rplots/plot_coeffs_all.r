@@ -258,7 +258,7 @@ for (n_q in 3:6) {
         )
 
     save_name <- str_c("coeff_mean_qubits", n_q, "_2D")
-    create_plot(g, save_name, COLWIDTH, (0.2 * n_q + 0.1) * HEIGHT)
+    create_plot(g, save_name, COLWIDTH, (0.22 * n_q + 0.15) * HEIGHT)
 
     g <- ggplot(d_coeffs_q, aes(x = noise_value, y = rel_sd, colour = as.factor(freq2))) +
         geom_point(size = POINT.SIZE) +
@@ -279,7 +279,7 @@ for (n_q in 3:6) {
         )
 
     save_name <- str_c("coeff_sd_qubits", n_q, "_2D")
-    create_plot(g, save_name, COLWIDTH, (0.2 * n_q + 0.1) * HEIGHT)
+    create_plot(g, save_name, COLWIDTH, (0.22 * n_q + 0.15) * HEIGHT)
 
     d_coeffs_q <- d_coeffs_q %>%
         filter(noise_value %in% c(0, 0.03))

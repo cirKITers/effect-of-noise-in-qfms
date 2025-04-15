@@ -360,5 +360,5 @@ g <- ggplot(d_coeffs_6q, aes(x = var_type, y = var, colour = noise_category, sha
         legend.key.height = unit(0.2, "cm"),
         legend.key.width = unit(0.2, "cm"),
     )
-save_name <- str_c("coeff_covar_qubits6")
+save_name <- str_c("coeff_covar_qubits6_sel")
 create_plot(g, save_name, COLWIDTH, 0.21 * HEIGHT)
