@@ -5,7 +5,7 @@ COLWIDTH <- 8.85553 * INCH.PER.CM
 HEIGHT <- 23.61475 * INCH.PER.CM
 OUTDIR_PDF <- "img-pdf/"
 OUTDIR_TIKZ <- "img-tikz/"
-COLOURS.LIST <- c("black", "#E69F00", "#999999", "#009371", "#beaed4", "#ed665a", "#1f78b4", "#CC79A7")
+COLOURS.LIST <- c("black", "#E69F00", "#999999", "#009371", "#beaed4", "#ed665a", "#1f78b4", "#CC79A7", "red", "blue")
 POINT.SIZE <- 0.3
 LINE.SIZE <- 0.5
 
@@ -56,7 +56,15 @@ circuit_labeller <- function(layer) {
 }
 
 frequencies_labeller <- function(layer) {
-    paste0(ifelse(use_tikz, "$\\omega$", "f"), " = ", layer)
+    paste0(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), " = ", layer)
+}
+
+freq1_labeller <- function(layer) {
+    paste0(ifelse(use_tikz, "${\\boldsymbol{\\omega}}^{(1)}$", "w1"), " = ", layer)
+}
+
+freq2_labeller <- function(layer) {
+    paste0(ifelse(use_tikz, "${\\boldsymbol{\\omega}}^{(2)}$", "w2"), " = ", layer)
 }
 
 latex_percent <- function (x) {

@@ -124,7 +124,6 @@ g <- ggplot(
     ))) +
     theme(
         legend.margin = margin(b = -4),
-        # legend.box = "vertical",
         legend.key.height = unit(0.2, "cm"),
         legend.key.width = unit(0.2, "cm")
     )

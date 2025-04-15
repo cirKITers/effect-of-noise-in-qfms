@@ -12,16 +12,17 @@ from helper import (
     get_entanglement_df,
 )
 
-id_ent_file = "notebooks/rplots/csv_data/ent_ids.csv"
-id_expr_file = "notebooks/rplots/csv_data/expr_ids.csv"
+CSV_DESTINATION = "plotting/rplots/csv_data"
+
+id_ent_file = f"{CSV_DESTINATION}/ent_ids.csv"
+id_expr_file = f"{CSV_DESTINATION}/expr_ids.csv"
 
 
-def export_encoding_coeff_data(export_full=True):
-
+def export_encoding_coeff_data(export_full=True, export_qubits=[3, 4, 5, 6]):
     id_coeff_file = (
-        "notebooks/rplots/csv_data/coeffs_encoding_ids.csv"
+        f"{CSV_DESTINATION}/coeffs_encoding_ids.csv"
         if export_full
-        else "notebooks/rplots/csv_data/coeffs_encoding_ids_small.csv"
+        else f"{CSV_DESTINATION}/coeffs_encoding_ids_small.csv"
     )
     if os.path.exists(id_coeff_file):
         id_coeffs = pd.read_csv(id_coeff_file)
@@ -33,7 +34,11 @@ def export_encoding_coeff_data(export_full=True):
     )
     if len(coeff_run_ids) == 0:
         return
-    all_coeffs_df = get_coeffs_df(coeff_run_ids, export_full_coeffs=export_full)
+    all_coeffs_df = get_coeffs_df(
+        coeff_run_ids,
+        export_full_coeffs=export_full,
+        export_qubits=export_qubits,
+    )
 
     array_columns = [
         "coeffs_abs_mean",
@@ -66,7 +71,7 @@ def export_encoding_coeff_data(export_full=True):
             coeffs_df = coeffs_df.explode(cols, ignore_index=True)
             coeffs_df[f"coeff{d}_idx"] = coeffs_df.groupby("original_idx").cumcount()
 
-        coeffs_df[[f"freq{d+1}" for d in range(n_dims)]] = pd.DataFrame(
+        coeffs_df[[f"freq{d + 1}" for d in range(n_dims)]] = pd.DataFrame(
             coeffs_df["frequencies"].to_list(), index=coeffs_df.index
         )
         coeffs_df = coeffs_df.drop(columns=["frequencies"])
@@ -81,7 +86,7 @@ def export_encoding_coeff_data(export_full=True):
                 "original_coeff_idx"
             ).cumcount()
 
-            result_file = f"notebooks/rplots/csv_data/coeffs_enc_full_dims{n_dims}.csv"
+            result_file = f"{CSV_DESTINATION}/coeffs_enc_full_dims{n_dims}.csv"
             if os.path.exists(result_file):
                 coeffs_df_full.to_csv(result_file, index=False, mode="a", header=False)
             else:
@@ -89,7 +94,7 @@ def export_encoding_coeff_data(export_full=True):
             print(f"Exported Full Coefficient Data for {n_dims} dims")
         else:
             coeffs_df = coeffs_df.drop(columns=big_array_columns)
-            result_file = f"notebooks/rplots/csv_data/coeffs_enc_stat_dims{n_dims}.csv"
+            result_file = f"{CSV_DESTINATION}/coeffs_enc_stat_dims{n_dims}.csv"
             if os.path.exists(result_file):
                 coeffs_df.to_csv(result_file, index=False, mode="a", header=False)
             else:
@@ -102,12 +107,24 @@ def export_encoding_coeff_data(export_full=True):
     print("Exported Indices")
 
 
-def export_coeff_data(export_full=True):
-
+def export_coeff_data(
+    export_full=True,
+    export_qubits=[3, 4, 5, 6],
+    export_noise_types=[
+        "AmplitudeDamping",
+        "PhaseDamping",
+        "Depolarizing",
+        "BitFlip",
+        "PhaseFlip",
+        "GateError",
+        "Measurement",
+        "StatePreparation",
+    ],
+):
     id_coeff_file = (
-        "notebooks/rplots/csv_data/coeffs_ids.csv"
+        f"{CSV_DESTINATION}/coeffs_ids.csv"
         if export_full
-        else "notebooks/rplots/csv_data/coeffs_ids_small.csv"
+        else f"{CSV_DESTINATION}/coeffs_ids_small.csv"
     )
     if os.path.exists(id_coeff_file):
         id_coeffs = pd.read_csv(id_coeff_file)
@@ -120,7 +137,11 @@ def export_coeff_data(export_full=True):
     if len(coeff_run_ids) == 0:
         return
     all_coeffs_df = get_coeffs_df(
-        coeff_run_ids, export_full_coeffs=export_full, skip_ry_circ15=True
+        coeff_run_ids,
+        export_full_coeffs=export_full,
+        skip_rx_circ15=True,
+        export_qubits=export_qubits,
+        export_noise_types=export_noise_types,
     )
     if all_coeffs_df.size == 0:
         return
@@ -156,7 +177,6 @@ def export_coeff_data(export_full=True):
                 coeffs_df.reset_index()
 
         for d in range(n_dims):
-
             coeffs_df["original_idx"] = coeffs_df.index
 
             for ac in cols:
@@ -165,7 +185,7 @@ def export_coeff_data(export_full=True):
             coeffs_df = coeffs_df.explode(cols, ignore_index=True)
             coeffs_df[f"coeff{d}_idx"] = coeffs_df.groupby("original_idx").cumcount()
 
-        coeffs_df[[f"freq{d+1}" for d in range(n_dims)]] = pd.DataFrame(
+        coeffs_df[[f"freq{d + 1}" for d in range(n_dims)]] = pd.DataFrame(
             coeffs_df["frequencies"].to_list(), index=coeffs_df.index
         )
         coeffs_df = coeffs_df.drop(columns=["frequencies"])
@@ -180,20 +200,32 @@ def export_coeff_data(export_full=True):
                 "original_coeff_idx"
             ).cumcount()
 
-            result_file = f"notebooks/rplots/csv_data/coeffs_full_dims{n_dims}.csv"
-            if os.path.exists(result_file):
-                coeffs_df_full.to_csv(result_file, index=False, mode="a", header=False)
-            else:
-                coeffs_df_full.to_csv(result_file, index=False)
-            print(f"Exported Full Coefficient Data for {n_dims} dims")
+            for q in export_qubits:
+                for noise_type in export_noise_types:
+                    coeffs_selected = coeffs_df_full[
+                        (coeffs_df_full[noise_type] > 0)
+                        & (coeffs_df_full["qubits"] == q)
+                    ]
+                    result_file = f"{CSV_DESTINATION}/coeffs_full_dims{n_dims}_q{q}_{noise_type}.csv"
+                    if os.path.exists(result_file):
+                        coeffs_selected.to_csv(
+                            result_file, index=False, mode="a", header=False
+                        )
+                    else:
+                        coeffs_selected.to_csv(result_file, index=False)
+                    print(
+                        f"Exported Full Coefficient Data for {n_dims} dims, {noise_type} and {q} qubits"
+                    )
         else:
             coeffs_df = coeffs_df.drop(columns=big_array_columns)
-            result_file = f"notebooks/rplots/csv_data/coeffs_stat_dims{n_dims}.csv"
+            result_file = f"{CSV_DESTINATION}/coeffs_stat_dims{n_dims}.csv"
             if os.path.exists(result_file):
                 coeffs_df.to_csv(result_file, index=False, mode="a", header=False)
             else:
                 coeffs_df.to_csv(result_file, index=False)
-            print(f"Exported Stat Coefficient Data for {n_dims} dims")
+            print(
+                f"Exported Stat Coefficient Data for {n_dims} dims, {export_noise_types} and {export_qubits} qubits"
+            )
 
     additional_runs = pd.DataFrame(all_coeffs_df["run_id"], columns=["run_id"])
     run_df = pd.concat([id_coeffs, additional_runs], ignore_index=True)
@@ -212,7 +244,7 @@ def export_expr_data():
     if len(expr_run_ids) == 0:
         return
     expr_df = get_expressibility_df(expr_run_ids)
-    result_file = f"notebooks/rplots/csv_data/expr.csv"
+    result_file = f"{CSV_DESTINATION}/expr.csv"
     if os.path.exists(result_file):
         expr_df.to_csv(result_file, index=False, mode="a", header=False)
     else:
@@ -236,7 +268,7 @@ def export_ent_data():
     if len(ent_run_ids) == 0:
         return
     ent_df = get_entanglement_df(ent_run_ids)
-    result_file = f"notebooks/rplots/csv_data/ent.csv"
+    result_file = f"{CSV_DESTINATION}/ent.csv"
     if os.path.exists(result_file):
         ent_df.to_csv(result_file, index=False, mode="a", header=False)
     else:
@@ -250,6 +282,12 @@ def export_ent_data():
 
 
 if __name__ == "__main__":
-    # export_coeff_data(False)
-    export_encoding_coeff_data()
+    export_coeff_data(
+        True,
+        export_qubits=[6],
+        export_noise_types=["AmplitudeDamping"],
+    )
+    export_coeff_data(False)
+    # export_encoding_coeff_data(True)
     # export_expr_data()
+    # export_ent_data()

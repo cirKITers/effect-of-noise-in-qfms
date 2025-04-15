@@ -41,14 +41,12 @@ d_coeffs <- d_coeffs %>%
         coeffs_abs = sqrt(coeffs_full_real^2 + coeffs_full_imag^2),
         coeffs_abs_real = abs(coeffs_full_real),
         coeffs_abs_imag = abs(coeffs_full_imag),
-        # Filter zero coefficients
-        coeffs_abs = ifelse(coeffs_abs < 1e-10, NA, coeffs_abs)
     )
 
 d_coeffs <- d_coeffs %>%
     distinct(ansatz, qubits, frequency, seed, encoding, sample_idx, .keep_all = TRUE)
 
-g <- ggplot(d_coeffs %>% filter(qubits == 6), aes(x = coeffs_full_real, y = coeffs_full_imag, colour = frequency)) +
+g <- ggplot(d_coeffs %>% filter(qubits == 6 & coeffs_abs > 1e-14), aes(x = coeffs_full_real, y = coeffs_full_imag, colour = frequency)) +
     geom_point_rast(size = POINT.SIZE, alpha = 0.7, shape = 16, raster.dpi = 600) +
     facet_nested(encoding ~ ansatz,
         labeller = labeller(
@@ -73,6 +71,7 @@ d_coeffs <- d_coeffs %>%
         mean_coeff = mean(coeffs_abs),
         sd_coeff = sd(coeffs_abs)
     ) %>%
+    filter(mean_coeff > 1e-14) %>%
     mutate(
         upper_bound = mean_coeff + sd_coeff,
         lower_bound = mean_coeff - sd_coeff,

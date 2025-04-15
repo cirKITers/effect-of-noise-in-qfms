@@ -43,8 +43,6 @@ d_ent <- d_ent %>%
         min_ent = min(entangling_capability)
     ) %>%
     mutate(
-        # upper_bound = mean_ent + sd_ent,
-        # lower_bound = mean_ent - sd_ent
         upper_bound = max_ent,
         lower_bound = min_ent
     )
@@ -118,7 +116,7 @@ g <- ggplot(
     force_panelsizes(cols = c(2, 5)) +
     facetted_pos_scales(
         x = list(
-            measure == "MW" ~ scale_x_continuous("", limits = c(-0.001, 0.001), breaks = seq(-1, 1, 1), labels = ifelse(use_tikz, latex_percent, scales::percent))
+            measure == "MW" ~ scale_x_continuous("Noise Level", limits = c(-0.001, 0.001), breaks = seq(-1, 1, 1), labels = ifelse(use_tikz, latex_percent, scales::percent))
         )
     )
 
