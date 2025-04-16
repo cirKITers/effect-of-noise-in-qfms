@@ -31,8 +31,8 @@ RUN R -e "install.packages('scales',dependencies=TRUE, repos='http://cran.rstudi
 RUN ln -s /usr/bin/python3.12 /usr/bin/python
 
 # Add user
-RUN useradd -m -G sudo -s /bin/bash repro && echo "repro:repro" | chpasswd
-RUN usermod -a -G ubuntu repro
+RUN userdel -r ubuntu
+RUN useradd -m -u 1000 -G sudo -o -s /bin/bash repro && echo "repro:repro" | chpasswd
 USER repro
 
 # Clone Repo
