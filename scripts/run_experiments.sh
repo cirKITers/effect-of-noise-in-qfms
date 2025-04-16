@@ -19,7 +19,7 @@ for seed in {1000..1004}; do
 			for noise_type in BitFlip PhaseFlip Depolarizing StatePreparation Measurement AmplitudeDamping PhaseDamping GateError; do
 				for experiment in coefficients entanglement expressibility; do
 					echo "Started experiment $experiment with seed=$seed, n_qubits=$n_qubits, $circuit, $encoding=encoding and noise_type=$noise_type"
-					kedro run --pipeline $experiment --params="data.omegas=$n_qubits,model.n_qubits=$n_qubits,model.encoding=$encoding,model.circuit_type=$circuit,seed=$seed"
+					~/effect-of-noise-in-qfms/.venv/bin/kedro run --pipeline $experiment --params="data.omegas=$n_qubits,model.n_qubits=$n_qubits,model.encoding=$encoding,model.circuit_type=$circuit,seed=$seed"
 				done
 			done
 		done
