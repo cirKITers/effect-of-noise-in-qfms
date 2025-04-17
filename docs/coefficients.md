@@ -18,7 +18,7 @@ The detailed mean and standard deviations for varying qubit counts can be found 
 
 Our Figure 9 in the paper:
 ![Coefficients Num Freq](figures/n_freqs_light.png#only-light)
-![Coefficients Num Freq](figures/n_freqs_dark.png#only-dark).
+![Coefficients Num Freq](figures/n_freqs_dark.png#only-dark)
 
 ## Input Encoding
 
