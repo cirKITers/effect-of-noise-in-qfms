@@ -2,6 +2,7 @@ site_name: Effects of Noise in QFMs
 site_url: https://cirkiters.github.io/effect-of-noise-in-qfms
 nav:
   - index.md
+  - coefficients.md
   - coefficients1d.md
   - coefficients2d.md
   - entanglement.md
