@@ -13,8 +13,8 @@ Our Figure 8 in the paper summarised the coefficient mean $\mu_c(\boldsymbol{\om
 (Absolute coefficient mean $\mu_c(\boldsymbol{\omega})$ for the lowest frequency $\boldsymbol{\omega}=\boldsymbol{0}$ and highest frequency $\boldsymbol{\omega} = \boldsymbol{\omega}_\text{max}$ in the respective spectrum under the influence of varying noise levels. We considered one-dimensional ($D$ = 1), and two-dimensional inputs ($D$ = 2). The y-axis for each facet row are equal throughout the respective $\boldsymbol{\omega}$, but differs in between.)
 
 The corresponding relative standard deviation is
-![Coefficients Mean Summary](../docs/figures/coeff_abs_sd_light.png).
-(Absolute relative standard deviation $\sigma_c(\boldsymbol{\omega})$)
+![Coefficients Mean Summary](../docs/figures/coeff_abs_sd_light.png)
+(Absolute relative standard deviation $\sigma_c(\boldsymbol{\omega})$.)
 
 The detailed mean and standard deviations for varying qubit counts can be found in the corresponding sections on [1D-coefficients](1d-coefficients) and [2D-coefficients](2d-coefficients).
 
@@ -35,7 +35,7 @@ Our Figure 4 from the paper:
 ![Coefficients Encoding Real/Imag](../docs/figures/coeff_real_imag_encoding_light.png)
 (Coefficients, separated into real and imaginary parts for a circuit with six qubits and different single qubit Pauli-encodings.)
 
-### 1D-Coefficients
+### 1D Coefficients
 
 We show the the coefficient mean $\mu_c(\boldsymbol{\omega})$, the corresponding relative standard deviation $\mu_c(\boldsymbol{\omega})$ and Covariance of real and imaginary parts. In the paper these would correspond to Figure 7a, 7b and 5, respectively for the six qubit case. Shown here are the plots for all qubit numbers.
 
@@ -87,7 +87,7 @@ Covariance (Figure 5 in our paper):
 ![Coefficients 6 Qubits - Mean](../docs/figures/coeff_covar_qubits6_light.png)
 
 
-### 2D-Coefficients
+### 2D Coefficients
 
 #### 3 Qubits
 
@@ -147,8 +147,8 @@ Our Figure 10 in the paper:
 ## Entanglement
 
 Meyer-Wallach Entanlement for the pure states:
-![Entanlement](../docs/figures/ent_mw.png)
+![Entanlement](../docs/figures/ent_mw_light.png)
 
 Our Figure 11 in the paper:
-![Entanlement](../docs/figures/ent.png)
+![Entanlement](../docs/figures/ent_light.png)
 (Meyer-Wallach (MW) entangling capability and Entanglement of Formation (EF) under the influence of increasing noise levels. Points represent the mean of five seeds and lines are a linear interpolation to guide the eye. Shaded areas present the minimum/maximum entanglement across the five seeds. As the difference between seeds is small, it is not visible in the plot.)
