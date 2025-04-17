@@ -14,7 +14,7 @@ Our Figure 8 in the paper summarised the coefficient mean $\mu_c(\boldsymbol{\om
 
 The corresponding relative standard deviation is
 ![Coefficients Mean Summary](../docs/figures/coeff_abs_sd_light.png)
-(Absolute relative standard deviation $\sigma_c(\boldsymbol{\omega})$.)
+(Relative standard deviation $\sigma_c(\boldsymbol{\omega})$.)
 
 The detailed mean and standard deviations for varying qubit counts can be found in the corresponding sections on [1D-coefficients](#1d-coefficients) and [2D-coefficients](#2d-coefficients).
 
