@@ -1,6 +1,6 @@
 # 2D-Coefficients
 
-#### 3 Qubits
+## 3 Qubits
 
 Mean:
 ![Coefficiens 2D 3 Qubits - Mean](../docs/figures/coeff_mean_qubits3_2D_light.png)
@@ -12,7 +12,7 @@ Covariance:
 ![Coefficiens 2D 3 Qubits - Mean](../docs/figures/coeff_covar_qubits3_2D_light.png)
 
 
-#### 4 Qubits
+## 4 Qubits
 
 Mean:
 ![Coefficiens 2D 4 Qubits - Mean](../docs/figures/coeff_mean_qubits4_2D_light.png)
@@ -24,7 +24,7 @@ Covariance:
 ![Coefficiens 2D 4 Qubits - Mean](../docs/figures/coeff_covar_qubits4_2D_light.png)
 
 
-#### 5 Qubits
+## 5 Qubits
 
 Mean:
 ![Coefficiens 2D 5 Qubits - Mean](../docs/figures/coeff_mean_qubits5_2D_light.png)
@@ -36,7 +36,7 @@ Covariance:
 ![Coefficiens 2D 5 Qubits - Mean](../docs/figures/coeff_covar_qubits5_2D_light.png)
 
 
-#### 6 Qubits
+## 6 Qubits
 
 Mean (Figure 7a in our paper):
 ![Coefficiens 2D 6 Qubits - Mean](../docs/figures/coeff_mean_qubits6_2D_light.png)
