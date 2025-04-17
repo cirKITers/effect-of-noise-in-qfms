@@ -127,7 +127,10 @@ def get_plotly_artifact(run_id, identifier=""):
     return sub_fig_trace
 
 
-def get_expressibility_df(run_ids):
+def get_expressibility_df(
+    run_ids,
+    debug=False,
+):
     df = pd.DataFrame(
         columns=[
             "run_id",
@@ -206,12 +209,16 @@ def get_expressibility_df(run_ids):
             [df, pd.merge(sub_df_a.iloc[[-1]], sub_df_b, how="cross")]
         ).reset_index(drop=True)
 
-    check_complete(all_cfgs)
+    if debug:
+        check_complete(all_cfgs)
 
     return df
 
 
-def get_entanglement_df(run_ids):
+def get_entanglement_df(
+    run_ids,
+    debug=False,
+):
     df = pd.DataFrame(
         columns=[
             "run_id",
@@ -285,7 +292,8 @@ def get_entanglement_df(run_ids):
             sub_df_b = pd.DataFrame()
             all_cfgs[ansatz][qubits][seed][noise][str(noise_value)]["RX"] -= 1
 
-    check_complete(all_cfgs)
+    if debug:
+        check_complete(all_cfgs)
 
     return df
 
@@ -396,6 +404,7 @@ def get_coeffs_df(
         "Measurement",
         "GateError",
     ],
+    debug=False,
 ):
     columns = [
         "run_id",
@@ -554,7 +563,8 @@ def get_coeffs_df(
             sub_df_b = pd.DataFrame()
             all_cfgs[ansatz][qubits][seed][noise][str(noise_value)][encoding] -= 1
 
-    check_complete(all_cfgs, export_qubits, export_noise_types)
+    if debug:
+        check_complete(all_cfgs, export_qubits, export_noise_types)
 
     return df
 
@@ -577,8 +587,22 @@ def assign_ansatz_id(df):
 
 
 def run_ids_from_experiment_id(
-    experiment_ids: Union[List[str], str], existing_run_ids: Optional[List[str]]
+    experiment_ids: Union[List[str], str],
+    existing_run_ids: Optional[List[str]],
+    experiment_type: Optional[str] = None,
+    n: Optional[int] = None,
 ):
-    runs = mlflow.search_runs(experiment_ids)["run_id"].to_list()
-    runs = [r for r in runs if r not in existing_run_ids]
+    filter_string = (
+        f"tags.pipeline_name = '{experiment_type}'"
+        if experiment_type is not None
+        else None
+    )
+    runs = mlflow.search_runs(experiment_ids, filter_string=filter_string)
+    print(runs.to_dict())
+
+    run_ids = runs["run_id"].to_list()
+    if n is not None:
+        run_ids = run_ids[:n]
+    runs = [r for r in run_ids if r not in existing_run_ids]
+
     return runs

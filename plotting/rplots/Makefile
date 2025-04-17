@@ -2,6 +2,7 @@ all: plot
 
 plot: plot_coeffs plot_expr plot_ent plot_coeffs_mean plot_coeffs_encoding plot_coherent plot_coeffs_all gen
 pdf: plot_coeffs_pdf plot_expr_pdf plot_ent_pdf plot_coeffs_mean_pdf plot_coeffs_encoding_pdf plot_coherent_pdf plot_coeffs_all_pdf
+single: img-pdf/single/coeffs.pdf img-pdf/single/expr.pdf img-pdf/single/ent.pdf
 
 plot_coeffs_pdf: img-pdf/coeff_real_imag_qubits6.pdf
 plot_coeffs_all_pdf: img-pdf/coeff_mean_qubits5.pdf
@@ -24,6 +25,12 @@ gen: img-tikz
 		sed -i "s/{coeff_real_imag/{img-tikz\/coeff_real_imag/g" img-tikz/coeff_real_imag*; \
 	fi;
 	bash gen_img.sh
+
+img-pdf/single/ent.pdf:
+img-pdf/single/expr.pdf:
+img-pdf/single/coeffs.pdf: layout.r csv_data/single/ plot_single.r
+	mkdir -p img-pdf/single
+	Rscript plot_single.r pdf
 
 img-pdf/coeff_real_imag_qubits6.pdf: layout.r plot_coeffs.r csv_data/coeffs_full_dims1_q6_AmplitudeDamping.csv
 	mkdir -p img-pdf
