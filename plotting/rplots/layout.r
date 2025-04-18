@@ -38,7 +38,7 @@ create_plot <- function(g, save_name, w, h) {
   print(g)
   dev.off()
   if (!use_tikz)
-    print(str_c("Created plot in ", OUTDIR_PDF, save_name, ".pdf"))
+    print(str_c("Created plot in ", getwd(), "/", OUTDIR_PDF, save_name, ".pdf"))
 }
 
 qubit_labeller <- function(layer) {

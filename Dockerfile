@@ -50,5 +50,5 @@ RUN .venv/bin/python -m pip install -r requirements.txt
 
 # Experiments can be run and plots can be generated when container is started,
 # see options in README or run script
-# ENTRYPOINT ["./scripts/run.sh"]
+ENTRYPOINT ["./scripts/run.sh"]
 CMD ["bash"]

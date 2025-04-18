@@ -19,16 +19,13 @@ if (length(args) == 1) {
     LINE.SIZE <- 0.4
 }
 
-coeffs_1D_path <- "csv_data/single/coeffs_stat_dims1.csv"
-coeffs_2D_path <- "csv_data/single/coeffs_stat_dims2.csv"
+coeffs_path <- "csv_data/single/coeffs_stat.csv"
 expr_path <- "csv_data/single/expr.csv"
 ent_path <- "csv_data/single/ent.csv"
 
-if(file.exists(coeffs_1D_path) | file.exists(coeffs_2D_path)) {
-    if(file.exists(coeffs_1D_path))
-        d_coeffs <- read_csv(coeffs_1D_path)
-    else if(file.exists(coeffs_2D_path))
-        d_coeffs <- read_csv(coeffs_2D_path)
+if(file.exists(coeffs_path)) {
+    d_coeffs <- read_csv(coeffs_path)
+
     if(!"freq2" %in% colnames(d_coeffs))
     {
       d_coeffs$freq2 <- 0
@@ -87,7 +84,7 @@ if(file.exists(coeffs_1D_path) | file.exists(coeffs_2D_path)) {
             ),
             noise_value = round(noise_value, digits = 3)
         )
-    
+
     d_coeffs$noise_category <- factor(d_coeffs$noise_category, levels = c("","Decoherent Gate", "SPAM", "Damping", "Coh."))
     d_coeffs$noise_type <- factor(d_coeffs$noise_type,
         levels = c(
@@ -103,17 +100,12 @@ if(file.exists(coeffs_1D_path) | file.exists(coeffs_2D_path)) {
             "CGE"
         ),
     )
-    
+
     d_coeffs$ansatz <- factor(d_coeffs$ansatz,
         levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_15", "Circuit_19"),
         labels = c("SEA", "HEA", "Circuit 15", "Circuit 19")
     )
-    
-    d_coeffs_ns <- d_coeffs %>%
-        filter(noise_value == 0 & !is.na(mean_abs)) %>%
-        group_by(ansatz, qubits, n_input_feat) %>%
-        summarise(max_freq1 = max(freq1), max_freq2 = max(freq2))
-    
+
     g <- ggplot(d_coeffs, aes(x = noise_value, y = mean_abs, colour = as.factor(freq1))) +
             geom_point(size = POINT.SIZE) +
             geom_line(linewidth = LINE.SIZE) +
@@ -134,10 +126,10 @@ if(file.exists(coeffs_1D_path) | file.exists(coeffs_2D_path)) {
                             qubits = qubit_labeller,
                     ),
             )
-    
+
     save_name <- str_c("single/coeffs")
-    create_plot(g, save_name, COLWIDTH, 0.3 * HEIGHT)
-    
+    create_plot(g, save_name, COLWIDTH, 0.2 * HEIGHT)
+
     g <- ggplot(d_coeffs, aes(x = noise_value, y = rel_sd, colour = as.factor(freq1))) +
             geom_point(size = POINT.SIZE) +
             geom_line(linewidth = LINE.SIZE) +
@@ -155,13 +147,13 @@ if(file.exists(coeffs_1D_path) | file.exists(coeffs_2D_path)) {
                             qubits = qubit_labeller,
                     ),
             )
-    
+
     save_name <- str_c("single/coeffs_sd")
-    create_plot(g, save_name, COLWIDTH, 0.3 * HEIGHT)
-    
+    create_plot(g, save_name, COLWIDTH, 0.2 * HEIGHT)
+
     d_coeffs <- d_coeffs %>%
             filter(noise_value %in% c(0, 0.03))
-    
+
     d_coeffs$noise_type[d_coeffs$noise_value == 0] <- "Noiseless"
     d_coeffs$noise_category[d_coeffs$noise_value == 0] <- ""
     d_coeffs <- d_coeffs %>% distinct(noise_type, noise_value, ansatz, qubits, freq1, .keep_all = TRUE) %>%
@@ -176,9 +168,9 @@ if(file.exists(coeffs_1D_path) | file.exists(coeffs_2D_path)) {
                                     "Re/Im"
             )
     )
-    
+
     d_coeffs$var[d_coeffs$var < 1e-15] <- 0
-    
+
     g <- ggplot(d_coeffs, aes(x = var_type, y = var, colour = noise_category, shape=noise_type)) +
             geom_point(size = 2 * POINT.SIZE, position = position_dodge(width = 0.7)) +
             facet_nested(freq1 ~ ansatz,
@@ -194,12 +186,11 @@ if(file.exists(coeffs_1D_path) | file.exists(coeffs_2D_path)) {
             scale_x_discrete("") +
             scale_y_continuous(
                     ifelse(use_tikz, "$\\text{Cov}(\\cdot, \\cdot)$","Cov(-)"),
-                    breaks = scales::trans_breaks("log10", function(x) 10^(-15:-1)),
+                    breaks = scales::trans_breaks("log10", function(x) 10^x),
                     labels = trans_format("log10", math_format(10^.x)),
                     trans = "log10",
             ) +
             guides(
-                    shape = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE), override.aes = list(size = 3 * POINT.SIZE, colour = c(COLOURS.LIST[1], COLOURS.LIST[2], COLOURS.LIST[2], COLOURS.LIST[2], COLOURS.LIST[3], COLOURS.LIST[3], COLOURS.LIST[4], COLOURS.LIST[4], COLOURS.LIST[5]))),
                     colour = "none",
             ) +
             theme(
@@ -208,17 +199,17 @@ if(file.exists(coeffs_1D_path) | file.exists(coeffs_2D_path)) {
                     legend.key.width = unit(0.2, "cm"),
             )
     save_name <- str_c("single/coeff_covar")
-    create_plot(g, save_name, COLWIDTH, d_coeffs$qubits * 0.1 * HEIGHT)
+    create_plot(g, save_name, 0.5 * COLWIDTH, d_coeffs$qubits[1] * 0.15 * HEIGHT)
 }
 
 if(file.exists(expr_path)) {
-    d_expr <- read_csv(coeffs_path)
-    
+    d_expr <- read_csv(expr_path)
+
     d_expr$ansatz <- factor(d_expr$ansatz,
         levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_15", "Circuit_19"),
         labels = c("SEA", "HEA", "Circuit 15", "Circuit 19")
     )
-    
+
     d_expr <- d_expr %>%
         pivot_longer(
             c(
@@ -258,9 +249,9 @@ if(file.exists(expr_path)) {
                 )
             ),
         )
-    
+
     d_expr$noise_category <- factor(d_expr$noise_category, levels = c("Decoherent Gate", "Coherent", "SPAM", "Damping", "Coh."))
-    
+
     d_expr$noise_type <- factor(d_expr$noise_type,
         levels = c(
             "Noiseless", "BitFlip", "PhaseFlip", "Depolarizing",
@@ -296,7 +287,7 @@ if(file.exists(expr_path)) {
         guides(colour = guide_legend(nrow = 1)) +
         scale_y_log10(
             ifelse(use_tikz, "\\small{more expressive} \\normalsize{$\\leftarrow\\qquad$ KL-Divergence [log] $\\qquad \\rightarrow$} \\small{less expressive}", "KL-Divergence [log]"),
-            breaks = c(1e-2, 1e0, 1e2),
+            breaks = scales::trans_breaks("log10", function(x) 10^x),
             labels = trans_format("log10", math_format(10^.x)),
         ) +
         theme(
@@ -355,9 +346,9 @@ if(file.exists(ent_path)) {
                 )
             ),
         )
-    
+
     d_ent$noise_category <- factor(d_ent$noise_category, levels = c("Decoherent Gate", "SPAM", "Damping", "Coh."))
-    
+
     d_ent$noise_type <- factor(d_ent$noise_type,
         levels = c(
             "Noiseless", "BitFlip", "PhaseFlip", "Depolarizing",
@@ -400,8 +391,7 @@ if(file.exists(ent_path)) {
             legend.margin = margin(b = -4),
             legend.key.height = unit(0.2, "cm"),
             legend.key.width = unit(0.2, "cm")
-        ) +
-        force_panelsizes(cols = c(2, 5))
+        )
 
     save_name <- str_c("single/ent")
     create_plot(g, save_name, COLWIDTH, 0.38 * HEIGHT)

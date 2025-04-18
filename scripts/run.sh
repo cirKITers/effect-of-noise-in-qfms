@@ -13,13 +13,13 @@ if [ "$1" = "experiments_paper" ]; then
 	./plot_all.sh
 elif [ "$1" = "coefficients" ]; then
 	./run_coefficient_config.sh
-	./plot_single.sh
+	./plot_single.sh coefficients
 elif [ "$1" = "entanglement" ]; then
 	./run_entanglement_config.sh
-	./plot_single.sh
+	./plot_single.sh entanglement
 elif [ "$1" = "expressibility" ]; then
 	./run_expressibility_config.sh
-	./plot_single.sh
+	./plot_single.sh expressibility
 elif [ "$1" = "plot_paper_results" ]; then
 	./plot_all.sh
 elif [ "$1" = "bash" ]; then

@@ -82,7 +82,7 @@ d_ent$noise_type <- factor(d_ent$noise_type,
 )
 
 d_ent <- d_ent %>% filter(measure == "EF" | noise_value == 0)
-d_ent$measure <- factor(d_ent$measure, levels = c("MWEF", "EF"), labels = c("MW", "EF"))
+d_ent$measure <- factor(d_ent$measure, levels = c("MW", "EF"), labels = c("MW", "EF"))
 
 g <- ggplot(
     d_ent,

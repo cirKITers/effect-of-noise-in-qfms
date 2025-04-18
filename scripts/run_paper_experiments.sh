@@ -55,7 +55,7 @@ for seed in {1000..1004}; do
 		done
 	done
 done
-sed -i "s/effect-of-noise-in-qfms/paper_experiments/g" mlruns/$(ls -rt mlruns| tail -n 1)/meta.yaml
+sed -i "s/effects_of_noise_in_qfm/paper_experiments/g" mlruns/$(ls -rt mlruns| tail -n 1)/meta.yaml
 
 # Run training with all frameworks
 echo "all experiments done."

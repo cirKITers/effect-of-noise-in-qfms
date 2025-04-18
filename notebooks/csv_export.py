@@ -21,7 +21,7 @@ id_expr_file = f"{CSV_DESTINATION}/expr_ids.csv"
 
 def export_encoding_coeff_data(
     export_full=True,
-    export_qubits=[3, 4, 5, 6],
+    export_qubits=[2, 3, 4, 5, 6],
 ):
     id_coeff_file = (
         f"{CSV_DESTINATION}/coeffs_encoding_ids.csv"
@@ -42,6 +42,7 @@ def export_encoding_coeff_data(
         coeff_run_ids,
         export_full_coeffs=export_full,
         export_qubits=export_qubits,
+        export_noise_types=["noiseless"],
     )
 
     array_columns = [
@@ -113,7 +114,7 @@ def export_encoding_coeff_data(
 
 def export_coeff_data(
     export_full=True,
-    export_qubits=[3, 4, 5, 6],
+    export_qubits=[2, 3, 4, 5, 6],
     export_noise_types=[
         "AmplitudeDamping",
         "PhaseDamping",
@@ -123,6 +124,7 @@ def export_coeff_data(
         "GateError",
         "Measurement",
         "StatePreparation",
+        "noiseless",
     ],
     experiment_id: Optional[str] = None,
     single: bool = False,
@@ -154,7 +156,7 @@ def export_coeff_data(
     all_coeffs_df = get_coeffs_df(
         coeff_run_ids,
         export_full_coeffs=export_full,
-        skip_rx_circ15=True,
+        skip_rx_circ15=not single,
         export_qubits=export_qubits,
         export_noise_types=export_noise_types,
     )
@@ -233,8 +235,11 @@ def export_coeff_data(
                     )
         else:
             coeffs_df = coeffs_df.drop(columns=big_array_columns)
-            result_file = f"{dest}/coeffs_stat_dims{n_dims}.csv"
-            if os.path.exists(result_file):
+            if single:
+                result_file = f"{dest}/coeffs_stat.csv"
+            else:
+                result_file = f"{dest}/coeffs_stat_dims{n_dims}.csv"
+            if os.path.exists(result_file) and not single:
                 coeffs_df.to_csv(result_file, index=False, mode="a", header=False)
             else:
                 coeffs_df.to_csv(result_file, index=False)
@@ -272,7 +277,7 @@ def export_expr_data(
         return
     expr_df = get_expressibility_df(expr_run_ids)
     result_file = f"{dest}/expr.csv"
-    if os.path.exists(result_file):
+    if os.path.exists(result_file) and not single:
         expr_df.to_csv(result_file, index=False, mode="a", header=False)
     else:
         expr_df.to_csv(result_file, index=False)
@@ -306,7 +311,7 @@ def export_ent_data(
         return
     ent_df = get_entanglement_df(ent_run_ids)
     result_file = f"{dest}/ent.csv"
-    if os.path.exists(result_file):
+    if os.path.exists(result_file) and not single:
         ent_df.to_csv(result_file, index=False, mode="a", header=False)
     else:
         ent_df.to_csv(result_file, index=False)
@@ -344,6 +349,27 @@ def get_arg_parser():
         "--experiment_id",
         help="Experiment ID",
     )
+    parser.add_argument(
+        "-coeff",
+        "--coefficients",
+        action="store_true",
+        default = False,
+        help="Store coefficient data",
+    )
+    parser.add_argument(
+        "-expr",
+        "--expressibility",
+        action="store_true",
+        default = False,
+        help="Store expressibility data",
+    )
+    parser.add_argument(
+        "-ent",
+        "--entanglement",
+        action="store_true",
+        default = False,
+        help="Store entangling capability data",
+    )
     args = parser.parse_args()
     return args
 
@@ -357,11 +383,14 @@ if __name__ == "__main__":
     if p.noise_type != "all":
         kwargs["export_noise_types"] = [p.noise_type]
 
-    export_coeff_data(
-        False,
-        experiment_id=p.experiment_id,
-        single=p.single,
-        **kwargs,
-    )
-    export_expr_data(experiment_id=p.experiment_id, single=p.single)
-    export_ent_data(experiment_id=p.experiment_id, single=p.single)
+    if p.coefficients:
+        export_coeff_data(
+            False,
+            experiment_id=p.experiment_id,
+            single=p.single,
+            **kwargs,
+        )
+    if p.expressibility:
+        export_expr_data(experiment_id=p.experiment_id, single=p.single)
+    if p.entanglement:
+        export_ent_data(experiment_id=p.experiment_id, single=p.single)

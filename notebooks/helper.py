@@ -153,7 +153,7 @@ def get_expressibility_df(
 
     for it, run_id in track(
         enumerate(run_ids),
-        description="Collecting coefficients data..",
+        description="Collecting expressibility data..",
         total=len(run_ids),
     ):
         client = mlflow.tracking.MlflowClient()
@@ -179,22 +179,22 @@ def get_expressibility_df(
         sub_df_a.loc[it, "qubits"] = qubits
 
         noise_params = client.get_run(run_id).data.params["model.noise_params"]
-        noise = [
-            k for k, v in ast.literal_eval(noise_params).items() if float(v) > 0.0
-        ][0]
+        noise = [k for k, v in ast.literal_eval(noise_params).items() if float(v) > 0.0]
+        if len(noise) > 1:
+            noise = noise[0]
+        else:
+            noise = "noiseless"
 
         seed = client.get_run(run_id).data.params["seed"]
-        if seed is None or seed == "None":
-            print(
-                f"Seed is None for ansatz={ansatz}, qubits={qubits}, noise={noise_params}?"
-            )
-            continue
+
         noise_value = [
             v for k, v in ast.literal_eval(noise_params).items() if float(v) > 0.0
-        ][0]
-        if noise_value > 0.03:
-            continue
-        seed = int(seed)
+        ]
+        if len(noise_value) > 1:
+            noise_value = noise_value[0]
+        else:
+            noise_value = 0
+        seed = int(seed) if seed is not None else "None"
         sub_df_a.loc[it, "seed"] = seed
 
         all_cfgs[ansatz][qubits][seed][noise][str(noise_value)]["RX"] += 1
@@ -240,7 +240,7 @@ def get_entanglement_df(
 
     for it, run_id in track(
         enumerate(run_ids),
-        description="Collecting coefficients data..",
+        description="Collecting entanglement data..",
         total=len(run_ids),
     ):
         client = mlflow.tracking.MlflowClient()
@@ -276,10 +276,18 @@ def get_entanglement_df(
             k
             for k, v in ast.literal_eval(noise_params).items()
             if not isinstance(v, dict) and float(v) > 0.0
-        ][0]
+        ]
+        if len(noise) > 1:
+            noise = noise[0]
+        else:
+            noise = "noiseless"
         noise_value = [
             v for k, v in ast.literal_eval(noise_params).items() if float(v) > 0.0
-        ][0]
+        ]
+        if len(noise_value) > 1:
+            noise_value = noise_value[0]
+        else:
+            noise_value = 0
         all_cfgs[ansatz][qubits][seed][noise][str(noise_value)]["RX"] += 1
 
         try:
@@ -317,9 +325,9 @@ def init_all_cfg_dict():
         "Circuit_19",
     ]:
         all_cfgs[circuit_type] = dict()
-        for n_qubits in [3, 4, 5, 6, 7]:
+        for n_qubits in range(1, 8):
             all_cfgs[circuit_type][n_qubits] = dict()
-            for seed in range(1000, 1010):
+            for seed in list(range(1000, 1010)) + ["None"]:
                 all_cfgs[circuit_type][n_qubits][seed] = dict()
                 for noise in [
                     "BitFlip",
@@ -347,7 +355,7 @@ def init_all_cfg_dict():
 
 def check_complete(
     all_cfgs: dict,
-    export_qubits: List[int] = [3, 4, 5, 6],
+    export_qubits: List[int] = [2, 3, 4, 5, 6],
     export_noise_types=[
         "BitFlip",
         "PhaseFlip",
@@ -393,7 +401,7 @@ def get_coeffs_df(
     run_ids,
     export_full_coeffs=False,
     skip_rx_circ15=False,
-    export_qubits=[3, 4, 5, 6],
+    export_qubits=[2, 3, 4, 5, 6],
     export_noise_types=[
         "BitFlip",
         "PhaseFlip",
@@ -403,6 +411,7 @@ def get_coeffs_df(
         "StatePreparation",
         "Measurement",
         "GateError",
+        "noiseless",
     ],
     debug=False,
 ):
@@ -529,9 +538,6 @@ def get_coeffs_df(
         if noise not in export_noise_types:
             continue
 
-        if n_input_feat == 2 and noise_value > 0.03:
-            continue
-
         all_cfgs[ansatz][qubits][seed][noise][str(noise_value)][encoding] += 1
         if (
             skip_rx_circ15
@@ -598,7 +604,6 @@ def run_ids_from_experiment_id(
         else None
     )
     runs = mlflow.search_runs(experiment_ids, filter_string=filter_string)
-    print(runs.to_dict())
 
     run_ids = runs["run_id"].to_list()
     if n is not None:
