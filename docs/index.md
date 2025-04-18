@@ -19,3 +19,6 @@ Checkout the subpages for detailled plots on how noise affects [Coefficients](co
 
   We find that decoherent noise exerts a uniform deleterious effect on all the tested \ase, manifesting in the vanishing of Fourier coefficients, expressibility and entangling capability.
   We note however, that the detrimental influence of noise is less pronounced in some \ase than in others, suggesting that these might possess greater resilience to noise.
+
+
+
