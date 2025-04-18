@@ -21,7 +21,7 @@ elif [ "$1" = "expressibility" ]; then
 	./run_expressibility_config.sh
 	./plot_single.sh expressibility
 elif [ "$1" = "plot_paper_results" ]; then
-	./plot_all.sh
+	./plot_all.sh only_plot
 elif [ "$1" = "bash" ]; then
 	# launch shell
 	cd ..

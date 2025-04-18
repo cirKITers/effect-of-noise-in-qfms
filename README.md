@@ -46,7 +46,7 @@ The `<option>` specifies which operations are performed on container start.
 
 Available options are:
 * `experiments_paper`\*: performs all experiments shown in the paper
-* `plot`: generates the the plots for the paper using R (only available if either the paper experiments are run first, or result data is downloaded from [Zenodo](https://doi.org/10.5281/zenodo.15211318)
+* `plot_paper_results`: generates the the plots for the paper using R (only available if either the paper experiments are run first, or result data is downloaded from [Zenodo](https://doi.org/10.5281/zenodo.15211318))
 * `coefficients`: performs coefficient experiment based on the [configuration](conf/base/parameters.yml)
 * `entanglement`: performs entanglement experiment based on the [configuration](conf/base/parameters.yml)
 * `expressibility`: performs entanglement experiment based on the [configuration](conf/base/parameters.yml)
