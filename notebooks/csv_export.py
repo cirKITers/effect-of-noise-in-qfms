@@ -223,7 +223,9 @@ def export_coeff_data(
                         (coeffs_df_full[noise_type] > 0)
                         & (coeffs_df_full["qubits"] == q)
                     ]
-                    result_file = f"{dest}/coeffs_full_dims{n_dims}_q{q}_{noise_type}.csv"
+                    result_file = (
+                        f"{dest}/coeffs_full_dims{n_dims}_q{q}_{noise_type}.csv"
+                    )
                     if os.path.exists(result_file):
                         coeffs_selected.to_csv(
                             result_file, index=False, mode="a", header=False
@@ -353,21 +355,21 @@ def get_arg_parser():
         "-coeff",
         "--coefficients",
         action="store_true",
-        default = False,
+        default=False,
         help="Store coefficient data",
     )
     parser.add_argument(
         "-expr",
         "--expressibility",
         action="store_true",
-        default = False,
+        default=False,
         help="Store expressibility data",
     )
     parser.add_argument(
         "-ent",
         "--entanglement",
         action="store_true",
-        default = False,
+        default=False,
         help="Store entangling capability data",
     )
     args = parser.parse_args()

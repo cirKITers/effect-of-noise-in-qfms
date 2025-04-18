@@ -262,7 +262,7 @@ def get_entanglement_df(
         ansatz = client.get_run(run_id).data.params["model.circuit_type"]
         sub_df_a.loc[it, "ansatz"] = ansatz
 
-        measure = client.get_run(run_id).data.params.get("entanglement.measure", "MWEF")
+        measure = client.get_run(run_id).data.params.get("entanglement.measure", "EF")
         sub_df_a.loc[it, "measure"] = measure
 
         qubits = int(client.get_run(run_id).data.params["model.n_qubits"])
@@ -365,6 +365,7 @@ def check_complete(
         "StatePreparation",
         "Measurement",
         "GateError",
+        "noiseless",
     ],
 ):
     for circuit_type in [
@@ -376,8 +377,10 @@ def check_complete(
         for n_qubits in export_qubits:
             for seed in range(1000, 1005):
                 for noise in export_noise_types:
-                    for noise_value in ["0.03"]:
-                        for encoding in ["RX", "RY"]:
+                    for noise_value in ["0", "0.03"]:
+                        if noise_value == "0" and noise != "noiseless":
+                            continue
+                        for encoding in ["RX", "RY", "RXRY"]:
                             if (
                                 encoding == "RX"
                                 and circuit_type == "Circuit_15"
@@ -393,7 +396,7 @@ def check_complete(
                             ):
                                 print(
                                     f"Got {all_cfgs[circuit_type][n_qubits][seed][noise][noise_value][encoding]} for "
-                                    f"{circuit_type}, {n_qubits}, {seed}, {noise}, {encoding}"
+                                    f"{circuit_type}, {n_qubits}, {seed}, {noise}={noise_value}, {encoding}"
                                 )
 
 
