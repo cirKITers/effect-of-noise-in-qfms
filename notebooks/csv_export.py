@@ -359,6 +359,20 @@ def get_arg_parser():
         help="Store coefficient data",
     )
     parser.add_argument(
+        "-fullcoeff",
+        "--full_coefficients",
+        action="store_true",
+        default=False,
+        help="Store full coefficient data",
+    )
+    parser.add_argument(
+        "-enccoeff",
+        "--encoding_coefficients",
+        action="store_true",
+        default=False,
+        help="Store full coefficient data",
+    )
+    parser.add_argument(
         "-expr",
         "--expressibility",
         action="store_true",
@@ -390,6 +404,17 @@ if __name__ == "__main__":
             False,
             experiment_id=p.experiment_id,
             single=p.single,
+            **kwargs,
+        )
+    if p.full_coefficients:
+        export_coeff_data(
+            True,
+            experiment_id=p.experiment_id,
+            **kwargs,
+        )
+    if p.encoding_coefficients:
+        export_encoding_coeff_data(
+            True,
             **kwargs,
         )
     if p.expressibility:
