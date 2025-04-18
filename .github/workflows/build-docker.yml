@@ -3,7 +3,7 @@ name: Docker Image
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: effect_of_noise_repro
-  REPO_NAME: cirKITers/effect-of-noise-in-qfms
+  REPO_NAME: cirkiters/effect-of-noise-in-qfms
 on:
   push:
     branches: [ main ]
