@@ -1,7 +1,6 @@
 #!/bin/bash
 
-export GIT_BASE_DIR=$(git rev-parse --show-toplevel)
-if [ ! $1 = "only_plot" ]; then
+if [ ! "$1" = "only_plot" ]; then
 	experiment_id_flag="-eid $(ls -rt mlruns | tail -n 1)"
 	## Data export
 	cd $GIT_BASE_DIR

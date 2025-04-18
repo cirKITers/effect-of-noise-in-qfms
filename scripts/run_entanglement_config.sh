@@ -1,5 +1,4 @@
 #!/bin/bash
-export GIT_BASE_DIR=$(git rev-parse --show-toplevel)
 
 # in case the script is not started from within the toplevel directory
 if [ ! "${PWD}" = $GIT_BASE_DIR ]; then

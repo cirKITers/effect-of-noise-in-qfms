@@ -2,11 +2,7 @@
 export GIT_BASE_DIR=$(git rev-parse --show-toplevel)
 
 # in case the script is not started from within the toplevel directory
-if [ ! "${PWD}" = $GIT_BASE_DIR ]; then
-    cd $GIT_BASE_DIR
-fi
-
-cd scripts/
+cd $GIT_BASE_DIR/scripts
 
 if [ "$1" = "experiments_paper" ]; then
 	./run_paper_experiments.sh

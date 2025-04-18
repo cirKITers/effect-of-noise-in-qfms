@@ -1,13 +1,13 @@
 #!/bin/bash
-export GIT_BASE_DIR=$(git rev-parse --show-toplevel)
+which Rscript
 
-if [ $1 = "coefficients" ]; then
+if [ "$1" = "coefficients" ]; then
 	experiment_id_flag="-coeff"
 	make_target=single_coeff
-elif [ $1 = "expressibility" ]; then
+elif [ "$1" = "expressibility" ]; then
 	experiment_id_flag="-expr"
 	make_target=single_expr
-elif [ $1 = "entanglement" ]; then
+elif [ "$1" = "entanglement" ]; then
 	experiment_id_flag="-ent"
 	make_target=single_ent
 else

@@ -1,5 +1,4 @@
 #!/bin/bash
-export GIT_BASE_DIR=$(git rev-parse --show-toplevel)
 
 # in case the script is not started from within the toplevel directory
 if [ ! "${PWD}" = $GIT_BASE_DIR ]; then
@@ -14,7 +13,7 @@ for experiment in coefficients entanglement expressibility; do
 	for seed in {1000..1004}; do
 		for n_qubits in {3..6}; do
 			for circuit in Hardware_Efficient Strongly_Entangling Circuit_19 Circuit_15; do
-				if [ $circuit = Circuit_15 ]; then
+				if [ "$circuit" = "Circuit_15" ]; then
 					encoding=RY
 				else
 					encoding=RX
