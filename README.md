@@ -34,12 +34,14 @@ To visualize the nodes and pipeline
 #### Get docker image
 Build image:
 
-```docker build -t effect_of_noise_repro .```
+```
+docker build -t effect_of_noise_repro .
+```
 
 #### Create Container
 
 ```
-docker run --name effect_of_noise_repro_cont [<-flags>] [<option>] -it effect_of_noise_repro
+docker run --name effect_of_noise_repro_cont [<-flags>] -it effect_of_noise_repro [<option>]
 ```
 
 The `<option>` specifies which operations are performed on container start.
