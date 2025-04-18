@@ -32,7 +32,18 @@ To visualize the nodes and pipeline
 ### Docker
 
 #### Get docker image
-Build image:
+
+Download image from github registry:
+```
+docker pull ghcr.io/cirkiters/effect-of-noise-in-qfms/effect_of_noise_repro:latest
+```
+
+Or download `effect_of_noise_repro.tar` from [Zenodo](https://doi.org/10.5281/zenodo.15211318) and load:
+```
+docker load -i effect_of_noise_repro.tar
+```
+
+Or build image:
 
 ```
 docker build -t effect_of_noise_repro .
