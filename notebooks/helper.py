@@ -194,7 +194,9 @@ def get_expressibility_df(
             noise_value = noise_value[0]
         else:
             noise_value = 0
-        seed = int(seed) if seed is not None else "None"
+        if seed is None or seed == "None":
+            continue
+        seed = int(seed)
         sub_df_a.loc[it, "seed"] = seed
 
         all_cfgs[ansatz][qubits][seed][noise][str(noise_value)]["RX"] += 1
