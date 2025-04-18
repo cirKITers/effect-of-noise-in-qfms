@@ -18,6 +18,8 @@ RUN apt-get install -y \
     git \
     r-base \
     texlive-latex-base \
+    texlive-latex-recommended \
+    texlive-latex-extra \
     build-essential \
     libcurl4-gnutls-dev \
     libxml2-dev \
