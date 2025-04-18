@@ -38,7 +38,9 @@ Build image:
 
 #### Create Container
 
-```docker run --name effect_of_noise_repro_cont -it effect_of_noise_repro [<-flags>] [<option>]```
+```
+docker run --name effect_of_noise_repro_cont [<-flags>] [<option>] -it effect_of_noise_repro
+```
 
 The `<option>` specifies which operations are performed on container start.
 
