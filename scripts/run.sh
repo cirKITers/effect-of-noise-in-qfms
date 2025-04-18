@@ -24,7 +24,7 @@ elif [ "$1" = "bash" ]; then
 	/bin/bash
 	exit 0
 else
-    echo "Usage: ./scripts/run.sh [coefficients|expressibility|entanglement|experiments_paper|plot|bash]"
+    echo "Usage: ./scripts/run.sh [coefficients|expressibility|entanglement|experiments_paper|plot_paper_results|bash]"
 fi
 
 cd -
