@@ -180,7 +180,7 @@ def get_expressibility_df(
 
         noise_params = client.get_run(run_id).data.params["model.noise_params"]
         noise = [k for k, v in ast.literal_eval(noise_params).items() if float(v) > 0.0]
-        if len(noise) > 1:
+        if len(noise) > 0:
             noise = noise[0]
         else:
             noise = "noiseless"
@@ -190,7 +190,7 @@ def get_expressibility_df(
         noise_value = [
             v for k, v in ast.literal_eval(noise_params).items() if float(v) > 0.0
         ]
-        if len(noise_value) > 1:
+        if len(noise_value) > 0:
             noise_value = noise_value[0]
         else:
             noise_value = 0
@@ -279,14 +279,14 @@ def get_entanglement_df(
             for k, v in ast.literal_eval(noise_params).items()
             if not isinstance(v, dict) and float(v) > 0.0
         ]
-        if len(noise) > 1:
+        if len(noise) > 0:
             noise = noise[0]
         else:
             noise = "noiseless"
         noise_value = [
             v for k, v in ast.literal_eval(noise_params).items() if float(v) > 0.0
         ]
-        if len(noise_value) > 1:
+        if len(noise_value) > 0:
             noise_value = noise_value[0]
         else:
             noise_value = 0
