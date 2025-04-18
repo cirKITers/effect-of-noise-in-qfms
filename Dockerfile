@@ -20,6 +20,8 @@ RUN apt-get install -y \
     texlive-latex-base \
     texlive-latex-recommended \
     texlive-latex-extra \
+    texlive-luatex \
+    texlive-publishers \
     build-essential \
     libcurl4-gnutls-dev \
     libxml2-dev \
