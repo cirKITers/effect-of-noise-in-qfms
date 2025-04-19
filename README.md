@@ -75,6 +75,7 @@ Volumes, to keep track of generated files and configuration on the host system:
 For quickly inspecting our reproduction package, we recommend to use the other options.
 
 #### Start a stopped container
+
 Not done yet? You do not have to run a new container for new experiments. Just call:
 ```
 docker start -i effect_of_noise_repro_cont
