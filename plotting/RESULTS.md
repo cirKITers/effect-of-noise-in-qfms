@@ -83,8 +83,11 @@ Mean (Figure 7a in our paper):
 Relative Standard Deviation (Figure 7b in our paper):
 ![Coefficients 6 Qubits - Mean](../docs/figures/coeff_sd_qubits6_light.png#only-light)
 
-Covariance (Figure 5 in our paper):
+Covariance:
 ![Coefficients 6 Qubits - Mean](../docs/figures/coeff_covar_qubits6_light.png#only-light)
+
+Covariance -- selection (Figure 5 in our paper):
+![Coefficients 6 Qubits - Mean](../docs/figures/coeff_covar_qubits6_sel_light.png#only-light)
 
 
 ### 2D Coefficients
@@ -127,13 +130,13 @@ Covariance:
 
 #### 6 Qubits
 
-Mean (Figure 7a in our paper):
+Mean:
 ![Coefficiens 2D 6 Qubits - Mean](../docs/figures/coeff_mean_qubits6_2D_light.png#only-light)
 
-Relative Standard Deviation (Figure 7b in our paper):
+Relative Standard Deviation:
 ![Coefficiens 2D 6 Qubits - Mean](../docs/figures/coeff_sd_qubits6_2D_light.png#only-light)
 
-Covariance (Figure 5 in our paper):
+Covariance:
 ![Coefficiens 2D 6 Qubits - Mean](../docs/figures/coeff_covar_qubits6_2D_light.png#only-light)
 
 
