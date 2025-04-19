@@ -63,5 +63,5 @@ Covariance:
 ![Coefficients 6 Qubits - Mean](figures/coeff_covar_qubits6_dark.png#only-dark)
 
 Covariance -- selection (Figure 5 in our paper):
-![Coefficiens 6 Qubits - Mean](../docs/figures/coeff_covar_qubits6_sel_light.png#only-light)
-![Coefficiens 6 Qubits - Mean](../docs/figures/coeff_covar_qubits6_sel_dark.png#only-dark)
+![Coefficiens 6 Qubits - Mean](figures/coeff_covar_qubits6_sel_light.png#only-light)
+![Coefficiens 6 Qubits - Mean](figures/coeff_covar_qubits6_sel_dark.png#only-dark)
