@@ -127,7 +127,10 @@ def get_plotly_artifact(run_id, identifier=""):
     return sub_fig_trace
 
 
-def get_expressibility_df(run_ids):
+def get_expressibility_df(
+    run_ids,
+    debug=False,
+):
     df = pd.DataFrame(
         columns=[
             "run_id",
@@ -150,7 +153,7 @@ def get_expressibility_df(run_ids):
 
     for it, run_id in track(
         enumerate(run_ids),
-        description="Collecting coefficients data..",
+        description="Collecting expressibility data..",
         total=len(run_ids),
     ):
         client = mlflow.tracking.MlflowClient()
@@ -176,20 +179,22 @@ def get_expressibility_df(run_ids):
         sub_df_a.loc[it, "qubits"] = qubits
 
         noise_params = client.get_run(run_id).data.params["model.noise_params"]
-        noise = [
-            k for k, v in ast.literal_eval(noise_params).items() if float(v) > 0.0
-        ][0]
+        noise = [k for k, v in ast.literal_eval(noise_params).items() if float(v) > 0.0]
+        if len(noise) > 0:
+            noise = noise[0]
+        else:
+            noise = "noiseless"
 
         seed = client.get_run(run_id).data.params["seed"]
-        if seed is None or seed == "None":
-            print(
-                f"Seed is None for ansatz={ansatz}, qubits={qubits}, noise={noise_params}?"
-            )
-            continue
+
         noise_value = [
             v for k, v in ast.literal_eval(noise_params).items() if float(v) > 0.0
-        ][0]
-        if noise_value > 0.03:
+        ]
+        if len(noise_value) > 0:
+            noise_value = noise_value[0]
+        else:
+            noise_value = 0
+        if seed is None or seed == "None":
             continue
         seed = int(seed)
         sub_df_a.loc[it, "seed"] = seed
@@ -206,12 +211,16 @@ def get_expressibility_df(run_ids):
             [df, pd.merge(sub_df_a.iloc[[-1]], sub_df_b, how="cross")]
         ).reset_index(drop=True)
 
-    check_complete(all_cfgs)
+    if debug:
+        check_complete(all_cfgs)
 
     return df
 
 
-def get_entanglement_df(run_ids):
+def get_entanglement_df(
+    run_ids,
+    debug=False,
+):
     df = pd.DataFrame(
         columns=[
             "run_id",
@@ -233,7 +242,7 @@ def get_entanglement_df(run_ids):
 
     for it, run_id in track(
         enumerate(run_ids),
-        description="Collecting coefficients data..",
+        description="Collecting entanglement data..",
         total=len(run_ids),
     ):
         client = mlflow.tracking.MlflowClient()
@@ -255,7 +264,7 @@ def get_entanglement_df(run_ids):
         ansatz = client.get_run(run_id).data.params["model.circuit_type"]
         sub_df_a.loc[it, "ansatz"] = ansatz
 
-        measure = client.get_run(run_id).data.params.get("entanglement.measure", "MWEF")
+        measure = client.get_run(run_id).data.params.get("entanglement.measure", "EF")
         sub_df_a.loc[it, "measure"] = measure
 
         qubits = int(client.get_run(run_id).data.params["model.n_qubits"])
@@ -269,10 +278,18 @@ def get_entanglement_df(run_ids):
             k
             for k, v in ast.literal_eval(noise_params).items()
             if not isinstance(v, dict) and float(v) > 0.0
-        ][0]
+        ]
+        if len(noise) > 0:
+            noise = noise[0]
+        else:
+            noise = "noiseless"
         noise_value = [
             v for k, v in ast.literal_eval(noise_params).items() if float(v) > 0.0
-        ][0]
+        ]
+        if len(noise_value) > 0:
+            noise_value = noise_value[0]
+        else:
+            noise_value = 0
         all_cfgs[ansatz][qubits][seed][noise][str(noise_value)]["RX"] += 1
 
         try:
@@ -285,7 +302,8 @@ def get_entanglement_df(run_ids):
             sub_df_b = pd.DataFrame()
             all_cfgs[ansatz][qubits][seed][noise][str(noise_value)]["RX"] -= 1
 
-    check_complete(all_cfgs)
+    if debug:
+        check_complete(all_cfgs)
 
     return df
 
@@ -309,9 +327,9 @@ def init_all_cfg_dict():
         "Circuit_19",
     ]:
         all_cfgs[circuit_type] = dict()
-        for n_qubits in [3, 4, 5, 6, 7]:
+        for n_qubits in range(1, 8):
             all_cfgs[circuit_type][n_qubits] = dict()
-            for seed in range(1000, 1010):
+            for seed in list(range(1000, 1010)) + ["None"]:
                 all_cfgs[circuit_type][n_qubits][seed] = dict()
                 for noise in [
                     "BitFlip",
@@ -339,7 +357,7 @@ def init_all_cfg_dict():
 
 def check_complete(
     all_cfgs: dict,
-    export_qubits: List[int] = [3, 4, 5, 6],
+    export_qubits: List[int] = [2, 3, 4, 5, 6],
     export_noise_types=[
         "BitFlip",
         "PhaseFlip",
@@ -349,6 +367,7 @@ def check_complete(
         "StatePreparation",
         "Measurement",
         "GateError",
+        "noiseless",
     ],
 ):
     for circuit_type in [
@@ -360,8 +379,10 @@ def check_complete(
         for n_qubits in export_qubits:
             for seed in range(1000, 1005):
                 for noise in export_noise_types:
-                    for noise_value in ["0.03"]:
-                        for encoding in ["RX", "RY"]:
+                    for noise_value in ["0", "0.03"]:
+                        if noise_value == "0" and noise != "noiseless":
+                            continue
+                        for encoding in ["RX", "RY", "RXRY"]:
                             if (
                                 encoding == "RX"
                                 and circuit_type == "Circuit_15"
@@ -377,7 +398,7 @@ def check_complete(
                             ):
                                 print(
                                     f"Got {all_cfgs[circuit_type][n_qubits][seed][noise][noise_value][encoding]} for "
-                                    f"{circuit_type}, {n_qubits}, {seed}, {noise}, {encoding}"
+                                    f"{circuit_type}, {n_qubits}, {seed}, {noise}={noise_value}, {encoding}"
                                 )
 
 
@@ -385,7 +406,7 @@ def get_coeffs_df(
     run_ids,
     export_full_coeffs=False,
     skip_rx_circ15=False,
-    export_qubits=[3, 4, 5, 6],
+    export_qubits=[2, 3, 4, 5, 6],
     export_noise_types=[
         "BitFlip",
         "PhaseFlip",
@@ -395,7 +416,9 @@ def get_coeffs_df(
         "StatePreparation",
         "Measurement",
         "GateError",
+        "noiseless",
     ],
+    debug=False,
 ):
     columns = [
         "run_id",
@@ -520,9 +543,6 @@ def get_coeffs_df(
         if noise not in export_noise_types:
             continue
 
-        if n_input_feat == 2 and noise_value > 0.03:
-            continue
-
         all_cfgs[ansatz][qubits][seed][noise][str(noise_value)][encoding] += 1
         if (
             skip_rx_circ15
@@ -554,7 +574,8 @@ def get_coeffs_df(
             sub_df_b = pd.DataFrame()
             all_cfgs[ansatz][qubits][seed][noise][str(noise_value)][encoding] -= 1
 
-    check_complete(all_cfgs, export_qubits, export_noise_types)
+    if debug:
+        check_complete(all_cfgs, export_qubits, export_noise_types)
 
     return df
 
@@ -577,8 +598,21 @@ def assign_ansatz_id(df):
 
 
 def run_ids_from_experiment_id(
-    experiment_ids: Union[List[str], str], existing_run_ids: Optional[List[str]]
+    experiment_ids: Union[List[str], str],
+    existing_run_ids: Optional[List[str]],
+    experiment_type: Optional[str] = None,
+    n: Optional[int] = None,
 ):
-    runs = mlflow.search_runs(experiment_ids)["run_id"].to_list()
-    runs = [r for r in runs if r not in existing_run_ids]
+    filter_string = (
+        f"tags.pipeline_name = '{experiment_type}'"
+        if experiment_type is not None
+        else None
+    )
+    runs = mlflow.search_runs(experiment_ids, filter_string=filter_string)
+
+    run_ids = runs["run_id"].to_list()
+    if n is not None:
+        run_ids = run_ids[:n]
+    runs = [r for r in run_ids if r not in existing_run_ids]
+
     return runs

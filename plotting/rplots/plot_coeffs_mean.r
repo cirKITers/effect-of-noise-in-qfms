@@ -53,6 +53,7 @@ d_coeffs_1D <- d_coeffs_1D %>%
 
 d_coeffs_2D <- d_coeffs_2D %>%
     mutate(coeffs_abs_mean = ifelse(coeffs_abs_mean < 1e-14, NA, coeffs_abs_mean)) %>%
+    mutate(GateError = ifelse(is.na(GateError), 0, GateError)) %>%
     group_by(
         BitFlip, PhaseFlip, Depolarizing,
         AmplitudeDamping, PhaseDamping,
