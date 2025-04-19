@@ -59,5 +59,14 @@ kaleido = "0.2.1"
 pandas = "^2.2.3"
 pyyaml = "^6.0.2"
 
+[tool.poetry.group.docs]
+optional = true
+
+[tool.poetry.group.docs.dependencies]
+mkdocs = "^1.6.1"
+mkdocs-material = "^9.6.11"
+mkdocs-glightbox = "^0.4.0"
+markdown-include = "^0.8.1"
+
 [tool.kedro_telemetry]
 project_id = "9afb68ff0fe045cf975e94fc0ede1279"
