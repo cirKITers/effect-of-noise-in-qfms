@@ -1,4 +1,4 @@
 experiment_ids = [
-    # "356438357402841629",  # Entanglement of formation with Meyer-Wallach at zero noise level
-    "917645486974457784",  # Entanglement of formation with full eigenvalue decomposition, also at zero noise
+    "553179683278344778",  # Meyer-Wallach at zero noise level
+    "738692020261135915",  # Entanglement of formation
 ]

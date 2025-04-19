@@ -25,4 +25,58 @@ To visualize the nodes and pipeline
 ## Tweaking :wrench:
 
 - To specify a pipeline: `kedro run --pipeline NAME`
- - Parameters can be adjusted in `conf\base\parameters.yml` or as command line arguments `--params=<key1>=<value1>`
+- Parameters can be adjusted in `conf/base/parameters.yml` or as command line arguments `--params=<key1>=<value1>`
+
+## Reproduction
+
+### Docker
+
+#### Get docker image
+
+Download image from github registry:
+```
+docker pull ghcr.io/cirkiters/effect-of-noise-in-qfms/effect_of_noise_repro:latest
+```
+
+Or download `effect_of_noise_repro.tar` from [Zenodo](https://doi.org/10.5281/zenodo.15211318) and load:
+```
+docker load -i effect_of_noise_repro.tar
+```
+
+Or build image:
+
+```
+docker build -t effect_of_noise_repro .
+```
+
+#### Create Container
+
+```
+docker run --name effect_of_noise_repro_cont [<-flags>] -it effect_of_noise_repro [<option>]
+```
+
+The `<option>` specifies which operations are performed on container start.
+
+Available options are:
+* `experiments_paper`\*: performs all experiments shown in the paper
+* `plot_paper_results`: generates the the plots for the paper using R (only available if either the paper experiments are run first, or result data is downloaded from [Zenodo](https://doi.org/10.5281/zenodo.15211318))
+* `coefficients`: performs coefficient experiment based on the [configuration](conf/base/parameters.yml)
+* `entanglement`: performs entanglement experiment based on the [configuration](conf/base/parameters.yml)
+* `expressibility`: performs entanglement experiment based on the [configuration](conf/base/parameters.yml)
+* `bash`(default): does not perform any operation, but launches interactive shell, default
+
+Feel free to define additional `<-flags>`, we recommend volumes, e.g.:
+Volumes, to keep track of generated files and configuration on the host system:
+```
+-v $PWD/mlruns:/home/repro/effect-of-noise-in-qfms/mlruns -v $PWD/plotting:/home/repro/effect-of-noise-in-qfms/plotting -v $PWD/conf/base:/home/repro/effect-of-noise-in-qfms/conf/base
+```
+
+\*Please note the long runtimes when executing all experiments (hours to days).
+For quickly inspecting our reproduction package, we recommend to use the other options.
+
+#### Start a stopped container
+Not done yet? You do not have to run a new container for new experiments. Just call:
+```
+docker start -i effect_of_noise_repro_cont
+```
+and check out the [scripts](scripts/) folder, or the [instructions](#tweaking-wrench) above.
