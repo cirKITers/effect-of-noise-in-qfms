@@ -1,0 +1,74 @@
+site_name: Effects of Noise in QFMs
+site_url: https://cirkiters.github.io/effect-of-noise-in-qfms
+nav:
+  - index.md
+  - setup.md
+  - coefficients.md
+  - coefficients1d.md
+  - coefficients2d.md
+  - entanglement.md
+  - expressibility.md
+theme:
+  name: material
+  # logo: logo.svg
+  # favicon: logo.svg
+  palette:
+    # Palette toggle for automatic mode
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: white
+      accent: amber
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: amber
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+plugins:
+  - search
+  - glightbox:
+      auto_caption: true
+      caption_position: top
+markdown_extensions:
+  - markdown_include.include:
+      base_path: .
+  - toc:
+      permalink: "#"
+      baselevel: 1
+      separator: "_"
+      toc_depth: 3
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.arithmatex:
+      generic: true
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/cirKITers/effect-of-noise-in-qfms
+      name: CirKITers @ Github
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
+
+extra_css:
+  - style.css

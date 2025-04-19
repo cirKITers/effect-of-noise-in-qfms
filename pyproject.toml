@@ -58,6 +58,10 @@ qml-essentials = "^0.1.31"
 kaleido = "0.2.1"
 pandas = "^2.2.3"
 pyyaml = "^6.0.2"
+mkdocs = "^1.6.1"
+mkdocs-material = "^9.6.11"
+mkdocs-glightbox = "^0.4.0"
+markdown-include = "^0.8.1"
 
 [tool.poetry.group.docs]
 optional = true
