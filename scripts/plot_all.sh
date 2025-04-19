@@ -4,7 +4,7 @@ if [ ! "$1" = "only_plot" ]; then
 	experiment_id_flag="-eid $(ls -rt mlruns | tail -n 1)"
 	## Data export
 	cd $GIT_BASE_DIR
-	$GIT_BASE_DIR/.venv/bin/python notebooks/csv_export.py $experiment_id_flag -coeff -ent -expr
+	$GIT_BASE_DIR/.venv/bin/python notebooks/csv_export.py $experiment_id_flag -coeff -ent -expr -enccoeff
 	cd -
 fi
 
