@@ -5,7 +5,7 @@ This repository contains the source code and additional results for our paper "O
 ## Results
 
 Looking for supplementary results beyond the scope of the paper? :eyes:
-Head over to the [results page](plotting/RESULTS.md).
+Head over to the [results page](https://cirkiters.github.io/effect-of-noise-in-qfms/).
 
 ## Getting Started :rocket:
 
