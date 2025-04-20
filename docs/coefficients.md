@@ -1,6 +1,6 @@
 # Coefficients
 
-The resulting plots of our experiments as PDF can be found in [plotting/rplots/img-gen](plotting/rplots/img-gen), while a PNG version can be found below.
+The resulting plots of our experiments as PDF can be found in [plotting/rplots/img-gen](https://github.com/cirKITers/effect-of-noise-in-qfms/tree/main/plotting/rplots/img-gen), while a PNG version can be found on this website.
 
 ## Summary
 
