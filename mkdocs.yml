@@ -62,6 +62,12 @@ markdown_extensions:
 
 extra:
   social:
+    - icon: fontawesome/solid/section
+      link: https://www.kit.edu/impressum.php
+      name: Impressum
+    - icon: fontawesome/solid/id-card
+      link: https://www.kit.edu/datenschutz.php
+      name: Datenschutz
     - icon: fontawesome/brands/github
       link: https://github.com/cirKITers/effect-of-noise-in-qfms
       name: CirKITers @ Github
