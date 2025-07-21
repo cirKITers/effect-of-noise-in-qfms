@@ -1,4 +1,5 @@
 from qml_essentials.entanglement import Entanglement
+from qml_essentials.coefficients import Coefficients
 from qml_essentials.model import Model
 
 import pennylane as qml
@@ -73,7 +74,6 @@ def train_model(
     steps: int,
     learning_rate: float,
     batch_size: int,
-    log_entangling: bool,
     convergence_threshold: float,
     convergence_gradient: float,
     convergence_steps: int,
@@ -91,6 +91,15 @@ def train_model(
     )
     df_params = pd.DataFrame()
     df_grads = pd.DataFrame()
+    df_metrics = pd.DataFrame(
+        columns=[
+            "mse",
+            "entanglement",
+            "frequencies",
+            "coeffs_real",
+            "coeffs_imag",
+        ]
+    )
 
     def mse(prediction, target):
         return np.mean((prediction - target) ** 2)
@@ -113,17 +122,39 @@ def train_model(
     costs = np.zeros(steps)
 
     for step in track(range(steps), description="Training..", total=steps):
-        if log_entangling:
-            with warnings.catch_warnings(action="ignore"):
-                ent_cap = Entanglement.meyer_wallach(
-                    model=model,
-                    n_samples=0,  # disable sampling, use model params
-                    seed=None,  # set seed none to disable warnings
-                    noise_params=noise_params,
-                    cache=False,
-                )
-            log.debug(f"Entangling capability in step {step}: {ent_cap}")
-            mlflow.log_metric("entangling_capability", ent_cap, step)
+        ent_cap = Entanglement.entanglement_of_formation(
+            model=model,
+            n_samples=0,  # disable sampling, use model params
+            seed=None,  # set seed none to disable warnings
+            noise_params=noise_params,
+            cache=False,
+        )
+        log.debug(f"Entangling capability in step {step}: {ent_cap}")
+        mlflow.log_metric("entangling_capability", ent_cap, step)
+        df_metrics.loc[step, "entanglement"] = ent_cap
+
+        coeffs, freqs = Coefficients.get_spectrum(
+            model=model,
+            shift=True,
+            trim=True,
+            noise_params=noise_params,
+            cache=False,
+        )
+
+        if model.n_input_feat == 1:
+            coeffs = coeffs[len(coeffs) // 2 :]
+            freqs = freqs[len(freqs) // 2 :]
+        else:
+            freqs = np.stack(np.meshgrid(*[freqs] * model.n_input_feat)).T.reshape(
+                *coeffs.shape, model.n_input_feat
+            )
+
+        log.debug(f"Frequencies in step {step}: {freqs}")
+        log.debug(f"Coefficients in step {step}: {coeffs}")
+
+        df_metrics.loc[step, "frequencies"] = freqs.tolist()
+        df_metrics.loc[step, "coeffs_real"] = np.array(coeffs).T.real.tolist()
+        df_metrics.loc[step, "coeffs_imag"] = np.array(coeffs).T.imag.tolist()
 
         # log params and gradients
         df_params = pd.concat(
@@ -158,7 +189,24 @@ def train_model(
         # log cost
         log.debug(f"Cost in step {step}: {cost_val}")
         mlflow.log_metric("mse", cost_val, step)
+        df_metrics.loc[step, "mse"] = cost_val
         costs[step] = cost_val
+
+        control_params = np.array(
+            [
+                model.pqc.get_control_angles(params, model.n_qubits)
+                for params in model.params
+            ]
+        )
+        indices = model.pqc.get_control_indices(model.n_qubits)
+        if indices is not None:
+            control_params = model.params[:, indices[0] : indices[1] : indices[2]]
+            control_rotation_mean = (
+                np.sum(np.abs(control_params) % (2 * np.pi)) / control_params.size
+            )
+
+            mlflow.log_metric("control_rotation_mean", control_rotation_mean, step)
+
 
         # early stopping
         if cost_val < convergence_threshold:
@@ -176,21 +224,6 @@ def train_model(
             )
             break
 
-        control_params = np.array(
-            [
-                model.pqc.get_control_angles(params, model.n_qubits)
-                for params in model.params
-            ]
-        )
-        indices = model.pqc.get_control_indices(model.n_qubits)
-        if indices is not None:
-            control_params = model.params[:, indices[0] : indices[1] : indices[2]]
-            control_rotation_mean = (
-                np.sum(np.abs(control_params) % (2 * np.pi)) / control_params.size
-            )
-
-            mlflow.log_metric("control_rotation_mean", control_rotation_mean, step)
-
     # Convert indices to columns
     df_params = df_params.rename_axis(df_param_index_names).reset_index()
     df_grads = df_grads.rename_axis(df_grads_index_names).reset_index()
@@ -199,4 +232,5 @@ def train_model(
         "model": model,
         "params": df_params,
         "grads": df_grads,
+        "metrics": df_metrics,
     }

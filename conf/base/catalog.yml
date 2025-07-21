@@ -1,6 +1,12 @@
 # trained_model:
 #   type: kedro_mlflow.io.models.MlflowModelTrackingDataset
 #   flavor: python_function
+#
+trained_metrics:
+  type: kedro_mlflow.io.artifacts.MlflowArtifactDataset
+  dataset:
+    type: pandas.CSVDataset
+    filepath: "trained_metrics.csv"
 
 trained_params:
   type: kedro_mlflow.io.artifacts.MlflowArtifactDataset

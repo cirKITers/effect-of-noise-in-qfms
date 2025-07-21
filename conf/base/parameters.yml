@@ -58,7 +58,6 @@ training:
   steps: 1000
   learning_rate: 0.01
   batch_size: -1
-  log_entangling: False
   convergence:
     threshold: 5e-4 # threshold for the cost, -1 to disable
     gradient: -1 # threshold for the cost gradient, -1 to disable
