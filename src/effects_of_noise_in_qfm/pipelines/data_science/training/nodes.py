@@ -14,15 +14,15 @@ import logging
 log = logging.getLogger(__name__)
 
 
-def validate_problem(omegas: List[List[float]], model: Model):
+def validate_problem(omegas: int, model: Model):
     if model.n_layers == 1 or model.n_qubits == 1:
-        if model.degree < len(omegas):
+        if model.degree < omegas:
             log.warning(
-                f"Model is too small to use {len(omegas)} frequencies. Consider adjusting the model degree."
+                f"Model is too small to use {omegas} frequencies. Consider adjusting the model degree."
             )
-        elif model.degree > len(omegas):
+        elif model.degree > omegas:
             log.warning(
-                f"Model is too large to use {len(omegas)} frequencies. Consider adjusting the model degree."
+                f"Model is too large to use {omegas} frequencies. Consider adjusting the model degree."
             )
         else:
             log.info("Problem and model validation passed.")
