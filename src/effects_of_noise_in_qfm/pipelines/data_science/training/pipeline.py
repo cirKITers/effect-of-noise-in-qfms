@@ -21,6 +21,7 @@ def create_pipeline() -> Pipeline:
                     "model": "model",
                     "domain_samples": "domain_samples",
                     "fourier_series": "fourier_series",
+                    "fourier_coefficients": "fourier_coefficients",
                     "noise_params": "params:model.noise_params",
                     "steps": "params:training.steps",
                     "learning_rate": "params:training.learning_rate",

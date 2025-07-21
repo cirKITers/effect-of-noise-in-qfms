@@ -69,6 +69,7 @@ def train_model(
     model: Model,
     domain_samples: np.ndarray,
     fourier_series: np.ndarray,
+    fourier_coefficients: np.ndarray,
     noise_params: Dict,
     steps: int,
     learning_rate: float,
@@ -93,6 +94,7 @@ def train_model(
     df_metrics = pd.DataFrame(
         columns=[
             "mse",
+            "coeff_dist",
             "entanglement",
             "frequencies",
             "coeffs_real",
@@ -139,6 +141,9 @@ def train_model(
             noise_params=noise_params,
             cache=False,
         )
+        dist = np.sum(np.abs(coeffs - fourier_coefficients))
+        log.debug(f"Coefficients dist: {dist}")
+        df_metrics.loc[step, "coeff_dist"] = dist
 
         if model.n_input_feat == 1:
             coeffs = coeffs[len(coeffs) // 2 :]
