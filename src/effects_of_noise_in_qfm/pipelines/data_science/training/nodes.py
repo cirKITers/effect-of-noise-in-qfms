@@ -11,6 +11,8 @@ import pandas as pd
 
 import logging
 
+from effects_of_noise_in_qfm.helpers.utils import NoiseDict
+
 log = logging.getLogger(__name__)
 
 
@@ -93,6 +95,7 @@ def train_model(
     df_grads = pd.DataFrame()
     df_metrics = pd.DataFrame(
         columns=[
+            "step",
             "mse",
             "coeff_dist",
             "entanglement",
@@ -123,6 +126,7 @@ def train_model(
     costs = np.zeros(steps)
 
     for step in track(range(steps), description="Training..", total=steps):
+        df_metrics.loc[step, "step"] = step
         ent_cap = Entanglement.entanglement_of_formation(
             model=model,
             n_samples=0,  # disable sampling, use model params
@@ -212,7 +216,6 @@ def train_model(
 
             mlflow.log_metric("control_rotation_mean", control_rotation_mean, step)
 
-
         # early stopping
         if cost_val < convergence_threshold:
             log.info(
@@ -235,6 +238,76 @@ def train_model(
 
     return {
         "model": model,
+        "params": df_params,
+        "grads": df_grads,
+        "metrics": df_metrics,
+    }
+
+
+def iterate_noise(
+    model: Model,
+    domain_samples: np.ndarray,
+    fourier_series: np.ndarray,
+    fourier_coefficients: np.ndarray,
+    noise_params: Dict,
+    noise_steps: int,
+    steps: int,
+    learning_rate: float,
+    batch_size: int,
+    convergence_threshold: float,
+    convergence_gradient: float,
+    convergence_steps: int,
+    seed: int,
+):
+    noise_params = NoiseDict(noise_params)
+
+    df_params = pd.DataFrame(
+        columns=[
+            *[n for n in noise_params.keys()],
+            "noise_level",
+        ]
+    )
+    df_grads = pd.DataFrame(
+        columns=[
+            *[n for n in noise_params.keys()],
+            "noise_level",
+        ]
+    )
+    df_metrics = pd.DataFrame(
+        columns=[
+            *[n for n in noise_params.keys()],
+            "noise_level",
+        ]
+    )
+
+    for step in range(noise_steps + 1):  # +1 to go for 100%
+        part_noise_params = noise_params * (step / noise_steps)
+
+        model.initialize_params(np.random.default_rng(seed))
+        res = train_model(
+            model,
+            domain_samples,
+            fourier_series,
+            fourier_coefficients,
+            part_noise_params,
+            steps,
+            learning_rate,
+            batch_size,
+            convergence_threshold,
+            convergence_gradient,
+            convergence_steps,
+        )
+
+        for df_name in ["params", "grads", "metrics"]:
+            res[df_name]["noise_step"] = step
+            res[df_name]["noise_level"] = step / noise_steps
+            for n, v in part_noise_params.items():
+                res[df_name][n] = v
+        df_params = pd.concat([df_params, res["params"]])
+        df_grads = pd.concat([df_grads, res["grads"]])
+        df_metrics = pd.concat([df_metrics, res["metrics"]])
+
+    return {
         "params": df_params,
         "grads": df_grads,
         "metrics": df_metrics,
