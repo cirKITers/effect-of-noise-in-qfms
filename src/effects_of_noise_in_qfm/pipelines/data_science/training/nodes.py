@@ -5,10 +5,9 @@ from qml_essentials.model import Model
 import pennylane as qml
 import pennylane.numpy as np
 import mlflow
-from typing import Dict, List, Tuple, Callable
+from typing import Dict, Tuple, Callable
 from rich.progress import track
 import pandas as pd
-import warnings
 
 import logging
 
@@ -156,6 +155,17 @@ def train_model(
         df_metrics.loc[step, "coeffs_real"] = np.array(coeffs).T.real.tolist()
         df_metrics.loc[step, "coeffs_imag"] = np.array(coeffs).T.imag.tolist()
 
+        model.params, cost_val, grads = step_cost_and_grads(
+            opt,
+            cost,
+            model.params,
+            inputs=domain_samples,
+            noise_params=noise_params,
+            cache=False,  # disable caching because currently no gradients are being stored
+            execution_type="expval",
+            force_mean=True,
+        )
+
         # log params and gradients
         df_params = pd.concat(
             [
@@ -170,20 +180,10 @@ def train_model(
             [
                 df_grads,
                 pd.DataFrame(
-                    {"param": model.params.flatten(), "step": step},
+                    {"param": grads[0].flatten(), "step": step},
                     index=df_grads_index,
                 ),
             ]
-        )
-
-        model.params, cost_val = opt.step_and_cost(
-            cost,
-            model.params,
-            inputs=domain_samples,
-            noise_params=noise_params,
-            cache=False,  # disable caching because currently no gradients are being stored
-            execution_type="expval",
-            force_mean=True,
         )
 
         # log cost
