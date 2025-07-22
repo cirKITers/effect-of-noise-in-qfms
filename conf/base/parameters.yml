@@ -58,7 +58,6 @@ coefficients:
 training:
   steps: 3000
   learning_rate: 0.01
-  batch_size: -1
   convergence:
     threshold: -1 # threshold for the cost, -1 to disable
     gradient: -1 # threshold for the cost gradient, -1 to disable
