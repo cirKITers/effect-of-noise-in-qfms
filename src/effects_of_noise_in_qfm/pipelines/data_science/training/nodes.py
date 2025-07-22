@@ -17,6 +17,14 @@ log = logging.getLogger(__name__)
 
 
 def validate_problem(omegas: int, model: Model):
+    """
+    Checks if the complexity of a given model is appropriate to do a regression
+    task on a Fourier series.
+
+    Args:
+        omegas (int): The number of frequencies in the target Fourier series.
+        model (Model): The function approximating model.
+    """
     if model.n_layers == 1 or model.n_qubits == 1:
         if model.degree < omegas:
             log.warning(
@@ -43,17 +51,15 @@ def step_cost_and_grads(
     Update trainable arguments with one step of the optimizer and return the
     corresponding objective function value prior to the step.
 
-    :param opt: pennylane optimiser
-    :type opt: qml.GradientDescentOptimizer
-    :param objective_fn: the objective function for optimization
-    :type objective_fn: Callable
-    :param *args : variable length argument list for objective function
-    :param **kwargs : variable length of keyword arguments for the objective
-        function
-    :return: the new variable values :math:`x^{(t+1)}`
-    :return: the objective function output prior to the step
-    :return: the gradients
-    :rtype: Tuple[np.ndarray, float, np.ndarray]
+    Args:
+        opt (qml.GradientDescentOptimizer): PennyLane Optimiser.
+        objective_fn (Callable): The objective function for optimisation.
+
+    Returns:
+        Tuple[np.ndarray, float, np.ndarray]:
+            - The new variable values :math:`x^{(t+1)}`.
+            - The objective function output prior to the step.
+            - The gradients.
     """
     g, forward = opt.compute_grad(objective_fn, args, kwargs)
     new_args = opt.apply_grad(g, args)
@@ -78,7 +84,35 @@ def train_model(
     convergence_threshold: float,
     convergence_gradient: float,
     convergence_steps: int,
-):
+) -> Dict[str, pd.DataFrame]:
+    """
+    Train a given model on the regression task of a target Fourier series.
+
+    Args:
+        model (Model): The function approximating model.
+        domain_samples (np.ndarray): The inputs to the training task.
+        fourier_series (np.ndarray): The target values (solutions) of the FS to
+            be learned.
+        fourier_coefficients (np.ndarray): The actual values for the Fourier
+            coefficients in the target FS.
+        noise_params (Dict): Noise parameters for the model if training with
+            noise.
+        steps (int): Number of training steps.
+        learning_rate (float): Optimiser learning rate.
+        convergence_threshold (float): Threshold for early stopping. Set to -1
+            to disable.
+        convergence_gradient (float): Gradient early stopping threshold. Set to
+            -1 to disable.
+        convergence_steps (int): Number of steps over which the gradient is
+            checked if convergence_gradient is set.
+
+    Returns:
+        Dict[str, pd.DataFrame]: Result dict containing the following:
+            - "params": Parameter at each step.
+            - "grads": Gradients at each step.
+            - "metrics": Metrics occuring during the training (MSE, FS dist,
+                Entanglement, Fourier Coefficients).
+    """
     opt = qml.AdamOptimizer(stepsize=learning_rate)
 
     # Indices for logging params and gradients
@@ -126,6 +160,8 @@ def train_model(
 
     for step in track(range(steps), description="Training..", total=steps):
         df_metrics.loc[step, "step"] = step
+
+        # log entanglement
         ent_cap = Entanglement.entanglement_of_formation(
             model=model,
             n_samples=0,  # disable sampling, use model params
@@ -137,6 +173,7 @@ def train_model(
         mlflow.log_metric("entangling_capability", ent_cap, step)
         df_metrics.loc[step, "entanglement"] = ent_cap
 
+        # log coefficients
         coeffs, freqs = Coefficients.get_spectrum(
             model=model,
             shift=True,
@@ -163,6 +200,7 @@ def train_model(
         df_metrics.loc[step, "coeffs_real"] = np.array(coeffs).T.real.tolist()
         df_metrics.loc[step, "coeffs_imag"] = np.array(coeffs).T.imag.tolist()
 
+        # actual training step
         model.params, cost_val, grads = step_cost_and_grads(
             opt,
             cost,
@@ -200,6 +238,7 @@ def train_model(
         df_metrics.loc[step, "mse"] = cost_val
         costs[step] = cost_val
 
+        # log control parameters
         control_params = np.array(
             [
                 model.pqc.get_control_angles(params, model.n_qubits)
@@ -236,7 +275,6 @@ def train_model(
     df_grads = df_grads.rename_axis(df_grads_index_names).reset_index()
 
     return {
-        "model": model,
         "params": df_params,
         "grads": df_grads,
         "metrics": df_metrics,
@@ -257,30 +295,53 @@ def iterate_noise(
     convergence_steps: int,
     seed: int,
 ):
-    noise_params = NoiseDict(noise_params)
+    """
+    Iterate over different noise levels and train a given model on the
+    regression task of a target Fourier series. for each level using the noise
+    parameters.
 
-    df_params = pd.DataFrame(
-        columns=[
-            *[n for n in noise_params.keys()],
-            "noise_level",
-        ]
-    )
-    df_grads = pd.DataFrame(
-        columns=[
-            *[n for n in noise_params.keys()],
-            "noise_level",
-        ]
-    )
-    df_metrics = pd.DataFrame(
-        columns=[
-            *[n for n in noise_params.keys()],
-            "noise_level",
-        ]
-    )
+    Args:
+        model (Model): The function approximating model.
+        domain_samples (np.ndarray): The inputs to the training task.
+        fourier_series (np.ndarray): The target values (solutions) of the FS to
+            be learned.
+        fourier_coefficients (np.ndarray): The actual values for the Fourier
+            coefficients in the target FS.
+        noise_params (Dict): A dictionary of noise parameters with their
+            initial values.
+        noise_steps (int): The number of steps to incrementally apply noise.
+        steps (int): Number of training steps.
+        learning_rate (float): Optimiser learning rate.
+        convergence_threshold (float): Threshold for early stopping. Set to -1
+            to disable.
+        convergence_gradient (float): Gradient early stopping threshold. Set to
+            -1 to disable.
+        convergence_steps (int): Number of steps over which the gradient is
+            checked if convergence_gradient is set.
+        seed (int): Seed for model initialisation each noise param iteration.
+
+    Returns:
+        Dict[str, pd.DataFrame]: Result dict containing the following for all
+        noise levels:
+            - "params": Parameter at each step.
+            - "grads": Gradients at each step.
+            - "metrics": Metrics occuring during the training (MSE, FS dist,
+                Entanglement, Fourier Coefficients).
+    """
+    noise_params = NoiseDict(noise_params)
+    noise_columns_df = [
+        *[n for n in noise_params.keys()],
+        "noise_level",
+    ]
+
+    df_params = pd.DataFrame(columns=noise_columns_df)
+    df_grads = pd.DataFrame(columns=noise_columns_df)
+    df_metrics = pd.DataFrame(columns=noise_columns_df)
 
     for step in range(noise_steps + 1):  # +1 to go for 100%
         part_noise_params = noise_params * (step / noise_steps)
 
+        # Reset Model
         model.initialize_params(np.random.default_rng(seed))
         res = train_model(
             model,
@@ -290,12 +351,12 @@ def iterate_noise(
             part_noise_params,
             steps,
             learning_rate,
-            batch_size,
             convergence_threshold,
             convergence_gradient,
             convergence_steps,
         )
 
+        # Add noise data to dfs
         for df_name in ["params", "grads", "metrics"]:
             res[df_name]["noise_step"] = step
             res[df_name]["noise_level"] = step / noise_steps

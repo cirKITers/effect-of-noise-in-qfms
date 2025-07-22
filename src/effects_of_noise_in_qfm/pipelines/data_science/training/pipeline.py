@@ -69,7 +69,6 @@ def create_pipeline() -> Pipeline:
                     "convergence_steps": "params:training.convergence.steps",
                 },
                 outputs={
-                    "model": "trained_model",
                     "params": "trained_params",
                     "grads": "trained_grads",
                     "metrics": "trained_metrics",
