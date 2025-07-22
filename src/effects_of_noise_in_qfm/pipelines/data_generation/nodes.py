@@ -89,6 +89,7 @@ def generate_fourier_series(
     domain_samples: np.ndarray,
     omegas: Union[List[List[float]], int],
     amplitude: Union[float, str],
+    norm_factor: float,
     seed: Optional[int] = None,
 ) -> np.ndarray:
     """
@@ -102,6 +103,9 @@ def generate_fourier_series(
         List of frequencies for each dimension or number of frequencies
     amplitude : Union[float, str]
         "random" or amplitude value for all coefficients
+    norm_factor : float
+        normalisation factor for output value, such that the output is in the
+        range [-norm_factor, norm_factor].
     seed : Optional[int]: seed for random init
 
     Returns
@@ -131,7 +135,7 @@ def generate_fourier_series(
             for x in domain_samples
         ]
     )
-    norm_factor = np.max(np.abs(values))
+    norm_factor = np.max(np.abs(values)) / norm_factor
     values /= norm_factor
     coefficients /= norm_factor
 

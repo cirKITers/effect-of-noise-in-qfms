@@ -39,6 +39,7 @@ def create_pipeline() -> Pipeline:
                     "domain_samples": "domain_samples",
                     "omegas": "params:data.omegas",
                     "amplitude": "params:data.amplitude",
+                    "norm_factor": "params:data.norm_factor",
                     "seed": "params:data.seed",
                 },
                 outputs={

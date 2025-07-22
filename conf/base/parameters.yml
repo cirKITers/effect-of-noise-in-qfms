@@ -2,6 +2,7 @@ data:
   domain: [-3.1415, 3.1415] # domain of x values
   omegas: 5
   amplitude: "random"
+  norm_factor: 0.5
   seed: 1000
 
 model:
@@ -30,7 +31,7 @@ model:
       # T2: 10000.0
       # t_factor: 5
   noise_steps: 6
-  mp_threshold: 1000
+  mp_threshold: -1
 
 seed: 1000
 
