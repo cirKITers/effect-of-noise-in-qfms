@@ -30,7 +30,7 @@ model:
       # T1: 18000.0
       # T2: 10000.0
       # t_factor: 5
-  noise_steps: 6
+  noise_steps: 1
   mp_threshold: -1
 
 seed: 1000
@@ -57,7 +57,7 @@ coefficients:
   scale: True
 
 training:
-  steps: 3000
+  steps: 2000
   learning_rate: 0.01
   convergence:
     threshold: -1 # threshold for the cost, -1 to disable
