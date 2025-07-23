@@ -3,49 +3,50 @@
 #   flavor: python_function
 #
 trained_metrics:
-  type: kedro_mlflow.io.artifacts.MlflowArtifactDataset
+  type: effects_of_noise_in_qfm.datasets.mlflow_dataset.CustomMlflowArtifactDataset
   dataset:
     type: pandas.CSVDataset
     filepath: "trained_metrics.csv"
 
 trained_params:
-  type: kedro_mlflow.io.artifacts.MlflowArtifactDataset
+  type: effects_of_noise_in_qfm.datasets.mlflow_dataset.CustomMlflowArtifactDataset
   dataset:
     type: pandas.CSVDataset
     filepath: "params.csv"
 
 trained_grads:
-  type: kedro_mlflow.io.artifacts.MlflowArtifactDataset
+  type: effects_of_noise_in_qfm.datasets.mlflow_dataset.CustomMlflowArtifactDataset
   dataset:
     type: pandas.CSVDataset
     filepath: "grads.csv"
 
 coefficients_noise_layers:
-  type: kedro_mlflow.io.artifacts.MlflowArtifactDataset
+  type: effects_of_noise_in_qfm.datasets.mlflow_dataset.CustomMlflowArtifactDataset
   dataset:
     type: pandas.CSVDataset
     filepath: "coefficients_noise_layers.csv"
 
 expressibility_noise:
-  type: kedro_mlflow.io.artifacts.MlflowArtifactDataset
+  type: effects_of_noise_in_qfm.datasets.mlflow_dataset.CustomMlflowArtifactDataset
   dataset:
     type: pandas.CSVDataset
     filepath: "expressibility_noise.csv"
 
 entangling_capability_noise:
+  type: effects_of_noise_in_qfm.datasets.mlflow_dataset.CustomMlflowArtifactDataset
   type: kedro_mlflow.io.artifacts.MlflowArtifactDataset
   dataset:
     type: pandas.CSVDataset
     filepath: "entangling_capability_noise.csv"
 
 coefficients_noise:
-  type: kedro_mlflow.io.artifacts.MlflowArtifactDataset
+  type: effects_of_noise_in_qfm.datasets.mlflow_dataset.CustomMlflowArtifactDataset
   dataset:
     type: pandas.CSVDataset
     filepath: "coefficients_noise.csv"
 
 coefficients_noise_samples:
-  type: kedro_mlflow.io.artifacts.MlflowArtifactDataset
+  type: effects_of_noise_in_qfm.datasets.mlflow_dataset.CustomMlflowArtifactDataset
   dataset:
     type: pandas.CSVDataset
     filepath: "coefficients_noise_samples.csv"
