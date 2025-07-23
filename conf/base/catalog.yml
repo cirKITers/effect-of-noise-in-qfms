@@ -34,7 +34,6 @@ expressibility_noise:
 
 entangling_capability_noise:
   type: effects_of_noise_in_qfm.datasets.mlflow_dataset.CustomMlflowArtifactDataset
-  type: kedro_mlflow.io.artifacts.MlflowArtifactDataset
   dataset:
     type: pandas.CSVDataset
     filepath: "entangling_capability_noise.csv"
