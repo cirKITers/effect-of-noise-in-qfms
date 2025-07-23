@@ -73,7 +73,7 @@ class CustomMlflowArtifactDataset(AbstractVersionedDataset):
                     local_path = Path(self._path)
 
                 ## actual only difference to kedro_mlflow implementation: specify run_id in save name
-                local_path = Path(f"{local_path}_{run_id}")
+                local_path = local_path.parent.joinpath(run_id).joinpath(local_path.name)
                 self._filepath = local_path
 
                 # it must be converted to a string with as_posix()
