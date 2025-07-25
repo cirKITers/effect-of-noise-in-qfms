@@ -27,8 +27,14 @@
 module load devel/python/3.11.7
 # ~/effect-of-noise-in-qfms/.venv/bin/python -m kedro run --pipeline coefficients --params=$1
 # ~/effect-of-noise-in-qfms/.venv/bin/python -m kedro run --pipeline entanglement --params=$1
-~/effect-of-noise-in-qfms/.venv/bin/python -m kedro run --pipeline training --params=$1
 # ~/effect-of-noise-in-qfms/.venv/bin/python -m kedro run --pipeline expressibility --params=$1
+
+
+for training_seed in 1000 1001 1002 1003 1004 1005 1006 1007 1008 1009
+do
+    echo "--- Training Seed $training_seed ---"
+    ~/effect-of-noise-in-qfms/.venv/bin/python -m kedro run --pipeline training --params="$1,data.seed=$training_seed"
+done
 
 # Done
 exit 0
