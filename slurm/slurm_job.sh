@@ -26,7 +26,8 @@
 
 module load devel/python/3.11.7
 # ~/effect-of-noise-in-qfms/.venv/bin/python -m kedro run --pipeline coefficients --params=$1
-~/effect-of-noise-in-qfms/.venv/bin/python -m kedro run --pipeline entanglement --params=$1
+# ~/effect-of-noise-in-qfms/.venv/bin/python -m kedro run --pipeline entanglement --params=$1
+~/effect-of-noise-in-qfms/.venv/bin/python -m kedro run --pipeline training --params=$1
 # ~/effect-of-noise-in-qfms/.venv/bin/python -m kedro run --pipeline expressibility --params=$1
 
 # Done
