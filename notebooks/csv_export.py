@@ -6,17 +6,20 @@ from helper import (
     run_ids_from_experiment_id,
     get_expressibility_df,
     get_entanglement_df,
+    get_training_df,
 )
 from typing import Optional
 from runs.coefficient_runs import experiment_ids as coeff_eids
 from runs.coefficient_runs import experiment_ids_encoding as coeff_enc_eids
 from runs.expressibility_runs import experiment_ids as expr_eids
 from runs.entanglement_runs import experiment_ids as ent_eids
+from runs.training_runs import experiment_ids as training_eids
 
 CSV_DESTINATION = "plotting/rplots/csv_data"
 
 id_ent_file = f"{CSV_DESTINATION}/ent_ids.csv"
 id_expr_file = f"{CSV_DESTINATION}/expr_ids.csv"
+id_training_file = f"{CSV_DESTINATION}/training_ids.csv"
 
 
 def export_encoding_coeff_data(
@@ -47,6 +50,8 @@ def export_encoding_coeff_data(
 
     array_columns = [
         "coeffs_abs_mean",
+        "coeffs_abs_min",
+        "coeffs_abs_max",
         "coeffs_real_mean",
         "coeffs_imag_mean",
         "coeffs_abs_var",
@@ -165,6 +170,8 @@ def export_coeff_data(
 
     array_columns = [
         "coeffs_abs_mean",
+        "coeffs_abs_min",
+        "coeffs_abs_max",
         "coeffs_real_mean",
         "coeffs_imag_mean",
         "coeffs_abs_var",
@@ -236,7 +243,6 @@ def export_coeff_data(
                         f"Exported Full Coefficient Data for {n_dims} dims, {noise_type} and {q} qubits"
                     )
         else:
-            coeffs_df = coeffs_df.drop(columns=big_array_columns)
             if single:
                 result_file = f"{dest}/coeffs_stat.csv"
             else:
@@ -325,6 +331,43 @@ def export_ent_data(
     print("Exported Indices")
 
 
+def export_training_data(
+    experiment_id: Optional[str] = None,
+    single: bool = False,
+):
+    global CSV_DESTINATION
+    if single:
+        dest = f"{CSV_DESTINATION}/single"
+    else:
+        dest = CSV_DESTINATION
+    os.makedirs(dest, exist_ok=True)
+    if os.path.exists(id_training_file):
+        id_training = pd.read_csv(id_training_file)
+    else:
+        id_training = pd.DataFrame(columns=["run_id"])
+    eids = training_eids if experiment_id is None else [experiment_id]
+    training_run_ids = run_ids_from_experiment_id(
+        eids,
+        existing_run_ids=id_training["run_id"].to_list(),
+        experiment_type="training",
+    )
+    if len(training_run_ids) == 0:
+        return
+    training_df = get_training_df(training_run_ids)
+
+    result_file = f"{dest}/training.csv"
+    if os.path.exists(result_file):
+        training_df.to_csv(result_file, index=False, mode="a", header=False)
+    else:
+        training_df.to_csv(result_file, index=False)
+    print("Exported Training Data")
+
+    additional_runs = pd.DataFrame(training_df["run_id"], columns=["run_id"])
+    run_df = pd.concat([id_training, additional_runs], ignore_index=True)
+    run_df.drop_duplicates().to_csv(id_training_file, index=False)
+    print("Exported Indices")
+
+
 def get_arg_parser():
     parser = argparse.ArgumentParser(
         prog="MLFlow -> CSV Exporter",
@@ -386,6 +429,13 @@ def get_arg_parser():
         default=False,
         help="Store entangling capability data",
     )
+    parser.add_argument(
+        "-train",
+        "--training",
+        action="store_true",
+        default=False,
+        help="Store training data",
+    )
     args = parser.parse_args()
     return args
 
@@ -421,3 +471,5 @@ if __name__ == "__main__":
         export_expr_data(experiment_id=p.experiment_id, single=p.single)
     if p.entanglement:
         export_ent_data(experiment_id=p.experiment_id, single=p.single)
+    if p.training:
+        export_training_data(experiment_id=p.experiment_id, single=p.single)
