@@ -57,7 +57,7 @@ coefficients:
   scale: True
 
 training:
-  steps: 2000
+  steps: 1000
   learning_rate: 0.01
   convergence:
     threshold: -1 # threshold for the cost, -1 to disable
