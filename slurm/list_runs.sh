@@ -1,1 +1,1 @@
-find mlruns/$1 -maxdepth 1 -type d -printf '%f\n'
+find ~/effect-of-noise-in-qfms/mlruns/$1 -maxdepth 1 -type d -printf '%f\n'
