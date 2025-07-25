@@ -113,4 +113,4 @@ g <- ggplot(
     )
 
 save_name <- str_c("expr")
-create_plot(g, save_name, COLWIDTH, 0.38 * HEIGHT)
+create_plot(g, save_name, TEXTWIDTH, 0.7 * HEIGHT)

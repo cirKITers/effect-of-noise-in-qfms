@@ -171,7 +171,7 @@ g <- ggplot(
         independent = "y"
     ) +
     scale_x_continuous("Noise Level",
-        labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.02)
+        labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.01)
     ) +
     theme_paper() +
     guides(
@@ -226,7 +226,7 @@ g <- ggplot(
         )
     )
 save_name <- str_c("coeff_abs_mean")
-create_plot(g, save_name, COLWIDTH, 0.35 * HEIGHT)
+create_plot(g, save_name, COLWIDTH, 0.7 * HEIGHT)
 print(warnings())
 
 g <- ggplot(
@@ -246,7 +246,7 @@ g <- ggplot(
     ) +
     scale_linetype_manual("", values = c("solid", "11")) +
     scale_shape_manual("", values = c(4, 17)) +
-    scale_x_continuous("Noise Level", labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.02)) +
+    scale_x_continuous("Noise Level", labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.01)) +
     scale_y_continuous(ifelse(use_tikz, "$\\sigma_c({\\boldsymbol{\\omega}})$", "|c| Relative Standard Deviation"), ) +
     theme_paper() +
     guides(colour = guide_legend(nrow = 1), shape = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE), override.aes = list(alpha = 1, size = 3 * POINT.SIZE))) +
@@ -254,7 +254,7 @@ g <- ggplot(
         legend.margin = margin(b = -4)
     )
 save_name <- str_c("coeff_abs_sd")
-create_plot(g, save_name, COLWIDTH, 0.35 * HEIGHT)
+create_plot(g, save_name, COLWIDTH, 0.7 * HEIGHT)
 
 d_coeffs_6q <- d_coeffs %>%
     filter(n_input_feat == 1 & qubits == 6)
@@ -281,13 +281,13 @@ g <- ggplot(d_coeffs_6q, aes(x = noise_value, y = mean_abs, colour = as.factor(f
     )
 
 save_name <- str_c("coeff_mean_qubits6")
-create_plot(g, save_name, COLWIDTH, 0.3 * HEIGHT)
+create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)
 
 g <- ggplot(d_coeffs_6q, aes(x = noise_value, y = rel_sd, colour = as.factor(freq1))) +
     geom_point(size = POINT.SIZE) +
     geom_line(linewidth = LINE.SIZE) +
     scale_colour_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "Frequency"), values = COLOURS.LIST) +
-    scale_x_continuous("Noise Level", labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.02)) +
+    scale_x_continuous("Noise Level", labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.01)) +
     theme_paper() +
     guides(colour = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE))) +
     theme(
@@ -302,7 +302,7 @@ g <- ggplot(d_coeffs_6q, aes(x = noise_value, y = rel_sd, colour = as.factor(fre
     )
 
 save_name <- str_c("coeff_sd_qubits6")
-create_plot(g, save_name, COLWIDTH, 0.3 * HEIGHT)
+create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)
 
 d_coeffs_6q <- d_coeffs_6q %>%
     filter(noise_value %in% c(0, 0.03))
@@ -362,4 +362,4 @@ g <- ggplot(d_coeffs_6q, aes(x = var_type, y = var, colour = noise_category, sha
         legend.key.width = unit(0.2, "cm"),
     )
 save_name <- str_c("coeff_covar_qubits6_sel")
-create_plot(g, save_name, COLWIDTH, 0.21 * HEIGHT)
+create_plot(g, save_name, TEXTWIDTH, 0.3 * HEIGHT)
