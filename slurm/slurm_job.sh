@@ -21,8 +21,8 @@
 #
 # infos
 #
-# output path
-#SBATCH --output="~/effect-of-noise-in-qfms/logs/slurm/slurm-%j-%x.out"
+# output path (must be relative to the folder where the script was launched)
+#SBATCH --output="logs/slurm/slurm-%j-%x.out"
 
 module load devel/python/3.11.7
 # ~/effect-of-noise-in-qfms/.venv/bin/python -m kedro run --pipeline coefficients --params=$1
