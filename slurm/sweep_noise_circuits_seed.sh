@@ -7,5 +7,5 @@ for noise in BitFlip PhaseFlip AmplitudeDamping PhaseDamping Depolarizing StateP
 do
     echo "Running with noise type $noise"
 
-    ./sweep_qubits_noise_circuits_seed.sh $noise $1 $2
+    ~/effect-of-noise-in-qfms/slurm/sweep_qubits_noise_circuits_seed.sh $noise $1 $2
 done
