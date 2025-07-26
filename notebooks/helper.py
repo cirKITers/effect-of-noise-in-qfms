@@ -90,7 +90,11 @@ def get_training_df(run_ids, debug=False):
         "coeffs_imag",
         "frequencies",
     ]
-    df = pd.DataFrame(columns=columns + array_cols)
+    additional_array_cols = [
+        "target_coefficients_real",
+        "target_coefficients_imag",
+    ]
+    df = pd.DataFrame(columns=columns + array_cols + additional_array_cols)
 
     def list_converter(s):
         return np.array(ast.literal_eval(s), dtype=float)
@@ -144,6 +148,14 @@ def get_training_df(run_ids, debug=False):
         sub_df_a.loc[it, "encoding"] = encoding
         sub_df_a.loc[it, "n_input_feat"] = n_input_feat
 
+        target_coefficients_real = ast.literal_eval(client.get_run(run_id).data.params["target_coefficients_real"])
+        target_coefficients_imag = ast.literal_eval(client.get_run(run_id).data.params["target_coefficients_imag"])
+        target_coefficients_real = np.array(target_coefficients_real[len(target_coefficients_real) // 2:], dtype=object)
+        target_coefficients_imag = np.array(target_coefficients_imag[len(target_coefficients_imag) // 2:], dtype=object)
+
+        sub_df_a.loc[it, "target_coefficients_real"] = target_coefficients_real
+        sub_df_a.loc[it, "target_coefficients_imag"] = target_coefficients_imag
+
         noise_params = client.get_run(run_id).data.params["model.noise_params"]
         noise = [
             k for k, v in ast.literal_eval(noise_params).items() if float(v) > 0.0
@@ -158,16 +170,17 @@ def get_training_df(run_ids, debug=False):
                 "trained_metrics",
                 converters=converter_dict,
             )
+            df_new = pd.merge(sub_df_a.iloc[[-1]], sub_df_b, how="cross")
 
-            for ac in array_cols:
-                sub_df_b[ac] = sub_df_b[ac].apply(list)
+            for ac in array_cols + additional_array_cols:
+                df_new[ac] = df_new[ac].apply(list)
 
-            sub_df_b["original_idx"] = sub_df_b.index
-            sub_df_b = sub_df_b.explode(array_cols, ignore_index=True)
-            sub_df_b["coeff_idx"] = sub_df_b.groupby("original_idx").cumcount()
+            df_new["original_idx"] = df_new.index
+            df_new = df_new.explode(array_cols + additional_array_cols, ignore_index=True)
+            df_new["coeff_idx"] = df_new.groupby("original_idx").cumcount()
 
             df = pd.concat(
-                [df, pd.merge(sub_df_a.iloc[[-1]], sub_df_b, how="cross")]
+                [df, df_new]
             ).reset_index(drop=True)
 
         except Exception as e:
@@ -282,7 +295,7 @@ def get_expressibility_df(
 
         all_cfgs[ansatz][qubits][seed][noise][str(noise_value)]["RX"][2000] += 1
         if (
-            all_cfgs[ansatz][qubits][seed][noise][str(noise_value)]["RX"] > 1
+            all_cfgs[ansatz][qubits][seed][noise][str(noise_value)]["RX"][2000] > 1
             or qubits == 7
         ):
             continue
