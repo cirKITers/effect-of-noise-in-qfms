@@ -14,7 +14,7 @@ model:
   initialization: "random" # random, zero, zero-controlled, pi-controlled
   initialization_domain: [0, 6.283185307179586]
   shots: -1 # number or -1 if expectation value should be used
-  encoding: ["RX", "RY"]
+  encoding: ["RY"]
   noise_params:
     GateError: 0.0
     BitFlip: 0.0
