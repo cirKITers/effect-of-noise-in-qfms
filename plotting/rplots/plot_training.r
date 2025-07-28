@@ -39,6 +39,7 @@ d$noise_type[d$noise_value == 0] <- "Noiseless"
 
 d <- d %>%
     distinct(noise_type, noise_value, ansatz, qubits, frequencies, step, problem_seed, seed, .keep_all = TRUE) %>%
+    filter(is.numeric(target_coefficients_imag)) %>%
     mutate(
         coeff_abs = sqrt(coeffs_real^2 + coeffs_imag^2),
         abs_target = sqrt(target_coefficients_real^2 + target_coefficients_imag^2),
@@ -145,7 +146,8 @@ create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)
 
 g <- ggplot(
     d_summarised,
-    aes(x = step, y = mean_dist), colour = "black"
+    aes(x = step, y = mean_dist),
+    colour = "black"
 ) +
     # geom_point(size = POINT.SIZE) +
     geom_line(linewidth = LINE.SIZE) +
@@ -162,49 +164,27 @@ g <- ggplot(
 save_name <- str_c("training_coeff_dist")
 create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)
 
-g <- ggplot(
-    d,
-    aes(x = step, y = mean_coeff_abs, colour = as.factor(frequencies))
-) +
-    # geom_point(size = POINT.SIZE) +
-    geom_line(linewidth = LINE.SIZE) +
-    geom_line(aes(y = abs_target), linewidth = LINE.SIZE, linetype = "dashed") +
-    geom_ribbon(aes(ymin = coeff_lower_bound, ymax = coeff_upper_bound, fill = as.factor(frequencies)), alpha = 0.2, colour = NA) +
-    scale_colour_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), values = COLOURS.LIST) +
-    scale_fill_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), values = COLOURS.LIST) +
-    facet_nested(problem_seed + ansatz ~ noise_category + noise_type,
-        labeller = labeller(problem_seed = problem_labeller),
-        scale="free_y"
+for (filtered_seed in 1000:1010) {
+    g <- ggplot(
+        d %>% filter(problem_seed == filtered_seed),
+        aes(x = step, y = mean_coeff_abs, colour = as.factor(frequencies))
     ) +
-    scale_x_continuous("Step") +
-    scale_y_continuous("c") +
-    theme_paper() +
-    theme(
-        legend.margin = margin(b = -4)
-    ) +
-    guides(colour = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE)))
-save_name <- str_c("training_coeffs_full")
-create_plot(g, save_name, TEXTWIDTH, HEIGHT)
-
-filtered_seed <- 1000
-d_filtered <- d %>% filter(problem_seed == filtered_seed)
-g <- ggplot(
-    d_filtered,
-    aes(x = step, y = mean_coeff_abs, colour = as.factor(frequencies))
-) +
-    # geom_point(size = POINT.SIZE) +
-    geom_line(linewidth = LINE.SIZE) +
-    geom_line(aes(y = abs_target), linewidth = LINE.SIZE, linetype = "dashed") +
-    geom_ribbon(aes(ymin = coeff_lower_bound, ymax = coeff_upper_bound, fill = as.factor(frequencies)), alpha = 0.2, colour = NA) +
-    scale_colour_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), values = COLOURS.LIST) +
-    scale_fill_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), values = COLOURS.LIST) +
-    facet_nested(ansatz ~ noise_category + noise_type, scale="free_y") +
-    scale_x_continuous("Step") +
-    scale_y_continuous("c") +
-    theme_paper() +
-    theme(
-        legend.margin = margin(b = -4)
-    ) +
-    guides(colour = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE)))
-save_name <- str_c("training_coeffs_seed", filtered_seed)
-create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)
+        geom_line(linewidth = LINE.SIZE) +
+        geom_line(aes(y = abs_target), linewidth = LINE.SIZE, linetype = "dashed") +
+        geom_ribbon(aes(ymin = coeff_lower_bound, ymax = coeff_upper_bound, fill = as.factor(frequencies)), alpha = 0.2, colour = NA) +
+        scale_colour_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), values = COLOURS.LIST) +
+        scale_fill_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), values = COLOURS.LIST) +
+        facet_nested(problem_seed + ansatz ~ noise_category + noise_type,
+            labeller = labeller(problem_seed = problem_labeller),
+            scale = "free_y"
+        ) +
+        scale_x_continuous("Step", breaks = seq(0, 1000, 250)) +
+        scale_y_continuous("c", limits = c(0, 0.6)) +
+        theme_paper() +
+        theme(
+            legend.margin = margin(b = -4)
+        ) +
+        guides(colour = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE)))
+    save_name <- str_c("training_coeffs_seed", filtered_seed)
+    create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)
+}

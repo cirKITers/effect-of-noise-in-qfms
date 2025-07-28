@@ -13,7 +13,7 @@ plot_coeffs_encoding_pdf: img-pdf/coeff_real_imag_encoding.pdf
 plot_coherent_pdf: img-pdf/n_freqs.pdf
 plot_expr_pdf: img-pdf/expr.pdf
 plot_ent_pdf: img-pdf/ent.pdf
-plot_training_pdf: img-pdf/training_coeffs_full.pdf
+plot_training_pdf: img-pdf/training_mse.pdf
 
 plot_coeffs: img-tikz/coeff_real_imag_qubits6.tex
 plot_coeffs_all: img-tikz/coeff_mean_qubits5.tex
@@ -22,7 +22,7 @@ plot_coeffs_encoding: img-tikz/coeff_real_imag_encoding.tex
 plot_coherent: img-tikz/n_freqs.tex
 plot_expr: img-tikz/expr.tex
 plot_ent: img-tikz/ent.tex
-plot_training: img-tikz/training_coeffs_full.tex
+plot_training: img-tikz/training_mse.tex
 
 gen: img-tikz
 	if [ -a img-tikz/coeff_real_imag_encoding.tex ]; then \
@@ -74,7 +74,7 @@ img-pdf/ent.pdf: layout.r plot_ent.r csv_data
 	mkdir -p img-pdf
 	Rscript plot_ent.r pdf
 
-img-pdf/training_coeffs_full.pdf: layout.r plot_training.r csv_data/training.csv
+img-pdf/training_mse.pdf: layout.r plot_training.r csv_data/training.csv
 	mkdir -p img-pdf
 	Rscript plot_training.r pdf
 
@@ -110,7 +110,7 @@ img-tikz/ent.tex: layout.r plot_ent.r csv_data
 	mkdir -p img-tikz
 	Rscript plot_ent.r
 
-img-tikz/training_coeffs_full.tex: layout.r plot_training.r csv_data/training.csv
+img-tikz/training_mse.tex: layout.r plot_training.r csv_data/training.csv
 	mkdir -p img-tikz
 	Rscript plot_training.r
 
