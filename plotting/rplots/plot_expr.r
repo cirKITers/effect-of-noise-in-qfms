@@ -92,7 +92,7 @@ g <- ggplot(
     geom_ribbon(aes(ymin = lower_bound, ymax = upper_bound, fill = as.factor(qubits)), alpha = 0.5, colour = NA) +
     scale_colour_manual(ifelse(use_tikz, "\\# Qubits", "# Qubits"), values = COLOURS.LIST) +
     scale_fill_manual(ifelse(use_tikz, "\\# Qubits", "# Qubits"), values = COLOURS.LIST) +
-    facet_nested(noise_category + noise_type ~ ansatz,
+    facet_nested(ansatz ~ noise_category + noise_type,
         labeller = labeller(
             frequency = frequencies_labeller,
             qubits = qubit_labeller,
@@ -102,7 +102,7 @@ g <- ggplot(
     theme_paper() +
     guides(colour = guide_legend(nrow = 1)) +
     scale_y_log10(
-        ifelse(use_tikz, "\\small{more expressive} \\normalsize{$\\leftarrow\\qquad$ KL-Divergence [log] $\\qquad \\rightarrow$} \\small{less expressive}", "KL-Divergence [log]"),
+        ifelse(use_tikz, "\\scriptsize{more expressive} \\normalsize{$\\leftarrow$    KL-Divergence [log]    $\\rightarrow$} \\scriptsize{less expressive}", "KL-Divergence [log]"),
         breaks = c(1e-2, 1e0, 1e2),
         labels = trans_format("log10", math_format(10^.x)),
     ) +
@@ -113,4 +113,4 @@ g <- ggplot(
     )
 
 save_name <- str_c("expr")
-create_plot(g, save_name, TEXTWIDTH, 0.7 * HEIGHT)
+create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)

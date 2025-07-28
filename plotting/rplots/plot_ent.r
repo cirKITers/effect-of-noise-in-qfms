@@ -94,14 +94,14 @@ g <- ggplot(
     scale_colour_manual(ifelse(use_tikz, "\\# Qubits", "# Qubits"), values = COLOURS.LIST) +
     scale_fill_manual(ifelse(use_tikz, "\\# Qubits", "# Qubits"), values = COLOURS.LIST) +
     scale_shape_manual("Measure", values = c(4, 19)) +
-    facet_nested(noise_category + noise_type ~ ansatz + measure,
+    facet_nested(ansatz ~ noise_category + noise_type + measure,
         labeller = labeller(
             frequency = frequencies_labeller,
             qubits = qubit_labeller,
         ),
         scale = "free_x",
     ) +
-    scale_x_continuous("Noise Level", labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.01)) +
+    scale_x_continuous("Noise Level", labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.02)) +
     scale_y_log10("Entangling Capability [log]") +
     theme_paper() +
     guides(
@@ -113,7 +113,7 @@ g <- ggplot(
         legend.key.height = unit(0.2, "cm"),
         legend.key.width = unit(0.2, "cm")
     ) +
-    force_panelsizes(cols = c(2, 5)) +
+    force_panelsizes(cols = c(4, 7)) +
     facetted_pos_scales(
         x = list(
             measure == "MW" ~ scale_x_continuous("Noise Level", limits = c(-0.001, 0.001), breaks = seq(-1, 1, 1), labels = ifelse(use_tikz, latex_percent, scales::percent))
@@ -122,7 +122,7 @@ g <- ggplot(
 
 
 save_name <- str_c("ent")
-create_plot(g, save_name, TEXTWIDTH, 0.7 * HEIGHT)
+create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)
 
 
 d_meyer_wallach <- d_ent %>%
@@ -150,4 +150,4 @@ g <- ggplot(
     )
 
 save_name <- str_c("ent_mw")
-create_plot(g, save_name, TEXTWIDTH, 0.25 * HEIGHT)
+create_plot(g, save_name, 0.5 * TEXTWIDTH, 0.15 * HEIGHT)

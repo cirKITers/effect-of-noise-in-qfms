@@ -23,7 +23,7 @@ plot_expr: img-tikz/expr.tex
 plot_ent: img-tikz/ent.tex
 
 gen: img-tikz
-	if [ -a img-tikz/coeff_real_imag* ]; then \
+	if [ -a img-tikz/coeff_real_imag_encoding.tex ]; then \
 		sed -i "s/{coeff_real_imag/{img-tikz\/coeff_real_imag/g" img-tikz/coeff_real_imag*; \
 	fi;
 	bash gen_img.sh
