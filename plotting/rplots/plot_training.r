@@ -34,10 +34,18 @@ d <- d %>%
     ) %>%
     filter(!is.na(noise_value))
 
+
+d$noise_type[d$noise_value == 0] <- "Noiseless"
+
 d <- d %>%
-    mutate(coeff_abs = sqrt(coeffs_real^2 + coeffs_imag^2)) %>%
+    distinct(noise_type, noise_value, ansatz, qubits, frequencies, step, problem_seed, seed, .keep_all = TRUE) %>%
+    mutate(
+        coeff_abs = sqrt(coeffs_real^2 + coeffs_imag^2),
+        abs_target = sqrt(target_coefficients_real^2 + target_coefficients_imag^2),
+    ) %>%
     group_by(noise_type, noise_value, ansatz, qubits, frequencies, step, problem_seed) %>%
     summarise(
+        abs_target = mean(abs_target),
         mean_coeff_abs = mean(coeff_abs),
         sd_coeff_abs = sd(coeff_abs),
         mean_mse = mean(mse),
@@ -55,17 +63,17 @@ d <- d %>%
                 ifelse(
                     noise_type %in% c("AmplitudeDamping", "PhaseDamping"),
                     "Damping",
-                    "Coh."
+                    ifelse(
+                        noise_type == "GateError",
+                        "Coh.",
+                        ""
+                    )
                 )
             )
         ),
         noise_value = round(noise_value, digits = 3),
         coeff_lower_bound = mean_coeff_abs - sd_coeff_abs,
         coeff_upper_bound = mean_coeff_abs + sd_coeff_abs,
-        mse_lower_bound = mean_mse - sd_mse,
-        mse_upper_bound = mean_mse + sd_mse,
-        dist_lower_bound = mean_dist - sd_dist,
-        dist_upper_bound = mean_dist + sd_dist,
     )
 
 d$noise_category <- factor(d$noise_category, levels = c("", "Decoherent Gate", "SPAM", "Damping", "Coh."))
@@ -89,37 +97,13 @@ d$ansatz <- factor(d$ansatz,
     labels = c("SEA", "HEA", "Circuit 15", "Circuit 19")
 )
 
-d$noise_type[d$noise_value == 0] <- "Noiseless"
-d$noise_category[d$noise_value == 0] <- ""
-
-d <- d %>% distinct(noise_category, noise_type, ansatz, qubits, frequencies, step, problem_seed, .keep_all = TRUE)
-
-g <- ggplot(
-    d,
-    aes(x = step, y = mean_coeff_abs, colour = as.factor(frequencies))
-) +
-    # geom_point(size = POINT.SIZE) +
-    geom_line(linewidth = LINE.SIZE) +
-    geom_ribbon(aes(ymin = coeff_lower_bound, ymax = coeff_upper_bound, fill = as.factor(frequencies)), alpha = 0.2, colour = NA) +
-    scale_colour_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), values = COLOURS.LIST) +
-    scale_fill_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), values = COLOURS.LIST) +
-    facet_nested(noise_category + noise_type ~ problem_seed + ansatz) +
-    scale_x_continuous("Step") +
-    scale_y_continuous("c") +
-    theme_paper() +
-    theme(
-        legend.margin = margin(b = -4)
-    )
-save_name <- str_c("training_coeffs")
-create_plot(g, save_name, COLWIDTH, 0.7 * HEIGHT)
-
-d <- d %>%
-    group_by(noise_category, noise_type, ansatz, qubits, step, problem_seed) %>%
+d_summarised <- d %>%
+    group_by(noise_category, noise_type, ansatz, qubits, step) %>%
     summarise(
         mean_mse = mean(mean_mse),
         sd_mse = mean(sd_mse),
         mean_dist = mean(mean_dist),
-        sd_dist = mean(mean_dist)
+        sd_dist = mean(sd_dist)
     ) %>%
     mutate(
         mse_lower_bound = mean_mse - sd_mse,
@@ -129,34 +113,46 @@ d <- d %>%
     )
 
 g <- ggplot(
-    d,
-    aes(x = step, y = mean_mse, colour = as.factor(qubits))
+    d_summarised,
+    # aes(x = step, y = mean_mse, colour = noise_category, linetype = noise_type)
+    aes(x = step, y = mean_mse),
+    colour = "black"
 ) +
     # geom_point(size = POINT.SIZE) +
     geom_line(linewidth = LINE.SIZE) +
-    geom_ribbon(aes(ymin = mse_lower_bound, ymax = mse_upper_bound, fill = as.factor(qubits)), alpha = 0.2, colour = NA) +
-    scale_colour_manual(ifelse(use_tikz, "\\# Qubits", "# Qubits"), values = COLOURS.LIST) +
-    scale_fill_manual(ifelse(use_tikz, "\\# Qubits", "# Qubits"), values = COLOURS.LIST) +
-    facet_nested(noise_category + noise_type ~ problem_seed + ansatz) +
-    scale_x_continuous("MSE") +
-    scale_y_continuous("c") +
+    geom_ribbon(aes(ymin = mse_lower_bound, ymax = mse_upper_bound), fill = "black", alpha = 0.2, colour = NA) +
+    # scale_colour_manual("", values = COLOURS.LIST) +
+    # scale_fill_manual("", values = COLOURS.LIST) +
+    # scale_linetype_manual("", values = c(1, 2)) +
+    facet_nested(ansatz ~ noise_category + noise_type) +
+    scale_x_continuous("Step") +
+    scale_y_continuous("MSE") +
     theme_paper() +
     theme(
         legend.margin = margin(b = -4)
     )
+# guides(
+#     linetype = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE), override.aes = list(
+#         colour = c(COLOURS.LIST[1], COLOURS.LIST[2]), # , COLOURS.LIST[2], COLOURS.LIST[2], COLOURS.LIST[3], COLOURS.LIST[3], COLOURS.LIST[4], COLOURS.LIST[4], COLOURS.LIST[5]),
+#         fill = c(COLOURS.LIST[1], COLOURS.LIST[2]) # , COLOURS.LIST[2], COLOURS.LIST[2], COLOURS.LIST[3], COLOURS.LIST[3], COLOURS.LIST[4], COLOURS.LIST[4], COLOURS.LIST[5]),
+
+#     )),
+#     colour = "none",
+#     fill = "none",
+# )
 save_name <- str_c("training_mse")
-create_plot(g, save_name, COLWIDTH, 0.7 * HEIGHT)
+create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)
 
 g <- ggplot(
-    d,
-    aes(x = step, y = mean_dist, colour = as.factor(qubits))
+    d_summarised,
+    aes(x = step, y = mean_dist), colour = "black"
 ) +
     # geom_point(size = POINT.SIZE) +
     geom_line(linewidth = LINE.SIZE) +
-    geom_ribbon(aes(ymin = dist_lower_bound, ymax = dist_upper_bound, fill = as.factor(qubits)), alpha = 0.2, colour = NA) +
-    scale_colour_manual(ifelse(use_tikz, "\\# Qubits", "# Qubits"), values = COLOURS.LIST) +
-    scale_fill_manual(ifelse(use_tikz, "\\# Qubits", "# Qubits"), values = COLOURS.LIST) +
-    facet_nested(noise_category + noise_type ~ problem_seed + ansatz) +
+    geom_ribbon(aes(ymin = dist_lower_bound, ymax = dist_upper_bound), fill = "black", alpha = 0.2, colour = NA) +
+    # scale_colour_manual(ifelse(use_tikz, "\\# Qubits", "# Qubits"), values = COLOURS.LIST) +
+    # scale_fill_manual(ifelse(use_tikz, "\\# Qubits", "# Qubits"), values = COLOURS.LIST) +
+    facet_nested(ansatz ~ noise_category + noise_type) +
     scale_x_continuous("Step") +
     scale_y_continuous("Coefficient Distance") +
     theme_paper() +
@@ -164,4 +160,48 @@ g <- ggplot(
         legend.margin = margin(b = -4)
     )
 save_name <- str_c("training_coeff_dist")
-create_plot(g, save_name, COLWIDTH, 0.7 * HEIGHT)
+create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)
+
+g <- ggplot(
+    d,
+    aes(x = step, y = mean_coeff_abs, colour = as.factor(frequencies))
+) +
+    # geom_point(size = POINT.SIZE) +
+    geom_line(linewidth = LINE.SIZE) +
+    geom_line(aes(y = abs_target), linewidth = LINE.SIZE, linetype = "dashed") +
+    geom_ribbon(aes(ymin = coeff_lower_bound, ymax = coeff_upper_bound, fill = as.factor(frequencies)), alpha = 0.2, colour = NA) +
+    scale_colour_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), values = COLOURS.LIST) +
+    scale_fill_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), values = COLOURS.LIST) +
+    facet_nested(problem_seed + ansatz ~ noise_category + noise_type,
+        labeller = labeller(problem_seed = problem_labeller)
+    ) +
+    scale_x_continuous("Step") +
+    scale_y_continuous("c") +
+    theme_paper() +
+    theme(
+        legend.margin = margin(b = -4)
+    )
+save_name <- str_c("training_coeffs_full")
+create_plot(g, save_name, TEXTWIDTH, 0.8 * HEIGHT)
+
+filtered_seed <- 1000
+d_filtered <- d %>% filter(problem_seed == filtered_seed)
+g <- ggplot(
+    d_filtered,
+    aes(x = step, y = mean_coeff_abs, colour = as.factor(frequencies))
+) +
+    # geom_point(size = POINT.SIZE) +
+    geom_line(linewidth = LINE.SIZE) +
+    geom_line(aes(y = abs_target), linewidth = LINE.SIZE, linetype = "dashed") +
+    geom_ribbon(aes(ymin = coeff_lower_bound, ymax = coeff_upper_bound, fill = as.factor(frequencies)), alpha = 0.2, colour = NA) +
+    scale_colour_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), values = COLOURS.LIST) +
+    scale_fill_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), values = COLOURS.LIST) +
+    facet_nested(ansatz ~ noise_category + noise_type) +
+    scale_x_continuous("Step") +
+    scale_y_continuous("c") +
+    theme_paper() +
+    theme(
+        legend.margin = margin(b = -4)
+    )
+save_name <- str_c("training_coeffs_seed", filtered_seed)
+create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)

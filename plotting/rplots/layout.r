@@ -57,6 +57,10 @@ circuit_labeller <- function(layer) {
   paste0("Circuit ", layer)
 }
 
+problem_labeller <- function(layer) {
+  paste0("Problem Seed=", layer)
+}
+
 frequencies_labeller <- function(layer) {
     paste0(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), " = ", layer)
 }
