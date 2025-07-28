@@ -154,34 +154,32 @@ create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)
 
 g <- ggplot(
     d_summarised,
-    # aes(x = step, y = mean_mse, colour = noise_category, linetype = noise_type)
-    aes(x = step, y = mean_mse),
-    colour = "black"
+    aes(x = step, y = mean_mse, colour = noise_category, linetype = noise_type)
 ) +
-    # geom_point(size = POINT.SIZE) +
     geom_line(linewidth = LINE.SIZE) +
     geom_ribbon(aes(ymin = mse_lower_bound, ymax = mse_upper_bound), fill = "black", alpha = 0.2, colour = NA) +
-    # scale_colour_manual("", values = COLOURS.LIST) +
-    # scale_fill_manual("", values = COLOURS.LIST) +
-    # scale_linetype_manual("", values = c(1, 2)) +
-    facet_nested(ansatz ~ noise_category + noise_type) +
+    scale_colour_manual("", values = COLOURS.LIST) +
+    scale_fill_manual("", values = COLOURS.LIST) +
+    scale_linetype_manual("", values = c(1, 1, 2, 3, 1, 2, 1, 2, 1)) +
+    facet_nested(ansatz ~ .) +
     scale_x_continuous("Step") +
     scale_y_continuous("MSE") +
     theme_paper() +
     theme(
-        legend.margin = margin(b = -4)
+        legend.margin = margin(b = -4),
+        legend.key.height = unit(0.2, "cm"),
+        legend.key.width = unit(0.2, "cm")
+    ) +
+    guides(
+        linetype = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE), override.aes = list(
+            colour = c(COLOURS.LIST[1], COLOURS.LIST[2]), # , COLOURS.LIST[2], COLOURS.LIST[2], COLOURS.LIST[3], COLOURS.LIST[3], COLOURS.LIST[4], COLOURS.LIST[4], COLOURS.LIST[5]),
+            fill = c(COLOURS.LIST[1], COLOURS.LIST[2]) # , COLOURS.LIST[2], COLOURS.LIST[2], COLOURS.LIST[3], COLOURS.LIST[3], COLOURS.LIST[4], COLOURS.LIST[4], COLOURS.LIST[5]),
+        )),
+        colour = "none",
+        fill = "none",
     )
-# guides(
-#     linetype = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE), override.aes = list(
-#         colour = c(COLOURS.LIST[1], COLOURS.LIST[2]), # , COLOURS.LIST[2], COLOURS.LIST[2], COLOURS.LIST[3], COLOURS.LIST[3], COLOURS.LIST[4], COLOURS.LIST[4], COLOURS.LIST[5]),
-#         fill = c(COLOURS.LIST[1], COLOURS.LIST[2]) # , COLOURS.LIST[2], COLOURS.LIST[2], COLOURS.LIST[3], COLOURS.LIST[3], COLOURS.LIST[4], COLOURS.LIST[4], COLOURS.LIST[5]),
-
-#     )),
-#     colour = "none",
-#     fill = "none",
-# )
 save_name <- str_c("training_mse")
-create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)
+create_plot(g, save_name, TEXTWIDTH, 0.2 * HEIGHT)
 
 for (filtered_seed in 1000:1009) {
     g <- ggplot(
