@@ -39,22 +39,10 @@ d$noise_type[d$noise_value == 0] <- "Noiseless"
 
 d <- d %>%
     distinct(noise_type, noise_value, ansatz, qubits, frequencies, step, problem_seed, seed, .keep_all = TRUE) %>%
-    filter(is.numeric(target_coefficients_imag)) %>%
     mutate(
         coeff_abs = sqrt(coeffs_real^2 + coeffs_imag^2),
         abs_target = sqrt(target_coefficients_real^2 + target_coefficients_imag^2),
-    ) %>%
-    group_by(noise_type, noise_value, ansatz, qubits, frequencies, step, problem_seed) %>%
-    summarise(
-        abs_target = mean(abs_target),
-        mean_coeff_abs = mean(coeff_abs),
-        sd_coeff_abs = sd(coeff_abs),
-        mean_mse = mean(mse),
-        sd_mse = sd(mse),
-        mean_dist = mean(coeff_dist),
-        sd_dist = sd(coeff_dist),
-    ) %>%
-    mutate(
+        coeff_abs_dist = abs(coeff_abs - abs_target),
         noise_category = ifelse(
             noise_type %in% c("BitFlip", "PhaseFlip", "Depolarizing"),
             "Decoherent Gate",
@@ -73,8 +61,6 @@ d <- d %>%
             )
         ),
         noise_value = round(noise_value, digits = 3),
-        coeff_lower_bound = mean_coeff_abs - sd_coeff_abs,
-        coeff_upper_bound = mean_coeff_abs + sd_coeff_abs,
     )
 
 d$noise_category <- factor(d$noise_category, levels = c("", "Decoherent Gate", "SPAM", "Damping", "Coh."))
@@ -98,6 +84,38 @@ d$ansatz <- factor(d$ansatz,
     labels = c("SEA", "HEA", "Circuit 15", "Circuit 19")
 )
 
+
+
+d_summarised_freq <- d %>%
+    group_by(noise_category, noise_type, ansatz, qubits, step, frequencies) %>%
+    summarise(
+        mean_abs_dist = mean(coeff_abs_dist),
+        sd_abs_dist = sd(coeff_abs_dist),
+    ) %>%
+    mutate(
+        dist_lower_bound = mean_abs_dist - sd_abs_dist,
+        dist_upper_bound = mean_abs_dist + sd_abs_dist,
+    )
+
+
+d <- d %>%
+    group_by(noise_category, noise_type, noise_value, ansatz, qubits, frequencies, step, problem_seed) %>%
+    summarise(
+        abs_target = mean(abs_target),
+        mean_coeff_abs = mean(coeff_abs),
+        sd_coeff_abs = sd(coeff_abs),
+        mean_abs_dist = mean(coeff_abs_dist),
+        sd_abs_dist = sd(coeff_abs_dist),
+        mean_mse = mean(mse),
+        sd_mse = sd(mse),
+        mean_dist = mean(coeff_dist),
+        sd_dist = sd(coeff_dist),
+    ) %>%
+    mutate(
+        coeff_lower_bound = mean_coeff_abs - sd_coeff_abs,
+        coeff_upper_bound = mean_coeff_abs + sd_coeff_abs,
+    )
+
 d_summarised <- d %>%
     group_by(noise_category, noise_type, ansatz, qubits, step) %>%
     summarise(
@@ -112,6 +130,27 @@ d_summarised <- d %>%
         dist_lower_bound = mean_dist - sd_dist,
         dist_upper_bound = mean_dist + sd_dist,
     )
+
+g <- ggplot(
+    d_summarised_freq,
+    aes(x = step, y = mean_abs_dist, colour = as.factor(frequencies))
+) +
+    geom_line(linewidth = LINE.SIZE) +
+    geom_ribbon(aes(ymin = dist_lower_bound, ymax = dist_upper_bound, fill = as.factor(frequencies)), alpha = 0.2, colour = NA) +
+    scale_colour_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), values = COLOURS.LIST) +
+    scale_fill_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), values = COLOURS.LIST) +
+    facet_nested(ansatz ~ noise_category + noise_type,
+        scale = "free_y"
+    ) +
+    scale_x_continuous("Step", breaks = seq(0, 1000, 250)) +
+    scale_y_continuous("Coefficient Distance") +
+    theme_paper() +
+    theme(
+        legend.margin = margin(b = -4)
+    ) +
+    guides(colour = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE)))
+save_name <- str_c("training_coeff_dist")
+create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)
 
 g <- ggplot(
     d_summarised,
@@ -142,26 +181,6 @@ g <- ggplot(
 #     fill = "none",
 # )
 save_name <- str_c("training_mse")
-create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)
-
-g <- ggplot(
-    d_summarised,
-    aes(x = step, y = mean_dist),
-    colour = "black"
-) +
-    # geom_point(size = POINT.SIZE) +
-    geom_line(linewidth = LINE.SIZE) +
-    geom_ribbon(aes(ymin = dist_lower_bound, ymax = dist_upper_bound), fill = "black", alpha = 0.2, colour = NA) +
-    # scale_colour_manual(ifelse(use_tikz, "\\# Qubits", "# Qubits"), values = COLOURS.LIST) +
-    # scale_fill_manual(ifelse(use_tikz, "\\# Qubits", "# Qubits"), values = COLOURS.LIST) +
-    facet_nested(ansatz ~ noise_category + noise_type) +
-    scale_x_continuous("Step") +
-    scale_y_continuous("Coefficient Distance") +
-    theme_paper() +
-    theme(
-        legend.margin = margin(b = -4)
-    )
-save_name <- str_c("training_coeff_dist")
 create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)
 
 for (filtered_seed in 1000:1009) {
