@@ -1,7 +1,9 @@
 data:
   domain: [-3.1415, 3.1415] # domain of x values
   omegas: 5
-  amplitude: 0.5
+  amplitude: "random"
+  norm_factor: 0.5
+  seed: 1000
 
 model:
   n_qubits: 5
@@ -12,7 +14,7 @@ model:
   initialization: "random" # random, zero, zero-controlled, pi-controlled
   initialization_domain: [0, 6.283185307179586]
   shots: -1 # number or -1 if expectation value should be used
-  encoding: ["RX", "RY"]
+  encoding: ["RY"]
   noise_params:
     GateError: 0.0
     BitFlip: 0.0
@@ -28,8 +30,8 @@ model:
       # T1: 18000.0
       # T2: 10000.0
       # t_factor: 5
-  noise_steps: 6
-  mp_threshold: 1000
+  noise_steps: 1
+  mp_threshold: -1
 
 seed: 1000
 
@@ -57,9 +59,7 @@ coefficients:
 training:
   steps: 1000
   learning_rate: 0.01
-  batch_size: -1
-  log_entangling: False
   convergence:
-    threshold: 5e-4 # threshold for the cost, -1 to disable
+    threshold: -1 # threshold for the cost, -1 to disable
     gradient: -1 # threshold for the cost gradient, -1 to disable
     steps: 50 # gradient is checked for the last n steps (mavg)

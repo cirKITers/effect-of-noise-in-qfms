@@ -63,7 +63,7 @@ g <- ggplot(d_coeffs %>% filter(qubits == 6 & coeffs_abs > 1e-14), aes(x = coeff
         legend.margin = margin(b = -6, t = 0)
     )
 save_name <- str_c("coeff_real_imag_encoding")
-create_plot(g, save_name, COLWIDTH, 0.28 * HEIGHT)
+create_plot(g, save_name, TEXTWIDTH, 0.3 * HEIGHT)
 
 d_coeffs <- d_coeffs %>%
     group_by(ansatz, qubits, freq1, encoding) %>%
@@ -103,7 +103,7 @@ g <- ggplot(d_coeffs, aes(x = freq1, y = mean_coeff, colour = qubits)) +
     guides(colour = guide_legend(reverse = T))
 
 save_name <- str_c("coeff_mean_encoding")
-create_plot(g, save_name, COLWIDTH, 0.2 * HEIGHT)
+create_plot(g, save_name, 0.48 * COLWIDTH, 0.25 * HEIGHT)
 
 g <- ggplot(d_coeffs, aes(x = freq1, y = sd_coeff, colour = qubits)) +
     geom_point(size = POINT.SIZE) +
@@ -127,4 +127,4 @@ g <- ggplot(d_coeffs, aes(x = freq1, y = sd_coeff, colour = qubits)) +
     guides(colour = guide_legend(reverse = T))
 
 save_name <- str_c("coeff_sd_encoding")
-create_plot(g, save_name, COLWIDTH, 0.2 * HEIGHT)
+create_plot(g, save_name, 0.48 * TEXTWIDTH, 0.25 * HEIGHT)

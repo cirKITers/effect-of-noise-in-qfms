@@ -128,4 +128,4 @@ g <- ggplot(
         legend.key.width = unit(0.2, "cm")
     )
 save_name <- str_c("n_freqs")
-create_plot(g, save_name, COLWIDTH, 0.17 * HEIGHT)
+create_plot(g, save_name, TEXTWIDTH, 0.25 * HEIGHT)

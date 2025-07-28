@@ -111,7 +111,7 @@ g <- ggplot(d_coeffs_ansatz %>% filter(noise_type %in% c("Noiseless", "AD") & fr
     scale_colour_manual("", values = c(COLOURS.LIST[1],COLOURS.LIST[4])) +
     scale_shape_manual("", values = c(19, 15)) +
     theme_paper() +
-    scale_x_continuous(ifelse(use_tikz, "$c_{\\boldsymbol{\\omega}}(\\boldsymbol{\\theta})$", "c"), limits = c(-0.3, 0.3)) +
+    scale_x_continuous(ifelse(use_tikz, "$c_{\\boldsymbol{0}}(\\boldsymbol{\\theta})$", "c"), limits = c(-0.3, 0.3)) +
     scale_y_discrete("", breaks = c("Noiseless", "AD")) +
     theme(
         legend.margin = margin(b = -4, t = 0),
@@ -119,4 +119,4 @@ g <- ggplot(d_coeffs_ansatz %>% filter(noise_type %in% c("Noiseless", "AD") & fr
         legend.key.height = unit(0.2, "cm"),
     )
 save_name <- str_c("coeff_real_AD_qubits6")
-create_plot(g, save_name, COLWIDTH, 0.1 * HEIGHT)
+create_plot(g, save_name, TEXTWIDTH, 0.1 * HEIGHT)

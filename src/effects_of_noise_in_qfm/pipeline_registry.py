@@ -12,7 +12,7 @@ from effects_of_noise_in_qfm.pipelines.data_science.entanglement.pipeline import
     create_pipeline as create_entanglement_pipeline,
 )
 from effects_of_noise_in_qfm.pipelines.data_science.training.pipeline import (
-    create_pipeline as create_training_pipeline,
+    create_noise_iteration_pipeline as create_training_pipeline,
 )
 from effects_of_noise_in_qfm.pipelines.data_science.expressibility.pipeline import (
     create_pipeline as create_expressibility_pipeline,

@@ -1,0 +1,1 @@
+wc -l `find ~/effect-of-noise-in-qfms/logs/slurm -type f -name '*.out'`

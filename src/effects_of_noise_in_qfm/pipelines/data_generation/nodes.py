@@ -1,9 +1,10 @@
 from qml_essentials.model import Model
-from qml_essentials.ansaetze import Gates
+from qml_essentials.coefficients import Coefficients
 from pennylane import Hadamard
 
-from typing import List, Union
+from typing import List, Union, Optional
 import numpy as np
+import mlflow
 
 import logging
 
@@ -86,8 +87,10 @@ def sample_domain(domain: List[float], omegas: List[List[float]]) -> np.ndarray:
 
 def generate_fourier_series(
     domain_samples: np.ndarray,
-    omegas: List[List[float]],
-    coefficients: List[List[float]],
+    omegas: Union[List[List[float]], int],
+    amplitude: Union[float, str],
+    norm_factor: float,
+    seed: Optional[int] = None,
 ) -> np.ndarray:
     """
     Generates the Fourier series representation of a function.
@@ -96,44 +99,50 @@ def generate_fourier_series(
     ----------
     domain_samples : np.ndarray
         Grid of domain samples.
-    omega : List[List[float]]
-        List of frequencies for each dimension.
+    omega : Union[List[List[float]], int]
+        List of frequencies for each dimension or number of frequencies
+    amplitude : Union[float, str]
+        "random" or amplitude value for all coefficients
+    norm_factor : float
+        normalisation factor for output value, such that the output is in the
+        range [-norm_factor, norm_factor].
+    seed : Optional[int]: seed for random init
 
     Returns
     -------
     np.ndarray
         Fourier series representation of the function.
     """
-    if not isinstance(omegas, list):
-        omegas = [o for o in range(omegas + 1)]
-    if not isinstance(coefficients, list):
-        coefficients = [coefficients for _ in omegas]
-
-    assert len(omegas) == len(
-        coefficients
-    ), "Number of frequencies and coefficients must match"
-
+    if isinstance(omegas, int):
+        omegas = np.arange(-omegas, omegas + 1)
     omegas = np.array(omegas)
-    coefficients = np.array(coefficients)
 
-    def y(x: np.ndarray) -> float:
-        """
-        Calculates the Fourier series representation of a function at a given point.
+    if isinstance(amplitude, float):
+        coefficients = [amplitude for _ in omegas]
+    elif amplitude == "random":
+        rng = np.random.default_rng(seed=seed)
+        max_f = max(omegas)
+        c_pos = rng.random(max_f) + 1j * rng.random(max_f)
+        c_neg = np.conj(c_pos)[::-1]
+        c0 = rng.random(1)
+        coefficients = np.concatenate([c_neg.T, c0, c_pos.T])
+    else:
+        raise ValueError("No amplidudes provided")
 
-        Parameters
-        ----------
-        x : np.ndarray
-            Point at which to evaluate the function.
+    values = np.stack(
+        [
+            Coefficients.evaluate_Fourier_series(coefficients, omegas, x)
+            for x in domain_samples
+        ]
+    )
+    norm_factor = np.max(np.abs(values)) / norm_factor
+    values /= norm_factor
+    coefficients /= norm_factor
 
-        Returns
-        -------
-        float
-            Value of the Fourier series representation at the given point.
-        """
-        return (
-            1 / np.linalg.norm(omegas) * np.sum(coefficients * np.cos(omegas.T * x))
-        )  # transpose!
+    mlflow.log_param("target_coefficients_real", coefficients.real.tolist())
+    mlflow.log_param("target_coefficients_imag", coefficients.imag.tolist())
 
-    values = np.stack([y(x) for x in domain_samples])
-
-    return values
+    return {
+        "fourier_series": values,
+        "fourier_coefficients": coefficients,
+    }

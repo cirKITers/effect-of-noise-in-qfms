@@ -122,7 +122,7 @@ g <- ggplot(
 
 
 save_name <- str_c("ent")
-create_plot(g, save_name, COLWIDTH, 0.38 * HEIGHT)
+create_plot(g, save_name, TEXTWIDTH, 0.7 * HEIGHT)
 
 
 d_meyer_wallach <- d_ent %>%
@@ -150,4 +150,4 @@ g <- ggplot(
     )
 
 save_name <- str_c("ent_mw")
-create_plot(g, save_name, COLWIDTH, 0.15 * HEIGHT)
+create_plot(g, save_name, TEXTWIDTH, 0.25 * HEIGHT)

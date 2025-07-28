@@ -1,0 +1,1 @@
+rm ~/effect-of-noise-in-qfms/logs/slurm/*.out

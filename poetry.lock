@@ -3402,14 +3402,14 @@ pyyaml = "*"
 
 [[package]]
 name = "qml-essentials"
-version = "0.1.33"
+version = "0.1.34"
 description = "A toolbox to make working with QML models easier."
 optional = false
 python-versions = "<3.13,>=3.10"
 groups = ["main"]
 files = [
-    {file = "qml_essentials-0.1.33-py3-none-any.whl", hash = "sha256:a75dfae600370bdf3046179f81c8b798aaaa1418aefb9dfa4043fe497c233d91"},
-    {file = "qml_essentials-0.1.33.tar.gz", hash = "sha256:87ae320c536fd483932709b95acd06b0c37d1b82fde5894510a3ad357acf859f"},
+    {file = "qml_essentials-0.1.34-py3-none-any.whl", hash = "sha256:e37edeb010ba9784c4ba2386495246e504f82a8d304fb7ce93342365a33d55e1"},
+    {file = "qml_essentials-0.1.34.tar.gz", hash = "sha256:f6a65f921a5860c273d1e755630fd24c539ba3353de24041a67dd2e182c19bf2"},
 ]
 
 [package.dependencies]
@@ -4571,4 +4571,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<3.13"
-content-hash = "d6db0a3e8dea644d5894cf9dce2fe737ad707ec03a0d99722f82588d3b65ab14"
+content-hash = "6624d5e0b08c911a9aef74c555067d27e7e6892065e10357cb4dc46ae3c1d024"
