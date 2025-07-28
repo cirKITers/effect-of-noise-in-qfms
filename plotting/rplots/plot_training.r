@@ -173,7 +173,8 @@ g <- ggplot(
     scale_colour_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), values = COLOURS.LIST) +
     scale_fill_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), values = COLOURS.LIST) +
     facet_nested(problem_seed + ansatz ~ noise_category + noise_type,
-        labeller = labeller(problem_seed = problem_labeller)
+        labeller = labeller(problem_seed = problem_labeller),
+        scale="free_y"
     ) +
     scale_x_continuous("Step") +
     scale_y_continuous("c") +
@@ -197,7 +198,7 @@ g <- ggplot(
     geom_ribbon(aes(ymin = coeff_lower_bound, ymax = coeff_upper_bound, fill = as.factor(frequencies)), alpha = 0.2, colour = NA) +
     scale_colour_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), values = COLOURS.LIST) +
     scale_fill_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), values = COLOURS.LIST) +
-    facet_nested(ansatz ~ noise_category + noise_type) +
+    facet_nested(ansatz ~ noise_category + noise_type, scale="free_y") +
     scale_x_continuous("Step") +
     scale_y_continuous("c") +
     theme_paper() +
