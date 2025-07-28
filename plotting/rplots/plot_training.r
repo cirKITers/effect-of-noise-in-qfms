@@ -142,7 +142,7 @@ g <- ggplot(
     facet_nested(ansatz ~ noise_category + noise_type,
         scale = "free_y"
     ) +
-    scale_x_continuous("Step", breaks = seq(0, 1000, 250)) +
+    scale_x_continuous("Step", breaks = seq(0, 1000, 500)) +
     scale_y_continuous("Coefficient Distance") +
     theme_paper() +
     theme(
@@ -162,7 +162,7 @@ g <- ggplot(
     scale_fill_manual("", values = COLOURS.LIST) +
     scale_linetype_manual("", values = c(1, 1, 2, 3, 1, 2, 1, 2, 1)) +
     facet_nested(. ~ ansatz) +
-    scale_x_continuous("Step") +
+    scale_x_continuous("Step", breaks = seq(0, 1000, 500)) +
     scale_y_continuous("MSE") +
     theme_paper() +
     theme(
@@ -195,11 +195,13 @@ for (filtered_seed in 1000:1009) {
             labeller = labeller(problem_seed = problem_labeller),
             scale = "free_y"
         ) +
-        scale_x_continuous("Step", breaks = seq(0, 1000, 250)) +
+        scale_x_continuous("Step", breaks = seq(0, 1000, 500)) +
         scale_y_continuous("c", limits = c(0, 0.06)) +
         theme_paper() +
         theme(
-            legend.margin = margin(b = -4)
+            legend.margin = margin(b = -4),
+            legend.key.height = unit(0.2, "cm"),
+            legend.key.width = unit(0.2, "cm")
         ) +
         guides(colour = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE)))
     save_name <- str_c("training_coeffs_seed", filtered_seed)
