@@ -180,9 +180,10 @@ g <- ggplot(
     theme_paper() +
     theme(
         legend.margin = margin(b = -4)
-    )
+    ) +
+    guides(colour = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE)))
 save_name <- str_c("training_coeffs_full")
-create_plot(g, save_name, TEXTWIDTH, 0.8 * HEIGHT)
+create_plot(g, save_name, TEXTWIDTH, HEIGHT)
 
 filtered_seed <- 1000
 d_filtered <- d %>% filter(problem_seed == filtered_seed)
@@ -202,6 +203,7 @@ g <- ggplot(
     theme_paper() +
     theme(
         legend.margin = margin(b = -4)
-    )
+    ) +
+    guides(colour = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE)))
 save_name <- str_c("training_coeffs_seed", filtered_seed)
 create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)
