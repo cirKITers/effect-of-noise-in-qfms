@@ -164,7 +164,7 @@ g <- ggplot(
 save_name <- str_c("training_coeff_dist")
 create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)
 
-for (filtered_seed in 1000:1010) {
+for (filtered_seed in 1000:1009) {
     g <- ggplot(
         d %>% filter(problem_seed == filtered_seed),
         aes(x = step, y = mean_coeff_abs, colour = as.factor(frequencies))
@@ -179,7 +179,7 @@ for (filtered_seed in 1000:1010) {
             scale = "free_y"
         ) +
         scale_x_continuous("Step", breaks = seq(0, 1000, 250)) +
-        scale_y_continuous("c", limits = c(0, 0.6)) +
+        scale_y_continuous("c", limits = c(0, 0.06)) +
         theme_paper() +
         theme(
             legend.margin = margin(b = -4)
