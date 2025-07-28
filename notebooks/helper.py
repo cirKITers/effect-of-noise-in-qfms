@@ -145,6 +145,8 @@ def get_training_df(run_ids, debug=False):
         )
         if encoding == "['RX', 'RY']":
             encoding = "RXRY"
+        elif encoding == "['RY']":
+            encoding = "RY"
         sub_df_a.loc[it, "encoding"] = encoding
         sub_df_a.loc[it, "n_input_feat"] = n_input_feat
 
@@ -293,9 +295,9 @@ def get_expressibility_df(
         seed = int(seed)
         sub_df_a.loc[it, "seed"] = seed
 
-        all_cfgs[ansatz][qubits][seed][noise][str(noise_value)]["RX"][2000] += 1
+        all_cfgs[ansatz][qubits][seed][noise][str(noise_value)]["RX"][1000] += 1
         if (
-            all_cfgs[ansatz][qubits][seed][noise][str(noise_value)]["RX"][2000] > 1
+            all_cfgs[ansatz][qubits][seed][noise][str(noise_value)]["RX"][1000] > 1
             or qubits == 7
         ):
             continue
@@ -306,7 +308,7 @@ def get_expressibility_df(
         ).reset_index(drop=True)
 
     if debug:
-        check_complete(all_cfgs, problem_seeds=[2000])
+        check_complete(all_cfgs, problem_seeds=[1000])
 
     return df
 
@@ -384,7 +386,7 @@ def get_entanglement_df(
             noise_value = noise_value[0]
         else:
             noise_value = 0
-        all_cfgs[ansatz][qubits][seed][noise][str(noise_value)]["RX"][2000] += 1
+        all_cfgs[ansatz][qubits][seed][noise][str(noise_value)]["RX"][1000] += 1
 
         try:
             sub_df_b = get_csv_artifact(run_id, "entangling_capability_noise")
@@ -397,7 +399,7 @@ def get_entanglement_df(
             all_cfgs[ansatz][qubits][seed][noise][str(noise_value)]["RX"] -= 1
 
     if debug:
-        check_complete(all_cfgs, problem_seeds=[2000])
+        check_complete(all_cfgs, problem_seeds=[1000])
 
     return df
 
@@ -445,7 +447,7 @@ def init_all_cfg_dict():
                             all_cfgs[circuit_type][n_qubits][seed][noise][noise_value][
                                 encoding
                             ] = dict()
-                            for problem_seed in range(2000, 2010):
+                            for problem_seed in range(1000, 1010):
                                 all_cfgs[circuit_type][n_qubits][seed][noise][
                                     noise_value
                                 ][encoding][problem_seed] = 0
@@ -467,7 +469,7 @@ def check_complete(
         "GateError",
         "noiseless",
     ],
-    problem_seeds=[2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009],
+    problem_seeds=[1000, 1001, 1002, 1003, 1004, 1005, 1006, 1007, 1008, 1009],
 ):
     for circuit_type in [
         "Hardware_Efficient",
@@ -648,7 +650,7 @@ def get_coeffs_df(
         if noise not in export_noise_types:
             continue
 
-        all_cfgs[ansatz][qubits][seed][noise][str(noise_value)][encoding][2000] += 1
+        all_cfgs[ansatz][qubits][seed][noise][str(noise_value)][encoding][1000] += 1
         if (
             skip_rx_circ15
             and encoding != "RY"
@@ -687,11 +689,11 @@ def get_coeffs_df(
         except Exception:
             print(f"No coefficients for run {run_id}")
             sub_df_b = pd.DataFrame()
-            all_cfgs[ansatz][qubits][seed][noise][str(noise_value)][encoding][2000] -= 1
+            all_cfgs[ansatz][qubits][seed][noise][str(noise_value)][encoding][1000] -= 1
 
     if debug:
         check_complete(
-            all_cfgs, export_qubits, export_noise_types, problem_seeds=[2000]
+            all_cfgs, export_qubits, export_noise_types, problem_seeds=[1000]
         )
 
     return df
