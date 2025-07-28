@@ -27,7 +27,10 @@ d_coeffs_2D <- read_csv(coeffs_path_2D)
 
 d_coeffs_1D <- d_coeffs_1D %>%
     filter(qubits < 7) %>%
-    mutate(coeffs_abs_mean = ifelse(coeffs_abs_mean < 1e-14, NA, coeffs_abs_mean)) %>%
+    mutate(
+    coeffs_abs_mean = ifelse(coeffs_abs_mean < 1e-14, NA, coeffs_abs_mean),
+    coeffs_abs_max = ifelse(coeffs_abs_max < 1e-14, NA, coeffs_abs_max),
+    coeffs_abs_min = ifelse(coeffs_abs_min < 1e-16, NA, coeffs_abs_min)) %>%
     mutate(GateError = ifelse(is.na(GateError), 0, GateError)) %>%
     group_by(
         BitFlip, PhaseFlip, Depolarizing,
@@ -36,6 +39,8 @@ d_coeffs_1D <- d_coeffs_1D %>%
         ansatz, qubits, n_input_feat, freq1
     ) %>%
     summarise(
+        min_abs = mean(coeffs_abs_min),
+        max_abs = mean(coeffs_abs_max),
         mean_abs = mean(coeffs_abs_mean),
         sd_mean_abs = sd(coeffs_abs_mean),
         rel_sd_mean_abs = sd(coeffs_abs_mean) / mean(coeffs_abs_mean),
@@ -61,6 +66,8 @@ d_coeffs_2D <- d_coeffs_2D %>%
         ansatz, qubits, n_input_feat, freq1, freq2
     ) %>%
     summarise(
+        min_abs = mean(coeffs_abs_min),
+        max_abs = mean(coeffs_abs_max),
         mean_abs = mean(coeffs_abs_mean),
         sd_mean_abs = sd(coeffs_abs_mean),
         rel_sd_mean_abs = sd(coeffs_abs_mean) / mean(coeffs_abs_mean),
@@ -137,7 +144,7 @@ d_coeffs$ansatz <- factor(d_coeffs$ansatz,
 )
 
 d_coeffs_selection <- d_coeffs %>%
-    filter(noise_type %in% c("DP", "AD", "CGE"))
+    filter(noise_type %in% c("DP", "ME", "AD", "CGE"))
 
 d_coeffs_ns <- d_coeffs %>%
     filter(noise_value == 0 & !is.na(mean_abs)) %>%
@@ -160,7 +167,7 @@ g <- ggplot(
     scale_colour_manual(ifelse(use_tikz, "\\# Qubits", "# Qubits"), values = COLOURS.LIST) +
     scale_linetype_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", ""), values = c("solid", "11")) +
     scale_shape_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", ""), values = c(4, 17)) +
-    facet_nested(coeff_type + noise_type ~ ansatz + n_input_feat,
+    facet_nested(ansatz + n_input_feat ~ coeff_type + noise_type,
         labeller = labeller(
             freq1 = frequencies_labeller,
             qubits = qubit_labeller,
@@ -236,7 +243,7 @@ g <- ggplot(
     geom_point(size = POINT.SIZE) +
     geom_line(linewidth = LINE.SIZE) +
     scale_colour_manual(ifelse(use_tikz, "\\# Qubits", "# Qubits"), values = COLOURS.LIST) +
-    facet_nested(coeff_type + noise_type ~ ansatz + n_input_feat,
+    facet_nested(ansatz + n_input_feat ~ coeff_type + noise_type,
         labeller = labeller(
             freq1 = frequencies_labeller,
             n_input_feat = feature_labeller,
@@ -260,10 +267,12 @@ d_coeffs_6q <- d_coeffs %>%
     filter(n_input_feat == 1 & qubits == 6)
 
 g <- ggplot(d_coeffs_6q, aes(x = noise_value, y = mean_abs, colour = as.factor(freq1))) +
-    geom_point(size = POINT.SIZE) +
     geom_line(linewidth = LINE.SIZE) +
+    # geom_linerange(aes(ymin = min_abs, ymax = max_abs), size = 0.7 * LINE.SIZE, position = position_dodge(width = 0.005 * LINE.SIZE)) +
+    geom_point(size = POINT.SIZE) +
     scale_colour_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "Frequency"), values = COLOURS.LIST) +
-    scale_x_continuous("Noise Level", labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.02)) +
+    scale_fill_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "Frequency"), values = COLOURS.LIST) +
+    scale_x_continuous("Noise Level", labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.01)) +
     theme_paper() +
     guides(colour = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE))) +
     theme(
@@ -335,7 +344,7 @@ d_coeffs_6q$coeff_type <- factor(d_coeffs_6q$coeff_type, levels = c(ifelse(use_t
 
 g <- ggplot(d_coeffs_6q, aes(x = var_type, y = var, colour = noise_category, shape=noise_type)) +
     geom_point(size = 2 * POINT.SIZE, position = position_dodge(width = 0.7)) +
-    facet_nested(coeff_type ~ ansatz,
+    facet_nested(noise_category + noise_type ~ ansatz,
         labeller = labeller(
             coeff_type = frequencies_labeller,
             qubits = qubit_labeller,
