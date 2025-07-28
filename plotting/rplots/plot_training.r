@@ -161,7 +161,7 @@ g <- ggplot(
     scale_colour_manual("", values = COLOURS.LIST) +
     scale_fill_manual("", values = COLOURS.LIST) +
     scale_linetype_manual("", values = c(1, 1, 2, 3, 1, 2, 1, 2, 1)) +
-    facet_nested(ansatz ~ .) +
+    facet_nested(. ~ ansatz) +
     scale_x_continuous("Step") +
     scale_y_continuous("MSE") +
     theme_paper() +
@@ -172,8 +172,8 @@ g <- ggplot(
     ) +
     guides(
         linetype = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE), override.aes = list(
-            colour = c(COLOURS.LIST[1], COLOURS.LIST[2]), # , COLOURS.LIST[2], COLOURS.LIST[2], COLOURS.LIST[3], COLOURS.LIST[3], COLOURS.LIST[4], COLOURS.LIST[4], COLOURS.LIST[5]),
-            fill = c(COLOURS.LIST[1], COLOURS.LIST[2]) # , COLOURS.LIST[2], COLOURS.LIST[2], COLOURS.LIST[3], COLOURS.LIST[3], COLOURS.LIST[4], COLOURS.LIST[4], COLOURS.LIST[5]),
+            colour = c(COLOURS.LIST[1], COLOURS.LIST[2], COLOURS.LIST[2], COLOURS.LIST[2], COLOURS.LIST[3], COLOURS.LIST[3], COLOURS.LIST[4], COLOURS.LIST[4], COLOURS.LIST[5]),
+            fill = c(COLOURS.LIST[1], COLOURS.LIST[2], COLOURS.LIST[2], COLOURS.LIST[2], COLOURS.LIST[3], COLOURS.LIST[3], COLOURS.LIST[4], COLOURS.LIST[4], COLOURS.LIST[5])
         )),
         colour = "none",
         fill = "none",
