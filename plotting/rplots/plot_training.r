@@ -141,6 +141,46 @@ if (!file.exists(data_path_summarised) && !file.exists(data_path_summarised_freq
     d <- read_csv(data_path_processed)
     d_summarised <- read_csv(data_path_summarised)
     d_summarised_freq <- read_csv(data_path_summarised_freq)
+
+    d$noise_category[is.na(d$noise_category)] <- ""
+    d$noise_category <- factor(d$noise_category, levels = c("", "Decoherent Gate", "SPAM", "Damping", "Coh."))
+    d$noise_type <- factor(d$noise_type,
+        levels = c(
+            "Noiseless", "BF", "PF", "DP",
+            "AD", "PD",
+            "SP", "ME",
+            "CGE"
+        ),
+    )
+    d$ansatz <- factor(d$ansatz,
+        levels = c("SEA", "HEA", "Circuit 15", "Circuit 19")
+    )
+    d_summarised$noise_category[is.na(d_summarised$noise_category)] <- ""
+    d_summarised$noise_category <- factor(d_summarised$noise_category, levels = c("", "Decoherent Gate", "SPAM", "Damping", "Coh."))
+    d_summarised$noise_type <- factor(d_summarised$noise_type,
+        levels = c(
+            "Noiseless", "BF", "PF", "DP",
+            "AD", "PD",
+            "SP", "ME",
+            "CGE"
+        ),
+    )
+    d_summarised$ansatz <- factor(d_summarised$ansatz,
+        levels = c("SEA", "HEA", "Circuit 15", "Circuit 19")
+    )
+    d_summarised_freq$noise_category[is.na(d_summarised_freq$noise_category)] <- ""
+    d_summarised_freq$noise_category <- factor(d_summarised_freq$noise_category, levels = c("", "Decoherent Gate", "SPAM", "Damping", "Coh."))
+    d_summarised_freq$noise_type <- factor(d_summarised_freq$noise_type,
+        levels = c(
+            "Noiseless", "BF", "PF", "DP",
+            "AD", "PD",
+            "SP", "ME",
+            "CGE"
+        ),
+    )
+    d_summarised_freq$ansatz <- factor(d_summarised_freq$ansatz,
+        levels = c("SEA", "HEA", "Circuit 15", "Circuit 19")
+    )
 }
 
 g <- ggplot(
@@ -158,7 +198,9 @@ g <- ggplot(
     scale_y_continuous("Coefficient Distance") +
     theme_paper() +
     theme(
-        legend.margin = margin(b = -4)
+        legend.margin = margin(b = -4),
+        legend.key.height = unit(0.4, "cm"),
+        legend.key.width = unit(0.4, "cm")
     ) +
     guides(colour = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE)))
 save_name <- str_c("training_coeff_dist")
@@ -169,18 +211,18 @@ g <- ggplot(
     aes(x = step, y = mean_mse, colour = noise_category, linetype = noise_type)
 ) +
     geom_line(linewidth = LINE.SIZE) +
-    geom_ribbon(aes(ymin = mse_lower_bound, ymax = mse_upper_bound), fill = "black", alpha = 0.2, colour = NA) +
-    scale_colour_manual("", values = COLOURS.LIST) +
-    scale_fill_manual("", values = COLOURS.LIST) +
-    scale_linetype_manual("", values = c(1, 1, 2, 3, 1, 2, 1, 2, 1)) +
+    geom_ribbon(aes(ymin = mse_lower_bound, ymax = mse_upper_bound, fill = noise_category), alpha = 0.2, colour = NA) +
+    scale_colour_manual("", values = COLOURS.LIST, breaks = c("", "Decoherent Gate", "SPAM", "Damping", "Coh.")) +
+    scale_fill_manual("", values = COLOURS.LIST, breaks = c("", "Decoherent Gate", "SPAM", "Damping", "Coh.")) +
+    scale_linetype_manual("", values = c(1, 1, 2, 111, 1, 2, 1, 2, 1)) +
     facet_nested(. ~ ansatz) +
     scale_x_continuous("Step", breaks = seq(0, 1000, 500)) +
     scale_y_continuous("MSE") +
     theme_paper() +
     theme(
         legend.margin = margin(b = -4),
-        legend.key.height = unit(0.2, "cm"),
-        legend.key.width = unit(0.2, "cm")
+        legend.key.height = unit(0.4, "cm"),
+        legend.key.width = unit(0.4, "cm")
     ) +
     guides(
         linetype = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE), override.aes = list(
@@ -208,12 +250,12 @@ for (filtered_seed in 1000:1009) {
             scale = "free_y"
         ) +
         scale_x_continuous("Step", breaks = seq(0, 1000, 500)) +
-        scale_y_continuous("c", limits = c(0, 0.06)) +
+        scale_y_continuous(ifelse(use_tikz, "$c_{\\boldsymbol{\\omega}}$", "c"), limits = c(0, 0.06)) +
         theme_paper() +
         theme(
             legend.margin = margin(b = -4),
-            legend.key.height = unit(0.2, "cm"),
-            legend.key.width = unit(0.2, "cm")
+            legend.key.height = unit(0.4, "cm"),
+            legend.key.width = unit(0.4, "cm")
         ) +
         guides(colour = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE)))
     save_name <- str_c("training_coeffs_seed", filtered_seed)
