@@ -74,6 +74,8 @@ def iterate_noise(
         raise ValueError(
             f"selective_noise must be 'both', 'iec' or 'pqc', got {selective_noise}"
         )
+    # else:
+    # model.pqc = pqc_no_batch_gate_error
 
     if scale:
         n_samples = int(np.power(2, model.n_qubits) * n_samples)
@@ -150,27 +152,27 @@ def iterate_noise(
 
             progress.advance(noise_it_task)
 
-    # import plotly.graph_objects as go
-    # import plotly.colors as pc
+    import plotly.graph_objects as go
+    import plotly.colors as pc
 
-    # colors = pc.sequential.Plasma
-    # fig = go.Figure(
-    #     data=[
-    #         go.Scatter(
-    #             x=df.frequencies[i],
-    #             y=df.coeffs_abs_mean.iloc[i],
-    #             mode="markers",
-    #             name=f"Noise level {df.noise_level[i]:.2f}",
-    #             marker=dict(color=colors[i]),
-    #         )
-    #         for i in range(noise_steps + 1)
-    #     ]
-    # )
-    # fig.update_layout(
-    #     title="Absolute value of the coefficients",
-    #     xaxis_title="Frequency",
-    #     yaxis_title="Absolute value of the coefficient",
-    #     template="plotly_white",
-    # )
-    # fig.show()
+    colors = pc.sequential.Plasma
+    fig = go.Figure(
+        data=[
+            go.Scatter(
+                x=df.frequencies[i],
+                y=df.coeffs_abs_mean.iloc[i],
+                mode="markers",
+                name=f"Noise level {df.noise_level[i]:.2f}",
+                marker=dict(color=colors[i]),
+            )
+            for i in range(noise_steps + 1)
+        ]
+    )
+    fig.update_layout(
+        title="Absolute value of the coefficients",
+        xaxis_title="Frequency",
+        yaxis_title="Absolute value of the coefficient",
+        template="plotly_white",
+    )
+    fig.show()
     return {"coefficients_noise": df}
