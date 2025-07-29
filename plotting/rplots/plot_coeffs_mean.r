@@ -189,7 +189,7 @@ g <- ggplot(
     ) +
     facetted_pos_scales(
         y = list(
-            noise_type == "DP" & n_input_feat == 1 & coeff_type == ifelse(use_tikz, "$0$", "0") ~ scale_y_continuous(ifelse(use_tikz, "$\\mu_c({\\boldsymbol{\\omega}})$ [log]", "|c| Mean [log]"),
+            noise_type == "DP" & coeff_type == ifelse(use_tikz, "$0$", "0") ~ scale_y_continuous(ifelse(use_tikz, "$\\mu_c({\\boldsymbol{\\omega}})$ [log]", "|c| Mean [log]"),
                 breaks = scales::trans_breaks("log10", function(x) 10^(-3:-1)),
                 labels = trans_format("log10", math_format(10^.x)),
                 trans = "log10",
@@ -202,14 +202,14 @@ g <- ggplot(
                 trans = "log10",
                 guide = "none"
             ),
-            noise_type == "DP" & n_input_feat != 1 & coeff_type == ifelse(use_tikz, "$0$", "0") ~ scale_y_continuous(ifelse(use_tikz, "$\\mu_c({\\boldsymbol{\\omega}})$ [log]", "|c| Mean [log]"),
+            noise_type == "DP" & coeff_type == ifelse(use_tikz, "$0$", "0") ~ scale_y_continuous(ifelse(use_tikz, "$\\mu_c({\\boldsymbol{\\omega}})$ [log]", "|c| Mean [log]"),
                 breaks = scales::trans_breaks("log10", function(x) 10^(-3:-1)),
                 labels = trans_format("log10", math_format(10^.x)),
                 limits = c(1e-3, 15e-2),
                 trans = "log10",
                 guide = "none"
             ),
-            noise_type == "DP" & n_input_feat == 1 & coeff_type == ifelse(use_tikz,"$\\boldsymbol{\\omega}_\\text{max}$", "max") ~ scale_y_continuous(ifelse(use_tikz, "$\\mu_c({\\boldsymbol{\\omega}})$ [log]", "|c| Mean [log]"),
+            noise_type == "DP" & coeff_type == ifelse(use_tikz,"$\\boldsymbol{\\omega}_\\text{max}$", "max") ~ scale_y_continuous(ifelse(use_tikz, "$\\mu_c({\\boldsymbol{\\omega}})$ [log]", "|c| Mean [log]"),
                 breaks = c(1e-8, 1e-6, 1e-4, 1e-2),
                 labels = trans_format("log10", math_format(10^.x)),
                 trans = "log10",
@@ -222,7 +222,7 @@ g <- ggplot(
                 trans = "log10",
                 guide = "none"
             ),
-            noise_type == "DP" & n_input_feat != 1 & coeff_type == ifelse(use_tikz,"$\\boldsymbol{\\omega}_\\text{max}$", "max") ~ scale_y_continuous(ifelse(use_tikz, "$\\mu_c({\\boldsymbol{\\omega}})$ [log]", "|c| Mean [log]"),
+            noise_type == "DP" & coeff_type == ifelse(use_tikz,"$\\boldsymbol{\\omega}_\\text{max}$", "max") ~ scale_y_continuous(ifelse(use_tikz, "$\\mu_c({\\boldsymbol{\\omega}})$ [log]", "|c| Mean [log]"),
                 breaks = c(1e-8, 1e-6, 1e-4, 1e-2),
                 labels = trans_format("log10", math_format(10^.x)),
                 limits = c(5e-8, 5e-2),
