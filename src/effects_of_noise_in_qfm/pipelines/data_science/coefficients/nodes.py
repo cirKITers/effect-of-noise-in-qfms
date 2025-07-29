@@ -1,10 +1,11 @@
 from qml_essentials.model import Model
 from qml_essentials.coefficients import Coefficients
+from qml_essentials.ansaetze import Gates
 import pennylane.numpy as np
 from rich.progress import Progress
 from typing import Dict
 import pandas as pd
-
+from functools import partial
 import logging
 
 from effects_of_noise_in_qfm.helpers.utils import NoiseDict
@@ -47,9 +48,10 @@ def iterate_noise(
 
     enc = model._enc
 
-    def enc_noise_free(*args, **kwargs):
+    def enc_noise_free(i, *args, **kwargs):
         kwargs["noise_params"] = None
-        return enc(*args, **kwargs)
+        ret = enc[i](*args, **kwargs)
+        return ret
 
     pqc = model.pqc
 
@@ -57,10 +59,17 @@ def iterate_noise(
         kwargs["noise_params"] = None
         return pqc(*args, **kwargs)
 
+    def pqc_no_batch_gate_error(*args, **kwargs):
+        Gates.batch_gate_error = False
+        ret = pqc(*args, **kwargs)
+        Gates.batch_gate_error = True
+        return ret
+
     if selective_noise == "iec":
         model.pqc = pqc_noise_free
     elif selective_noise == "pqc":
-        model._enc = enc_noise_free
+        model._enc = [partial(enc_noise_free, i) for i in range(len(model._enc))]
+        model.pqc = pqc_no_batch_gate_error
     elif selective_noise != "both":
         raise ValueError(
             f"selective_noise must be 'both', 'iec' or 'pqc', got {selective_noise}"
@@ -141,4 +150,27 @@ def iterate_noise(
 
             progress.advance(noise_it_task)
 
+    # import plotly.graph_objects as go
+    # import plotly.colors as pc
+
+    # colors = pc.sequential.Plasma
+    # fig = go.Figure(
+    #     data=[
+    #         go.Scatter(
+    #             x=df.frequencies[i],
+    #             y=df.coeffs_abs_mean.iloc[i],
+    #             mode="markers",
+    #             name=f"Noise level {df.noise_level[i]:.2f}",
+    #             marker=dict(color=colors[i]),
+    #         )
+    #         for i in range(noise_steps + 1)
+    #     ]
+    # )
+    # fig.update_layout(
+    #     title="Absolute value of the coefficients",
+    #     xaxis_title="Frequency",
+    #     yaxis_title="Absolute value of the coefficient",
+    #     template="plotly_white",
+    # )
+    # fig.show()
     return {"coefficients_noise": df}
