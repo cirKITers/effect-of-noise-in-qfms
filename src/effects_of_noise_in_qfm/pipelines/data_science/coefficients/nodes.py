@@ -74,8 +74,8 @@ def iterate_noise(
         raise ValueError(
             f"selective_noise must be 'both', 'iec' or 'pqc', got {selective_noise}"
         )
-    # else:
-    # model.pqc = pqc_no_batch_gate_error
+    else:
+        model.pqc = pqc_no_batch_gate_error
 
     if scale:
         n_samples = int(np.power(2, model.n_qubits) * n_samples)
