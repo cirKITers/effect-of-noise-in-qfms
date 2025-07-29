@@ -24,7 +24,7 @@ data_path_processed <- "csv_data/training_processed.csv"
 data_path_summarised <- "csv_data/training_summarised.csv"
 data_path_summarised_freq <- "csv_data/training_summarised_freq.csv"
 
-if (!file.exists(data_path_summarised) && !file.exists(data_path_summarised_freq) && !file.exists(data_path_processed)) {
+if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq) || !file.exists(data_path_processed)) {
     d <- read_csv(data_path)
 
     d <- d %>%
@@ -102,6 +102,26 @@ if (!file.exists(data_path_summarised) && !file.exists(data_path_summarised_freq
         )
 
 
+    d_summarised <- d %>%
+        group_by(noise_category, noise_type, ansatz, qubits, step) %>%
+        summarise(
+            mean_mse = mean(mse),
+            sd_mse = sd(mse),
+            mean_dist = mean(coeff_dist),
+            sd_dist = sd(coeff_dist),
+            mean_ent = mean(entanglement),
+            sd_ent = sd(entanglement),
+        ) %>%
+        mutate(
+            mse_lower_bound = mean_mse - sd_mse,
+            mse_upper_bound = mean_mse + sd_mse,
+            dist_lower_bound = mean_dist - sd_dist,
+            dist_upper_bound = mean_dist + sd_dist,
+            ent_lower_bound = mean_ent - sd_ent,
+            ent_upper_bound = mean_ent + sd_ent,
+        )
+    print(d_summarised)
+
     d <- d %>%
         group_by(noise_category, noise_type, noise_value, ansatz, qubits, frequencies, step, problem_seed) %>%
         summarise(
@@ -110,30 +130,13 @@ if (!file.exists(data_path_summarised) && !file.exists(data_path_summarised_freq
             sd_coeff_abs = sd(coeff_abs),
             mean_abs_dist = mean(coeff_abs_dist),
             sd_abs_dist = sd(coeff_abs_dist),
-            mean_mse = mean(mse),
-            sd_mse = sd(mse),
-            mean_dist = mean(coeff_dist),
-            sd_dist = sd(coeff_dist),
         ) %>%
         mutate(
             coeff_lower_bound = mean_coeff_abs - sd_coeff_abs,
             coeff_upper_bound = mean_coeff_abs + sd_coeff_abs,
         )
+    print(colnames(d))
 
-    d_summarised <- d %>%
-        group_by(noise_category, noise_type, ansatz, qubits, step) %>%
-        summarise(
-            mean_mse = mean(mean_mse),
-            sd_mse = mean(sd_mse),
-            mean_dist = mean(mean_dist),
-            sd_dist = mean(sd_dist)
-        ) %>%
-        mutate(
-            mse_lower_bound = mean_mse - sd_mse,
-            mse_upper_bound = mean_mse + sd_mse,
-            dist_lower_bound = mean_dist - sd_dist,
-            dist_upper_bound = mean_dist + sd_dist,
-        )
     write_csv(d, data_path_processed)
     write_csv(d_summarised, data_path_summarised)
     write_csv(d_summarised_freq, data_path_summarised_freq)
@@ -197,11 +200,6 @@ g <- ggplot(
     scale_x_continuous("Step", breaks = seq(0, 1000, 500)) +
     scale_y_continuous("Coefficient Distance") +
     theme_paper() +
-    theme(
-        legend.margin = margin(b = -4),
-        legend.key.height = unit(0.4, "cm"),
-        legend.key.width = unit(0.4, "cm")
-    ) +
     guides(colour = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE)))
 save_name <- str_c("training_coeff_dist")
 create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)
@@ -219,11 +217,6 @@ g <- ggplot(
     scale_x_continuous("Step", breaks = seq(0, 1000, 500)) +
     scale_y_continuous("MSE") +
     theme_paper() +
-    theme(
-        legend.margin = margin(b = -4),
-        legend.key.height = unit(0.4, "cm"),
-        legend.key.width = unit(0.4, "cm")
-    ) +
     guides(
         linetype = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE), override.aes = list(
             colour = c(COLOURS.LIST[1], COLOURS.LIST[2], COLOURS.LIST[2], COLOURS.LIST[2], COLOURS.LIST[3], COLOURS.LIST[3], COLOURS.LIST[4], COLOURS.LIST[4], COLOURS.LIST[5]),
@@ -234,6 +227,22 @@ g <- ggplot(
     )
 save_name <- str_c("training_mse")
 create_plot(g, save_name, TEXTWIDTH, 0.2 * HEIGHT)
+
+g <- ggplot(
+    d_summarised,
+    aes(x = step, y = mean_ent), colour = "black"
+) +
+    geom_line(linewidth = LINE.SIZE) +
+    geom_ribbon(aes(ymin = ent_lower_bound, ymax = ent_upper_bound), fill = "black", alpha = 0.2, colour = NA) +
+    facet_nested(ansatz ~ noise_category + noise_type,
+        scale = "free_y"
+    ) +
+    scale_x_continuous("Step", breaks = seq(0, 1000, 500)) +
+    scale_y_continuous("Entangling Capability") +
+    theme_paper() +
+    guides(colour = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE)))
+save_name <- str_c("training_ent")
+create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)
 
 for (filtered_seed in 1000:1009) {
     g <- ggplot(

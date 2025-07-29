@@ -19,7 +19,10 @@ theme_paper <- function() {
       axis.title.y = element_text(size = BASE.SIZE),
       legend.title = element_text(size = BASE.SIZE),
       legend.position = "top",
-      plot.margin = unit(c(0, 0, 0, 0), "cm")
+      plot.margin = unit(c(0, 0, 0, 0), "cm"),
+      legend.margin = margin(b = -4),
+      legend.key.height = unit(0.4, "cm"),
+      legend.key.width = unit(0.4, "cm")
     ))
 }
 
