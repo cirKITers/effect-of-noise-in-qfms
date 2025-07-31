@@ -101,7 +101,7 @@ save_name <- str_c("coeff_real_imag_qubits6")
 create_plot(g, save_name, COLWIDTH, 0.28 * HEIGHT)
 
 g <- ggplot(d_coeffs_ansatz %>% filter(noise_type %in% c("Noiseless", "AD") & freq1 == 0), aes(x = coeffs_full_real, y = "none", colour = noise_type, shape = noise_type)) +
-    geom_boxplot(lwd = 0.3, outlier.size = 0.05 * POINT.SIZE) +
+    geom_boxplot(lwd = 0.4, outlier.size = 0.05 * POINT.SIZE) +
     facet_nested(. ~ ansatz,
         labeller = labeller(
             freq1 = frequencies_labeller,
@@ -118,4 +118,4 @@ g <- ggplot(d_coeffs_ansatz %>% filter(noise_type %in% c("Noiseless", "AD") & fr
         legend.key.height = unit(0.2, "cm")
     )
 save_name <- str_c("coeff_real_AD_qubits6")
-create_plot(g, save_name, 0.6 * TEXTWIDTH, 0.1 * HEIGHT)
+create_plot(g, save_name, 0.6 * TEXTWIDTH, 0.12 * HEIGHT)
