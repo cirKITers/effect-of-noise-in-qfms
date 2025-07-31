@@ -49,6 +49,7 @@ RUN R -e "install.packages('tidyverse',dependencies=TRUE, repos='http://cran.rst
 RUN R -e "install.packages('ggh4x',dependencies=TRUE, repos='http://cran.rstudio.com/')"
 RUN R -e "install.packages('ggrastr',dependencies=TRUE, repos='http://cran.rstudio.com/')"
 RUN R -e "install.packages('tikzDevice',dependencies=TRUE, repos='http://cran.rstudio.com/')"
+RUN R -e "install.packages('ggnewscale',dependencies=TRUE, repos='http://cran.rstudio.com/')"
 
 # Clone Repo
 WORKDIR /home/repro

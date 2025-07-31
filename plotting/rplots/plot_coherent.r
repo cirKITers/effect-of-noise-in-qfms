@@ -5,6 +5,7 @@ library(ggh4x)
 library(tikzDevice)
 library(scales)
 library(ggrastr)
+library(ggnewscale)
 source("layout.r")
 
 options(tikzLatexPackages = c(
@@ -127,3 +128,67 @@ g <- ggplot(
     )
 save_name <- str_c("n_freqs")
 create_plot(g, save_name, 0.6 * TEXTWIDTH, 0.25 * HEIGHT)
+
+coeffs_path <- "csv_data/subsamplingcoeffs_stat_dims1.csv"
+
+d_coeffs <- read_csv(coeffs_path)
+
+index_labeller <- function(layer) {
+    paste0("i = ", layer)
+}
+
+d_coeffs$ansatz <- factor(d_coeffs$ansatz,
+    levels = c("Strongly_Entangling", "Strongly_Entangling_Plus", "Hardware_Efficient", "Circuit_15", "Circuit_19"),
+    labels = c("SEA", "SEA+", "HEA", "Circuit 15", "Circuit 19")
+)
+d_coeffs$frequency <- as.factor(d_coeffs$freq1)
+
+print(colnames(d_coeffs))
+
+d_coeffs <- d_coeffs %>%
+    group_by(ansatz, qubits, freq1, selective_noise, GateError) %>%
+    summarise(
+        mean_coeff = mean(coeffs_abs_mean),
+        sd_coeff = mean(sqrt(coeffs_abs_var))
+    ) %>%
+    mutate(
+        upper_bound = mean_coeff + sd_coeff,
+        lower_bound = mean_coeff - sd_coeff,
+        relative_sd = mean_coeff * sd_coeff,
+        mean_coeff = ifelse(mean_coeff < 1e-14, NA, mean_coeff)
+    )
+
+d_coeffs$GateError <- round(d_coeffs$GateError, digits = 3)
+
+d_coeffs$selective_noise <- factor(d_coeffs$selective_noise, levels = c("iec", "both", "pqc"), labels = c("On Input Gates", "On Full VQC", "On Variational Gates"))
+
+g <- ggplot(d_coeffs, aes(x = freq1, y = mean_coeff, alpha = GateError, colour = selective_noise, group = interaction(GateError, selective_noise))) + 
+    geom_line(linewidth = LINE.SIZE) +
+    geom_point(data = d_coeffs %>% filter(qubits == 3 | selective_noise == "On Variational Gates"), size = 3 * POINT.SIZE, aes(shape = selective_noise)) +
+    facet_nested(qubits ~ ansatz,
+        labeller = labeller(
+            frequency = frequencies_labeller,
+            qubits = qubit_labeller,
+        ),
+        scale = "free",
+        independent = "x"
+    ) +
+    scale_x_continuous(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "Frequency")) +
+    scale_colour_manual("", values = c(COLOURS.LIST[2], COLOURS.LIST[4], COLOURS.LIST[3])) +
+    scale_shape_manual("", values = c(3, 1, 4)) +
+    scale_alpha_continuous("CGE", breaks = seq(0,1,0.01), labels = latex_percent(seq(0,1,0.01))) +
+    scale_y_log10(ifelse(use_tikz, "$\\mu_c({\\boldsymbol{\\omega}})$ [log]", "|c| Mean [log]"),
+        breaks = scales::trans_breaks("log10", function(x) 10^x),
+        labels = trans_format("log10", math_format(10^.x))
+    ) +
+    theme_paper() +
+    theme(
+        legend.title=element_text(size=7),
+        legend.key.width = unit(0.3, "cm")
+    ) +
+    guides(
+        colour = guide_legend(reverse = TRUE),
+        shape = guide_legend(reverse = TRUE)
+    )
+save_name <- str_c("coeff_mean_subsampling")
+create_plot(g, save_name, TEXTWIDTH, 0.45 * HEIGHT)

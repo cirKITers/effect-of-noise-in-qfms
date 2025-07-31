@@ -119,4 +119,4 @@ g <- ggplot(d_coeffs_ansatz %>% filter(noise_type %in% c("Noiseless", "AD") & fr
         legend.key.height = unit(0.2, "cm"),
     )
 save_name <- str_c("coeff_real_AD_qubits6")
-create_plot(g, save_name, TEXTWIDTH, 0.1 * HEIGHT)
+create_plot(g, save_name, 0.6 * TEXTWIDTH, 0.15 * HEIGHT)

@@ -150,10 +150,18 @@ def get_training_df(run_ids, debug=False):
         sub_df_a.loc[it, "encoding"] = encoding
         sub_df_a.loc[it, "n_input_feat"] = n_input_feat
 
-        target_coefficients_real = ast.literal_eval(client.get_run(run_id).data.params["target_coefficients_real"])
-        target_coefficients_imag = ast.literal_eval(client.get_run(run_id).data.params["target_coefficients_imag"])
-        target_coefficients_real = np.array(target_coefficients_real[len(target_coefficients_real) // 2:], dtype=object)
-        target_coefficients_imag = np.array(target_coefficients_imag[len(target_coefficients_imag) // 2:], dtype=object)
+        target_coefficients_real = ast.literal_eval(
+            client.get_run(run_id).data.params["target_coefficients_real"]
+        )
+        target_coefficients_imag = ast.literal_eval(
+            client.get_run(run_id).data.params["target_coefficients_imag"]
+        )
+        target_coefficients_real = np.array(
+            target_coefficients_real[len(target_coefficients_real) // 2 :], dtype=object
+        )
+        target_coefficients_imag = np.array(
+            target_coefficients_imag[len(target_coefficients_imag) // 2 :], dtype=object
+        )
 
         sub_df_a.loc[it, "target_coefficients_real"] = target_coefficients_real
         sub_df_a.loc[it, "target_coefficients_imag"] = target_coefficients_imag
@@ -178,12 +186,12 @@ def get_training_df(run_ids, debug=False):
                 df_new[ac] = df_new[ac].apply(list)
 
             df_new["original_idx"] = df_new.index
-            df_new = df_new.explode(array_cols + additional_array_cols, ignore_index=True)
+            df_new = df_new.explode(
+                array_cols + additional_array_cols, ignore_index=True
+            )
             df_new["coeff_idx"] = df_new.groupby("original_idx").cumcount()
 
-            df = pd.concat(
-                [df, df_new]
-            ).reset_index(drop=True)
+            df = pd.concat([df, df_new]).reset_index(drop=True)
 
         except Exception as e:
             print(f"No results for run {run_id}")
@@ -522,6 +530,8 @@ def get_coeffs_df(
         "noiseless",
     ],
     debug=False,
+    export_selective_noise=False,
+    export_min_max=False,
 ):
     columns = [
         "run_id",
@@ -538,6 +548,8 @@ def get_coeffs_df(
         "Measurement",
         "GateError",
     ]
+    if export_selective_noise:
+        columns.append("selective_noise")
     array_cols = [
         "coeffs_abs_var",
         "coeffs_abs_mean",
@@ -634,6 +646,8 @@ def get_coeffs_df(
         )
         if encoding == "['RX', 'RY']":
             encoding = "RXRY"
+        elif encoding == "['RY']":
+            encoding = "RY"
         sub_df_a.loc[it, "encoding"] = encoding
         sub_df_a.loc[it, "n_input_feat"] = n_input_feat
 
@@ -659,7 +673,17 @@ def get_coeffs_df(
         ):
             continue
 
-        converter_dict = {c: list_converter for c in array_cols + big_array_cols}
+        if export_selective_noise:
+            selective_noise = client.get_run(run_id).data.params.get(
+                "coefficients.selective_noise", "both"
+            )
+            sub_df_a.loc[it, "selective_noise"] = selective_noise
+
+        if export_min_max:
+            converter_dict = {c: list_converter for c in array_cols + big_array_cols}
+        else:
+            converter_dict = {c: list_converter for c in array_cols}
+            converter_dict.update({c: do_nothing_converter for c in big_array_cols})
 
         try:
             sub_df_b = get_csv_artifact(
@@ -667,17 +691,18 @@ def get_coeffs_df(
                 "coefficients_noise",
                 converters=converter_dict,
             )
-            sub_df_b["coeffs_abs"] = (
-                sub_df_b["coeffs_full_real"] ** 2 + sub_df_b["coeffs_full_imag"] ** 2
-            )
-            sub_df_b["coeffs_abs"] = sub_df_b["coeffs_abs"].map(np.sqrt)
-            sub_df_b["coeffs_abs_min"] = sub_df_b["coeffs_abs"].map(
-                lambda x: np.min(x, axis=-1)
-            )
-            sub_df_b["coeffs_abs_max"] = sub_df_b["coeffs_abs"].map(
-                lambda x: np.max(x, axis=-1)
-            )
-            sub_df_b.drop(columns=["coeffs_abs"], inplace=True)
+            if export_min_max:
+                sub_df_b["coeffs_abs"] = (
+                    sub_df_b["coeffs_full_real"] ** 2 + sub_df_b["coeffs_full_imag"] ** 2
+                )
+                sub_df_b["coeffs_abs"] = sub_df_b["coeffs_abs"].map(np.sqrt)
+                sub_df_b["coeffs_abs_min"] = sub_df_b["coeffs_abs"].map(
+                    lambda x: np.min(x, axis=-1)
+                )
+                sub_df_b["coeffs_abs_max"] = sub_df_b["coeffs_abs"].map(
+                    lambda x: np.max(x, axis=-1)
+                )
+                sub_df_b.drop(columns=["coeffs_abs"], inplace=True)
 
             if not export_full_coeffs:
                 sub_df_b.drop(columns=big_array_cols, inplace=True)

@@ -282,7 +282,7 @@ g <- ggplot(d_coeffs_6q, aes(x = noise_value, y = mean_abs, colour = as.factor(f
     )
 
 save_name <- str_c("coeff_mean_qubits6")
-create_plot(g, save_name, 0.48* TEXTWIDTH, 0.4 * HEIGHT)
+create_plot(g, save_name, 0.48* TEXTWIDTH, 0.45 * HEIGHT)
 
 g <- ggplot(d_coeffs_6q, aes(x = noise_value, y = rel_sd, colour = as.factor(freq1))) +
     geom_point(size = POINT.SIZE) +
@@ -303,7 +303,7 @@ g <- ggplot(d_coeffs_6q, aes(x = noise_value, y = rel_sd, colour = as.factor(fre
     )
 
 save_name <- str_c("coeff_sd_qubits6")
-create_plot(g, save_name, 0.48* TEXTWIDTH, 0.4 * HEIGHT)
+create_plot(g, save_name, 0.48* TEXTWIDTH, 0.45 * HEIGHT)
 
 d_coeffs_6q <- d_coeffs_6q %>%
     filter(noise_value %in% c(0, 0.03))
@@ -347,18 +347,36 @@ g <- ggplot(d_coeffs_6q, aes(x = var_type, y = var, colour = noise_category, sha
     scale_colour_manual("", values = COLOURS.LIST) +
     scale_shape_manual("", values = c(19, 15, 9, 6, 4, 3, 0, 1, 17)) +
     scale_x_discrete("") +
-    scale_y_continuous(
-        ifelse(use_tikz, "$\\text{Cov}(\\cdot, \\cdot)$","Cov(-)"),
-        breaks = scales::trans_breaks("log10", function(x) 10^(-15:-1)),
-        labels = trans_format("log10", math_format(10^.x)),
-        trans = "log10",
-    ) +
+    scale_y_continuous() +
     guides(
         shape = guide_legend(nrow = 2, theme = theme(legend.byrow = TRUE), override.aes = list(size = 3 * POINT.SIZE, colour = c(COLOURS.LIST[1], COLOURS.LIST[2], COLOURS.LIST[2], COLOURS.LIST[2], COLOURS.LIST[3], COLOURS.LIST[3], COLOURS.LIST[4], COLOURS.LIST[4], COLOURS.LIST[5]))),
         colour = "none",
     ) +
     theme(
         legend.key.height = unit(0.2, "cm")
+    ) +
+    facetted_pos_scales(
+        y = list(
+            ansatz == "SEA" & coeff_type != ifelse(use_tikz,"$\\boldsymbol{\\omega}_\\text{max}$", "max") ~ scale_y_continuous(ifelse(use_tikz, "$\\text{Cov}(\\cdot, \\cdot)$","Cov(-)"), breaks = scales::trans_breaks("log10", function(x) 10^(-15:-1)),
+                labels = trans_format("log10", math_format(10^.x)),
+                trans = "log10"
+            ),
+            ansatz != "SEA" & coeff_type != ifelse(use_tikz,"$\\boldsymbol{\\omega}_\\text{max}$", "max") ~ scale_y_continuous(ifelse(use_tikz, "$\\text{Cov}(\\cdot, \\cdot)$","Cov(-)"), breaks = scales::trans_breaks("log10", function(x) 10^(-15:-1)),
+                labels = trans_format("log10", math_format(10^.x)),
+                trans = "log10",
+                guide = "none"
+            ),
+            ansatz == "SEA" & coeff_type == ifelse(use_tikz,"$\\boldsymbol{\\omega}_\\text{max}$", "max") ~ scale_y_continuous(ifelse(use_tikz, "$\\text{Cov}(\\cdot, \\cdot)$","Cov(-)"), breaks = scales::trans_breaks("log10", function(x) 10^seq(-15,-1,2)),
+                labels = trans_format("log10", math_format(10^.x)),
+                trans = "log10"
+            ),
+            ansatz != "SEA" & coeff_type == ifelse(use_tikz,"$\\boldsymbol{\\omega}_\\text{max}$", "max") ~ scale_y_continuous(ifelse(use_tikz, "$\\text{Cov}(\\cdot, \\cdot)$","Cov(-)"), breaks = scales::trans_breaks("log10", function(x) 10^(-15:-1)),
+                labels = trans_format("log10", math_format(10^.x)),
+                trans = "log10",
+                guide = "none"
+            )
+        )
     )
+
 save_name <- str_c("coeff_covar_qubits6_sel")
 create_plot(g, save_name, 0.6 * TEXTWIDTH, 0.3 * HEIGHT)

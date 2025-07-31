@@ -77,5 +77,9 @@ freq2_labeller <- function(layer) {
 }
 
 latex_percent <- function (x) {
-    stringr::str_c(x * 100, "\\%")
+    if(use_tikz) {
+        stringr::str_c(x * 100, "\\%")
+    } else {
+        stringr::str_c(x * 100, "%")
+    }
 }
