@@ -22,7 +22,7 @@ if (length(args) == 1) {
 coeffs_path_1D <- "csv_data/coeffs_stat_dims1.csv"
 coeffs_path_2D <- "csv_data/coeffs_stat_dims2.csv"
 
-d_coeffs_1D <- read_csv(coeffs_path_1D)
+d_coeffs_1D <- read_csv(coeffs_path_1D) %>% filter(encoding == "RY")
 d_coeffs_2D <- read_csv(coeffs_path_2D)
 
 d_coeffs_1D <- d_coeffs_1D %>%
@@ -30,7 +30,6 @@ d_coeffs_1D <- d_coeffs_1D %>%
     coeffs_abs_mean = ifelse(coeffs_abs_mean < 1e-14, NA, coeffs_abs_mean),
     coeffs_abs_max = ifelse(coeffs_abs_max < 1e-14, NA, coeffs_abs_max),
     coeffs_abs_min = ifelse(coeffs_abs_min < 1e-16, NA, coeffs_abs_min)) %>%
-    mutate(GateError = ifelse(is.na(GateError), 0, GateError)) %>%
     group_by(
         BitFlip, PhaseFlip, Depolarizing,
         AmplitudeDamping, PhaseDamping,
@@ -56,8 +55,8 @@ d_coeffs_1D <- d_coeffs_1D %>%
     )
 
 d_coeffs_2D <- d_coeffs_2D %>%
-    mutate(coeffs_abs_mean = ifelse(coeffs_abs_mean < 1e-14, NA, coeffs_abs_mean)) %>%
-    mutate(GateError = ifelse(is.na(GateError), 0, GateError)) %>%
+    filter(coeffs_abs_mean > 1e-14 | ansatz != "Strongly_Entangling") %>%
+    mutate(coeffs_abs_mean = ifelse(coeffs_abs_mean < 1e-15, NA, coeffs_abs_mean)) %>%
     group_by(
         BitFlip, PhaseFlip, Depolarizing,
         AmplitudeDamping, PhaseDamping,
@@ -84,7 +83,7 @@ print(str_c("Max rel sd 1D: ", max(stat_coeff$rel_sd_mean_abs)))
 print(str_c("Mean rel sd 1D: ", mean(stat_coeff$rel_sd_mean_abs)))
 print(stat_coeff %>% filter(rel_sd_mean_abs == max(stat_coeff$rel_sd_mean_abs)), width = 2000)
 
-stat_coeff <- d_coeffs_2D %>% filter(!is.na(mean_abs))
+stat_coeff <- d_coeffs_2D %>% filter(!is.na(mean_abs) & !is.na(rel_sd_mean_abs))
 print(str_c("Max rel sd 2D: ", max(stat_coeff$rel_sd_mean_abs)))
 print(str_c("Mean rel sd 2D: ", mean(stat_coeff$rel_sd_mean_abs)))
 print(stat_coeff %>% filter(rel_sd_mean_abs == max(stat_coeff$rel_sd_mean_abs)), width = 2000)
@@ -166,7 +165,7 @@ g <- ggplot(
     scale_colour_manual(ifelse(use_tikz, "\\# Qubits", "# Qubits"), values = COLOURS.LIST) +
     scale_linetype_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", ""), values = c("solid", "11")) +
     scale_shape_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", ""), values = c(4, 17)) +
-    facet_nested(ansatz + n_input_feat ~ coeff_type + noise_type,
+    facet_nested(coeff_type + noise_type ~ ansatz + n_input_feat,
         labeller = labeller(
             freq1 = frequencies_labeller,
             qubits = qubit_labeller,
@@ -177,52 +176,49 @@ g <- ggplot(
         independent = "y"
     ) +
     scale_x_continuous("Noise Level",
-        labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.01)
+        labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.02)
     ) +
     theme_paper() +
     guides(
         colour = guide_legend(nrow = 1),
         shape = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE), override.aes = list(alpha = 1, size = 3 * POINT.SIZE))
     ) +
-    theme(
-        legend.margin = margin(b = -4)
-    ) +
     facetted_pos_scales(
         y = list(
-            noise_type == "DP" & coeff_type == ifelse(use_tikz, "$0$", "0") ~ scale_y_continuous(ifelse(use_tikz, "$\\mu_c({\\boldsymbol{\\omega}})$ [log]", "|c| Mean [log]"),
+            ansatz == "SEA" & n_input_feat == 1 & coeff_type == ifelse(use_tikz, "$0$", "0") ~ scale_y_continuous(ifelse(use_tikz, "$\\mu_c({\\boldsymbol{\\omega}})$ [log]", "|c| Mean [log]"),
                 breaks = scales::trans_breaks("log10", function(x) 10^(-3:-1)),
                 labels = trans_format("log10", math_format(10^.x)),
                 trans = "log10",
                 limits = c(1e-3, 15e-2)
             ),
-            noise_type != "DP" & coeff_type == ifelse(use_tikz, "$0$", "0") ~ scale_y_continuous(ifelse(use_tikz, "$\\mu_c({\\boldsymbol{\\omega}})$ [log]", "|c| Mean [log]"),
+            ansatz != "SEA" & coeff_type == ifelse(use_tikz, "$0$", "0") ~ scale_y_continuous(ifelse(use_tikz, "$\\mu_c({\\boldsymbol{\\omega}})$ [log]", "|c| Mean [log]"),
                 breaks = scales::trans_breaks("log10", function(x) 10^(-3:-1)),
                 labels = trans_format("log10", math_format(10^.x)),
                 limits = c(1e-3, 15e-2),
                 trans = "log10",
                 guide = "none"
             ),
-            noise_type == "DP" & coeff_type == ifelse(use_tikz, "$0$", "0") ~ scale_y_continuous(ifelse(use_tikz, "$\\mu_c({\\boldsymbol{\\omega}})$ [log]", "|c| Mean [log]"),
+            ansatz == "SEA" & n_input_feat != 1 & coeff_type == ifelse(use_tikz, "$0$", "0") ~ scale_y_continuous(ifelse(use_tikz, "$\\mu_c({\\boldsymbol{\\omega}})$ [log]", "|c| Mean [log]"),
                 breaks = scales::trans_breaks("log10", function(x) 10^(-3:-1)),
                 labels = trans_format("log10", math_format(10^.x)),
                 limits = c(1e-3, 15e-2),
                 trans = "log10",
                 guide = "none"
             ),
-            noise_type == "DP" & coeff_type == ifelse(use_tikz,"$\\boldsymbol{\\omega}_\\text{max}$", "max") ~ scale_y_continuous(ifelse(use_tikz, "$\\mu_c({\\boldsymbol{\\omega}})$ [log]", "|c| Mean [log]"),
+            ansatz == "SEA" & n_input_feat == 1 & coeff_type == ifelse(use_tikz,"$\\boldsymbol{\\omega}_\\text{max}$", "max") ~ scale_y_continuous(ifelse(use_tikz, "$\\mu_c({\\boldsymbol{\\omega}})$ [log]", "|c| Mean [log]"),
                 breaks = c(1e-8, 1e-6, 1e-4, 1e-2),
                 labels = trans_format("log10", math_format(10^.x)),
                 trans = "log10",
                 limits = c(5e-8, 5e-2)
             ),
-            noise_type != "DP" & coeff_type == ifelse(use_tikz,"$\\boldsymbol{\\omega}_\\text{max}$", "max") ~ scale_y_continuous(ifelse(use_tikz, "$\\mu_c({\\boldsymbol{\\omega}})$ [log]", "|c| Mean [log]"),
+            ansatz != "SEA" & coeff_type == ifelse(use_tikz,"$\\boldsymbol{\\omega}_\\text{max}$", "max") ~ scale_y_continuous(ifelse(use_tikz, "$\\mu_c({\\boldsymbol{\\omega}})$ [log]", "|c| Mean [log]"),
                 breaks = c(1e-8, 1e-6, 1e-4, 1e-2),
                 labels = trans_format("log10", math_format(10^.x)),
                 limits = c(5e-8, 5e-2),
                 trans = "log10",
                 guide = "none"
             ),
-            noise_type == "DP" & coeff_type == ifelse(use_tikz,"$\\boldsymbol{\\omega}_\\text{max}$", "max") ~ scale_y_continuous(ifelse(use_tikz, "$\\mu_c({\\boldsymbol{\\omega}})$ [log]", "|c| Mean [log]"),
+            ansatz == "SEA" & n_input_feat != 1 & coeff_type == ifelse(use_tikz,"$\\boldsymbol{\\omega}_\\text{max}$", "max") ~ scale_y_continuous(ifelse(use_tikz, "$\\mu_c({\\boldsymbol{\\omega}})$ [log]", "|c| Mean [log]"),
                 breaks = c(1e-8, 1e-6, 1e-4, 1e-2),
                 labels = trans_format("log10", math_format(10^.x)),
                 limits = c(5e-8, 5e-2),
@@ -232,7 +228,7 @@ g <- ggplot(
         )
     )
 save_name <- str_c("coeff_abs_mean")
-create_plot(g, save_name, COLWIDTH, 0.7 * HEIGHT)
+create_plot(g, save_name, COLWIDTH, 0.5 * HEIGHT)
 print(warnings())
 
 g <- ggplot(
@@ -242,7 +238,7 @@ g <- ggplot(
     geom_point(size = POINT.SIZE) +
     geom_line(linewidth = LINE.SIZE) +
     scale_colour_manual(ifelse(use_tikz, "\\# Qubits", "# Qubits"), values = COLOURS.LIST) +
-    facet_nested(ansatz + n_input_feat ~ coeff_type + noise_type,
+    facet_nested(coeff_type + noise_type ~ ansatz + n_input_feat,
         labeller = labeller(
             freq1 = frequencies_labeller,
             n_input_feat = feature_labeller,
@@ -252,15 +248,12 @@ g <- ggplot(
     ) +
     scale_linetype_manual("", values = c("solid", "11")) +
     scale_shape_manual("", values = c(4, 17)) +
-    scale_x_continuous("Noise Level", labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.01)) +
+    scale_x_continuous("Noise Level", labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.02)) +
     scale_y_continuous(ifelse(use_tikz, "$\\sigma_c({\\boldsymbol{\\omega}})$", "|c| Relative Standard Deviation"), ) +
     theme_paper() +
-    guides(colour = guide_legend(nrow = 1), shape = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE), override.aes = list(alpha = 1, size = 3 * POINT.SIZE))) +
-    theme(
-        legend.margin = margin(b = -4)
-    )
+    guides(colour = guide_legend(nrow = 1), shape = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE), override.aes = list(alpha = 1, size = 3 * POINT.SIZE)))
 save_name <- str_c("coeff_abs_sd")
-create_plot(g, save_name, COLWIDTH, 0.7 * HEIGHT)
+create_plot(g, save_name, COLWIDTH, 0.5 * HEIGHT)
 
 d_coeffs_6q <- d_coeffs %>%
     filter(n_input_feat == 1 & qubits == 6)
@@ -271,46 +264,46 @@ g <- ggplot(d_coeffs_6q, aes(x = noise_value, y = mean_abs, colour = as.factor(f
     geom_point(size = POINT.SIZE) +
     scale_colour_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "Frequency"), values = COLOURS.LIST) +
     scale_fill_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "Frequency"), values = COLOURS.LIST) +
-    scale_x_continuous("Noise Level", labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.01)) +
+    scale_x_continuous("Noise Level", labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.02)) +
     theme_paper() +
-    guides(colour = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE))) +
-    theme(
-        legend.margin = margin(b = -4)
-    ) +
+    guides(colour = guide_legend(nrow = 2, theme = theme(legend.byrow = TRUE))) +
     scale_y_log10(ifelse(use_tikz, "$\\mu_c({\\boldsymbol{{\\boldsymbol{\\omega}}}})$ [log]", "|c| Mean [log]"),
-        breaks = scales::trans_breaks("log10", function(x) 10^x),
+        breaks = c(1e-1, 1e-3, 1e-5), #scales::trans_breaks("log10", function(x) 10^x),
         labels = trans_format("log10", math_format(10^.x))
     ) +
-    facet_nested(ansatz ~ noise_category + noise_type,
+    facet_nested(noise_category + noise_type ~ ansatz,
         labeller = labeller(
             freq1 = frequencies_labeller,
             qubits = qubit_labeller,
         ),
+    ) +
+    theme(
+        legend.key.height = unit(0.2, "cm")
     )
 
 save_name <- str_c("coeff_mean_qubits6")
-create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)
+create_plot(g, save_name, 0.48* TEXTWIDTH, 0.4 * HEIGHT)
 
 g <- ggplot(d_coeffs_6q, aes(x = noise_value, y = rel_sd, colour = as.factor(freq1))) +
     geom_point(size = POINT.SIZE) +
     geom_line(linewidth = LINE.SIZE) +
     scale_colour_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "Frequency"), values = COLOURS.LIST) +
-    scale_x_continuous("Noise Level", labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.01)) +
+    scale_x_continuous("Noise Level", labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.02)) +
     theme_paper() +
-    guides(colour = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE))) +
-    theme(
-        legend.margin = margin(b = -4)
-    ) +
+    guides(colour = guide_legend(nrow = 2, theme = theme(legend.byrow = TRUE))) +
     scale_y_log10(ifelse(use_tikz, "$\\sigma_c({\\boldsymbol{\\omega}})$ [log]", "|c| Relative Standard Deviation"), ) +
-    facet_nested(ansatz ~ noise_category + noise_type,
+    facet_nested(noise_category + noise_type ~ ansatz,
         labeller = labeller(
             freq1 = frequencies_labeller,
             qubits = qubit_labeller,
         ),
+    ) +
+    theme(
+        legend.key.height = unit(0.2, "cm")
     )
 
 save_name <- str_c("coeff_sd_qubits6")
-create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)
+create_plot(g, save_name, 0.48* TEXTWIDTH, 0.4 * HEIGHT)
 
 d_coeffs_6q <- d_coeffs_6q %>%
     filter(noise_value %in% c(0, 0.03))
@@ -343,7 +336,7 @@ d_coeffs_6q$coeff_type <- factor(d_coeffs_6q$coeff_type, levels = c(ifelse(use_t
 
 g <- ggplot(d_coeffs_6q, aes(x = var_type, y = var, colour = noise_category, shape=noise_type)) +
     geom_point(size = 2 * POINT.SIZE, position = position_dodge(width = 0.7)) +
-    facet_nested(noise_category + noise_type ~ ansatz,
+    facet_nested(coeff_type ~ ansatz,
         labeller = labeller(
             coeff_type = frequencies_labeller,
             qubits = qubit_labeller,
@@ -361,13 +354,11 @@ g <- ggplot(d_coeffs_6q, aes(x = var_type, y = var, colour = noise_category, sha
         trans = "log10",
     ) +
     guides(
-        shape = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE), override.aes = list(size = 3 * POINT.SIZE, colour = c(COLOURS.LIST[1], COLOURS.LIST[2], COLOURS.LIST[2], COLOURS.LIST[2], COLOURS.LIST[3], COLOURS.LIST[3], COLOURS.LIST[4], COLOURS.LIST[4], COLOURS.LIST[5]))),
+        shape = guide_legend(nrow = 2, theme = theme(legend.byrow = TRUE), override.aes = list(size = 3 * POINT.SIZE, colour = c(COLOURS.LIST[1], COLOURS.LIST[2], COLOURS.LIST[2], COLOURS.LIST[2], COLOURS.LIST[3], COLOURS.LIST[3], COLOURS.LIST[4], COLOURS.LIST[4], COLOURS.LIST[5]))),
         colour = "none",
     ) +
     theme(
-        legend.margin = margin(b = -4, t = 0),
-        legend.key.height = unit(0.2, "cm"),
-        legend.key.width = unit(0.2, "cm"),
+        legend.key.height = unit(0.2, "cm")
     )
 save_name <- str_c("coeff_covar_qubits6_sel")
-create_plot(g, save_name, TEXTWIDTH, 0.3 * HEIGHT)
+create_plot(g, save_name, 0.6 * TEXTWIDTH, 0.3 * HEIGHT)

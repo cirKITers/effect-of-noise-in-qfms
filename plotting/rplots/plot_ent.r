@@ -110,8 +110,6 @@ g <- ggplot(
     ) +
     theme(
         legend.margin = margin(b = -4),
-        legend.key.height = unit(0.2, "cm"),
-        legend.key.width = unit(0.2, "cm")
     ) +
     force_panelsizes(cols = c(4, 7)) +
     facetted_pos_scales(
@@ -145,8 +143,6 @@ g <- ggplot(
     guides(colour = guide_legend(nrow = 1)) +
     theme(
         legend.margin = margin(b = -4),
-        legend.key.height = unit(0.2, "cm"),
-        legend.key.width = unit(0.2, "cm")
     )
 
 save_name <- str_c("ent_mw")

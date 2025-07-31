@@ -102,14 +102,12 @@ g <- ggplot(
     theme_paper() +
     guides(colour = guide_legend(nrow = 1)) +
     scale_y_log10(
-        ifelse(use_tikz, "\\scriptsize{more expressive} \\normalsize{$\\leftarrow$    KL-Divergence [log]    $\\rightarrow$} \\scriptsize{less expressive}", "KL-Divergence [log]"),
+        ifelse(use_tikz, "\\quad \\scriptsize{more expressive} \\normalsize{$\\leftarrow$    KL-Divergence [log]    $\\rightarrow$} \\scriptsize{less expressive}", "KL-Divergence [log]"),
         breaks = c(1e-2, 1e0, 1e2),
         labels = trans_format("log10", math_format(10^.x)),
     ) +
     theme(
         legend.margin = margin(b = -4),
-        legend.key.height = unit(0.2, "cm"),
-        legend.key.width = unit(0.2, "cm")
     )
 
 save_name <- str_c("expr")

@@ -22,7 +22,7 @@ if (length(args) == 1) {
 coeffs_path_1D <- "csv_data/coeffs_stat_dims1.csv"
 coeffs_path_2D <- "csv_data/coeffs_stat_dims2.csv"
 
-d_coeffs_1D <- read_csv(coeffs_path_1D)
+d_coeffs_1D <- read_csv(coeffs_path_1D) %>% filter(encoding == "RY")
 d_coeffs_2D <- read_csv(coeffs_path_2D)
 
 d_coeffs_1D <- d_coeffs_1D %>%
@@ -123,9 +123,7 @@ g <- ggplot(
         legend.byrow = TRUE,
     ))) +
     theme(
-        legend.margin = margin(b = -4),
-        legend.key.height = unit(0.2, "cm"),
-        legend.key.width = unit(0.2, "cm")
+        legend.box = "vertical"
     )
 save_name <- str_c("n_freqs")
-create_plot(g, save_name, TEXTWIDTH, 0.25 * HEIGHT)
+create_plot(g, save_name, 0.6 * TEXTWIDTH, 0.25 * HEIGHT)
