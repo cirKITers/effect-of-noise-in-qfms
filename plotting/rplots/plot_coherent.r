@@ -156,7 +156,8 @@ d_coeffs <- d_coeffs %>%
         lower_bound = mean_coeff - sd_coeff,
         relative_sd = mean_coeff * sd_coeff,
         mean_coeff = ifelse(mean_coeff < 1e-14, NA, mean_coeff)
-    )
+    ) %>%
+    filter(qubits == 6)
 
 d_coeffs$GateError <- round(d_coeffs$GateError, digits = 3)
 
@@ -164,8 +165,8 @@ d_coeffs$selective_noise <- factor(d_coeffs$selective_noise, levels = c("iec", "
 
 g <- ggplot(d_coeffs, aes(x = freq1, y = mean_coeff, alpha = GateError, colour = selective_noise, group = interaction(GateError, selective_noise))) + 
     geom_line(linewidth = LINE.SIZE) +
-    geom_point(data = d_coeffs %>% filter(qubits == 3 | selective_noise == "On Variational Gates"), size = 3 * POINT.SIZE, aes(shape = selective_noise)) +
-    facet_nested(qubits ~ ansatz,
+    geom_point(data = d_coeffs %>% filter(qubits == 3 | selective_noise == "On Variational Gates"), size = 3 * POINT.SIZE, shape = 4) +
+    facet_nested(. ~ ansatz,
         labeller = labeller(
             frequency = frequencies_labeller,
             qubits = qubit_labeller,
@@ -175,7 +176,7 @@ g <- ggplot(d_coeffs, aes(x = freq1, y = mean_coeff, alpha = GateError, colour =
     ) +
     scale_x_continuous(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "Frequency")) +
     scale_colour_manual("", values = c(COLOURS.LIST[2], COLOURS.LIST[4], COLOURS.LIST[3])) +
-    scale_shape_manual("", values = c(3, 1, 4)) +
+    #scale_shape_manual("", values = c(4, 1, 3)) +
     scale_alpha_continuous("CGE", breaks = seq(0,1,0.01), labels = latex_percent(seq(0,1,0.01))) +
     scale_y_log10(ifelse(use_tikz, "$\\mu_c({\\boldsymbol{\\omega}})$ [log]", "|c| Mean [log]"),
         breaks = scales::trans_breaks("log10", function(x) 10^x),
@@ -188,7 +189,7 @@ g <- ggplot(d_coeffs, aes(x = freq1, y = mean_coeff, alpha = GateError, colour =
     ) +
     guides(
         colour = guide_legend(reverse = TRUE),
-        shape = guide_legend(reverse = TRUE)
+        #shape = "none" #guide_legend(reverse = TRUE)
     )
 save_name <- str_c("coeff_mean_subsampling")
-create_plot(g, save_name, TEXTWIDTH, 0.45 * HEIGHT)
+create_plot(g, save_name, TEXTWIDTH, 0.18 * HEIGHT)
