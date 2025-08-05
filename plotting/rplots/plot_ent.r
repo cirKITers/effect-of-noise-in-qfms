@@ -23,7 +23,7 @@ d_ent <- read_csv(ent_path)
 
 d_ent$ansatz <- factor(d_ent$ansatz,
     levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_15", "Circuit_19"),
-    labels = c("SEA", "HEA", "Circuit 15", "Circuit 19")
+    labels = c("SEA", "HEA", "C15", "C19")
 )
 d_ent <- d_ent %>%
     pivot_longer(

@@ -103,7 +103,7 @@ if(file.exists(coeffs_path)) {
 
     d_coeffs$ansatz <- factor(d_coeffs$ansatz,
         levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_15", "Circuit_19"),
-        labels = c("SEA", "HEA", "Circuit 15", "Circuit 19")
+        labels = c("SEA", "HEA", "C15", "C19")
     )
 
     g <- ggplot(d_coeffs, aes(x = noise_value, y = mean_abs, colour = as.factor(freq1))) +
@@ -207,7 +207,7 @@ if(file.exists(expr_path)) {
 
     d_expr$ansatz <- factor(d_expr$ansatz,
         levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_15", "Circuit_19"),
-        labels = c("SEA", "HEA", "Circuit 15", "Circuit 19")
+        labels = c("SEA", "HEA", "C15", "C19")
     )
 
     d_expr <- d_expr %>%
@@ -306,7 +306,7 @@ if(file.exists(ent_path)) {
 
     d_ent$ansatz <- factor(d_ent$ansatz,
         levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_15", "Circuit_19"),
-        labels = c("SEA", "HEA", "Circuit 15", "Circuit 19")
+        labels = c("SEA", "HEA", "C15", "C19")
     )
     d_ent <- d_ent %>%
         pivot_longer(

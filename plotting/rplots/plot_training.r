@@ -85,7 +85,7 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
 
     d$ansatz <- factor(d$ansatz,
         levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_15", "Circuit_19"),
-        labels = c("SEA", "HEA", "Circuit 15", "Circuit 19")
+        labels = c("SEA", "HEA", "C15", "C19")
     )
 
 
@@ -156,7 +156,7 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
         ),
     )
     d$ansatz <- factor(d$ansatz,
-        levels = c("SEA", "HEA", "Circuit 15", "Circuit 19")
+        levels = c("SEA", "HEA", "C15", "C19")
     )
     d_summarised$noise_category[is.na(d_summarised$noise_category)] <- ""
     d_summarised$noise_category <- factor(d_summarised$noise_category, levels = c("", "Decoherent Gate", "SPAM", "Damping", "Coh."))
@@ -169,7 +169,7 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
         ),
     )
     d_summarised$ansatz <- factor(d_summarised$ansatz,
-        levels = c("SEA", "HEA", "Circuit 15", "Circuit 19")
+        levels = c("SEA", "HEA", "C15", "C19")
     )
     d_summarised_freq$noise_category[is.na(d_summarised_freq$noise_category)] <- ""
     d_summarised_freq$noise_category <- factor(d_summarised_freq$noise_category, levels = c("", "Decoherent Gate", "SPAM", "Damping", "Coh."))
@@ -182,7 +182,7 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
         ),
     )
     d_summarised_freq$ansatz <- factor(d_summarised_freq$ansatz,
-        levels = c("SEA", "HEA", "Circuit 15", "Circuit 19")
+        levels = c("SEA", "HEA", "C15", "C19")
     )
 }
 
@@ -266,3 +266,4 @@ for (filtered_seed in 1000:1009) {
     save_name <- str_c("training_coeffs_seed", filtered_seed)
     create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)
 }
+

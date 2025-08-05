@@ -26,7 +26,7 @@ d_coeffs <- d_coeffs %>% filter(qubits == 6)
 
 d_coeffs$ansatz <- factor(d_coeffs$ansatz,
     levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_15", "Circuit_19"),
-    labels = c("SEA", "HEA", "Circuit 15", "Circuit 19")
+    labels = c("SEA", "HEA", "C15", "C19")
 )
 d_coeffs$freq1 <- as.factor(d_coeffs$freq1)
 

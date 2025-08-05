@@ -28,8 +28,8 @@ index_labeller <- function(layer) {
 }
 
 d_coeffs$ansatz <- factor(d_coeffs$ansatz,
-    levels = c("Strongly_Entangling", "Strongly_Entangling_Plus", "Hardware_Efficient", "Circuit_15", "Circuit_19"),
-    labels = c("SEA", "SEA+", "HEA", "Circuit 15", "Circuit 19")
+    levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_15", "Circuit_19"),
+    labels = c("SEA", "HEA", "C15", "C19")
 )
 d_coeffs$frequency <- as.factor(d_coeffs$freq1)
 if (use_tikz) {

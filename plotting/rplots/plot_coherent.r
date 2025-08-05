@@ -92,8 +92,8 @@ d_coeffs_2D <- d_coeffs_2D %>%
 
 d_coeffs <- rbind(d_coeffs_1D, d_coeffs_2D) %>% filter(qubits < 7 & noise_value < 0.1 & ansatz %in% c("Hardware_Efficient", "Circuit_15"))
 d_coeffs$ansatz <- factor(d_coeffs$ansatz,
-    levels = c("Strongly_Entangling", "Strongly_Entangling_Plus", "Hardware_Efficient", "Circuit_15", "Circuit_19"),
-    labels = c("SEA", "SEA+", "HEA", "Circuit 15", "Circuit 19")
+    levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_15", "Circuit_19"),
+    labels = c("SEA", "HEA", "C15", "C19")
 )
 
 d_coeffs_n <- d_coeffs %>%
@@ -105,7 +105,7 @@ g <- ggplot(
     d_coeffs_n,
     aes(x = as.factor(qubits), y = n_freqs, fill = noise_value)
 ) +
-    geom_hline(aes(yintercept = max_freq, colour = as.factor(qubits)), linetype = "dashed", linewidth = LINE.SIZE) +
+    geom_hline(aes(yintercept = max_freq, colour = as.factor(qubits)), linetype = "solid", linewidth = LINE.SIZE) +
     geom_bar(stat = "identity", position = position_dodge(), width = 0.7) +
     geom_line(linewidth = LINE.SIZE) +
     scale_fill_manual("", values = c(COLOURS.LIST[7], COLOURS.LIST[6])) +
@@ -138,8 +138,8 @@ index_labeller <- function(layer) {
 }
 
 d_coeffs$ansatz <- factor(d_coeffs$ansatz,
-    levels = c("Strongly_Entangling", "Strongly_Entangling_Plus", "Hardware_Efficient", "Circuit_15", "Circuit_19"),
-    labels = c("SEA", "SEA+", "HEA", "Circuit 15", "Circuit 19")
+    levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_15", "Circuit_19"),
+    labels = c("SEA", "HEA", "C15", "C19")
 )
 d_coeffs$frequency <- as.factor(d_coeffs$freq1)
 
@@ -161,11 +161,11 @@ d_coeffs <- d_coeffs %>%
 
 d_coeffs$GateError <- round(d_coeffs$GateError, digits = 3)
 
-d_coeffs$selective_noise <- factor(d_coeffs$selective_noise, levels = c("iec", "both", "pqc"), labels = c("On Input Gates", "On Full VQC", "On Variational Gates"))
+d_coeffs$selective_noise <- factor(d_coeffs$selective_noise, levels = c("iec", "both", "pqc"), labels = c("Encoding Gates", "Full VQC", "Variational Gates"))
 
 g <- ggplot(d_coeffs, aes(x = freq1, y = mean_coeff, alpha = GateError, colour = selective_noise, group = interaction(GateError, selective_noise))) + 
     geom_line(linewidth = LINE.SIZE) +
-    geom_point(data = d_coeffs %>% filter(qubits == 3 | selective_noise == "On Variational Gates"), size = 3 * POINT.SIZE, shape = 4) +
+    geom_point(data = d_coeffs %>% filter(qubits == 3 | selective_noise == "Variational Gates"), size = 3 * POINT.SIZE, shape = 4) +
     facet_nested(. ~ ansatz,
         labeller = labeller(
             frequency = frequencies_labeller,
@@ -188,8 +188,8 @@ g <- ggplot(d_coeffs, aes(x = freq1, y = mean_coeff, alpha = GateError, colour =
         legend.key.width = unit(0.3, "cm")
     ) +
     guides(
-        colour = guide_legend(reverse = TRUE),
-        #shape = "none" #guide_legend(reverse = TRUE)
+        alpha = guide_legend(order = 1),
+        colour = guide_legend(reverse = TRUE, order = 2)
     )
 save_name <- str_c("coeff_mean_subsampling")
 create_plot(g, save_name, TEXTWIDTH, 0.18 * HEIGHT)

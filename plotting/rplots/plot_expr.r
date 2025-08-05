@@ -23,7 +23,7 @@ d_expr <- read_csv(coeffs_path)
 
 d_expr$ansatz <- factor(d_expr$ansatz,
     levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_15", "Circuit_19"),
-    labels = c("SEA", "HEA", "Circuit 15", "Circuit 19")
+    labels = c("SEA", "HEA", "C15", "C19")
 )
 
 d_expr <- d_expr %>%
@@ -98,11 +98,11 @@ g <- ggplot(
             qubits = qubit_labeller,
         ),
     ) +
-    scale_x_continuous("Noise Level", labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.01)) +
+    scale_x_continuous("Noise Level", labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.02)) +
     theme_paper() +
     guides(colour = guide_legend(nrow = 1)) +
     scale_y_log10(
-        ifelse(use_tikz, "\\quad \\scriptsize{more expressive} \\normalsize{$\\leftarrow$    KL-Divergence [log]    $\\rightarrow$} \\scriptsize{less expressive}", "KL-Divergence [log]"),
+        ifelse(use_tikz, "\\quad \\scriptsize{more expr.} \\normalsize{$\\leftarrow$    KL-Divergence [log]    $\\rightarrow$} \\scriptsize{less expr.}", "KL-Divergence [log]"),
         breaks = c(1e-2, 1e0, 1e2),
         labels = trans_format("log10", math_format(10^.x)),
     ) +
