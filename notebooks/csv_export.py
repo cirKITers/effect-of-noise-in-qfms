@@ -169,7 +169,6 @@ def export_coeff_data(
     all_coeffs_df = get_coeffs_df(
         coeff_run_ids,
         export_full_coeffs=export_full,
-        skip_rx_circ15=not single,
         export_qubits=export_qubits,
         export_noise_types=export_noise_types,
         export_selective_noise=subsampling,

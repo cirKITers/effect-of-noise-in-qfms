@@ -648,6 +648,8 @@ def get_coeffs_df(
             encoding = "RXRY"
         elif encoding == "['RY']":
             encoding = "RY"
+        elif encoding == "['RX']":
+            encoding = "RX"
         sub_df_a.loc[it, "encoding"] = encoding
         sub_df_a.loc[it, "n_input_feat"] = n_input_feat
 
@@ -665,13 +667,6 @@ def get_coeffs_df(
             continue
 
         all_cfgs[ansatz][qubits][seed][noise][str(noise_value)][encoding][1000] += 1
-        if (
-            skip_rx_circ15
-            and encoding != "RY"
-            and ansatz == "Circuit_15"
-            and n_input_feat == 1
-        ):
-            continue
 
         if export_selective_noise:
             selective_noise = client.get_run(run_id).data.params.get(
