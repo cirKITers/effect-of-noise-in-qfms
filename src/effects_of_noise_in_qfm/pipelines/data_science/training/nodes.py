@@ -1,6 +1,7 @@
 from qml_essentials.entanglement import Entanglement
 from qml_essentials.coefficients import Coefficients
 from qml_essentials.model import Model
+from qml_essentials.ansaetze import Gates
 
 import pennylane as qml
 import pennylane.numpy as np
@@ -158,6 +159,15 @@ def train_model(
 
     costs = np.zeros(steps)
 
+    # HACK
+    pqc = model.pqc
+
+    def pqc_no_batch_gate_error(*args, **kwargs):
+        Gates.batch_gate_error = False
+        ret = pqc(*args, **kwargs)
+        Gates.batch_gate_error = True
+        return ret
+
     for step in track(range(steps), description="Training..", total=steps):
         df_metrics.loc[step, "step"] = step
 
@@ -173,6 +183,8 @@ def train_model(
         mlflow.log_metric("entangling_capability", ent_cap, step)
         df_metrics.loc[step, "entanglement"] = ent_cap
 
+        # HACK
+        model.pqc = pqc_no_batch_gate_error
         # log coefficients
         coeffs, freqs = Coefficients.get_spectrum(
             model=model,
@@ -181,6 +193,9 @@ def train_model(
             noise_params=noise_params,
             cache=False,
         )
+        # HACK
+        model.pqc = pqc
+
         dist = np.sum(np.abs(coeffs - fourier_coefficients))
         log.debug(f"Coefficients dist: {dist}")
         df_metrics.loc[step, "coeff_dist"] = dist
