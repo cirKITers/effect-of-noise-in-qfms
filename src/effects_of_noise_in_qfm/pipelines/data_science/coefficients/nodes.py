@@ -37,6 +37,7 @@ def iterate_noise(
             "coeffs_real_var",  # Variance of real parts only
             "coeffs_imag_var",  # Variance of imaginary parts only
             "coeffs_abs_mean",  # Mean absolute coefficient
+            "coeffs_abs_max",  # Mean absolute coefficient
             "coeffs_real_mean",  # Mean of real part only
             "coeffs_imag_mean",  # Mean of imaginary part only
             "coeffs_full_real",  # All coefficients real part
@@ -143,6 +144,7 @@ def iterate_noise(
             df.loc[step, "coeffs_co_var_real_imag"] = co_variance_real_imag.tolist()
             df.loc[step, "coeffs_real_var"] = np.real(coeffs).var(axis=0).tolist()
             df.loc[step, "coeffs_imag_var"] = np.imag(coeffs).var(axis=0).tolist()
+            df.loc[step, "coeffs_abs_max"] = np.abs(coeffs).max(axis=0).tolist()
             df.loc[step, "coeffs_abs_mean"] = np.abs(coeffs).mean(axis=0).tolist()
             df.loc[step, "coeffs_real_mean"] = mean_real.tolist()
             df.loc[step, "coeffs_imag_mean"] = mean_imag.tolist()
@@ -152,27 +154,28 @@ def iterate_noise(
 
             progress.advance(noise_it_task)
 
-    # import plotly.graph_objects as go
-    # import plotly.colors as pc
+    import plotly.graph_objects as go
+    import plotly.colors as pc
 
-    # colors = pc.sequential.Plasma
-    # fig = go.Figure(
-    #     data=[
-    #         go.Scatter(
-    #             x=df.frequencies[i],
-    #             y=df.coeffs_abs_mean.iloc[i],
-    #             mode="markers",
-    #             name=f"Noise level {df.noise_level[i]:.2f}",
-    #             marker=dict(color=colors[i]),
-    #         )
-    #         for i in range(noise_steps + 1)
-    #     ]
-    # )
-    # fig.update_layout(
-    #     title="Absolute value of the coefficients",
-    #     xaxis_title="Frequency",
-    #     yaxis_title="Absolute value of the coefficient",
-    #     template="plotly_white",
-    # )
-    # fig.show()
+    colors = pc.sequential.Plasma
+    fig = go.Figure(
+        data=[
+            go.Scatter(
+                x=df.frequencies[i],
+                y=df.coeffs_abs_mean.iloc[i],
+                mode="markers",
+                name=f"Noise level {df.noise_level[i]:.2f}",
+                marker=dict(color=colors[i]),
+            )
+            for i in range(noise_steps + 1)
+        ]
+    )
+    fig.update_layout(
+        title="Absolute value of the coefficients",
+        xaxis_title="Frequency",
+        yaxis_title="Absolute value of the coefficient",
+        template="plotly_white",
+        yaxis_type="log",
+    )
+    fig.show()
     return {"coefficients_noise": df}
