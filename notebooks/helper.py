@@ -491,14 +491,7 @@ def check_complete(
                     for noise_value in ["0.03"]:
                         if noise_value == "0" and noise != "noiseless":
                             continue
-                        for encoding in ["RX", "RY"]:
-                            if (
-                                encoding == "RX"
-                                and circuit_type == "Circuit_15"
-                                or encoding == "RY"
-                                and circuit_type != "Circuit_15"
-                            ):
-                                continue
+                        for encoding in ["RX", "RY", "RXRY"]:
                             for problem_seed in problem_seeds:
                                 if (
                                     all_cfgs[circuit_type][n_qubits][seed][noise][
@@ -516,7 +509,6 @@ def check_complete(
 def get_coeffs_df(
     run_ids,
     export_full_coeffs=False,
-    skip_rx_circ15=False,
     export_qubits=[2, 3, 4, 5, 6],
     export_noise_types=[
         "BitFlip",

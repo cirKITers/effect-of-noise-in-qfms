@@ -172,7 +172,7 @@ def export_coeff_data(
         export_qubits=export_qubits,
         export_noise_types=export_noise_types,
         export_selective_noise=subsampling,
-        export_min_max=False,
+        export_min_max=export_min_max,
     )
     if all_coeffs_df.size == 0:
         return
