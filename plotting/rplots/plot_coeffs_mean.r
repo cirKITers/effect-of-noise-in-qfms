@@ -257,7 +257,6 @@ for (enc in c("RX", "RY")) {
     d_coeffs_6q <- d_coeffs_6q_all %>% filter(encoding == enc)
     g <- ggplot(d_coeffs_6q, aes(x = noise_value, y = mean_abs, colour = as.factor(freq1))) +
         geom_line(linewidth = LINE.SIZE) +
-        # geom_linerange(aes(ymin = min_abs, ymax = max_abs), size = 0.7 * LINE.SIZE, position = position_dodge(width = 0.005 * LINE.SIZE)) +
         geom_point(size = POINT.SIZE) +
         scale_colour_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "Frequency"), values = COLOURS.LIST) +
         scale_fill_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "Frequency"), values = COLOURS.LIST) +
@@ -277,10 +276,10 @@ for (enc in c("RX", "RY")) {
         theme(
             legend.key.height = unit(0.2, "cm")
         )
-    
+
     save_name <- str_c("coeff_mean_qubits6_", enc)
     create_plot(g, save_name, 0.48* TEXTWIDTH, 0.45 * HEIGHT)
-    
+
     g <- ggplot(d_coeffs_6q, aes(x = noise_value, y = rel_sd, colour = as.factor(freq1))) +
         geom_point(size = POINT.SIZE) +
         geom_line(linewidth = LINE.SIZE) +
