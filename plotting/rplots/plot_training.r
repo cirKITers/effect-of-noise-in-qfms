@@ -195,7 +195,7 @@ g <- ggplot(
     scale_colour_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), values = COLOURS.LIST) +
     scale_fill_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), values = COLOURS.LIST) +
     facet_nested(ansatz ~ noise_category + noise_type) +
-    scale_x_continuous("Step", breaks = seq(0, 1000, 500)) +
+    scale_x_continuous("Step", breaks = seq(0, 1000, 400)) +
     scale_y_continuous(ifelse(use_tikz, "$\\lvert \\lvert c_{\\boldsymbol{\\omega}}(\\boldsymbol{\\theta})\\rvert - \\lvert c'_{\\boldsymbol{\\omega}} \\rvert \\rvert$", "Diff")) +
     theme_paper() +
     guides(colour = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE)))
@@ -212,7 +212,7 @@ g <- ggplot(
     scale_fill_manual("", values = COLOURS.LIST, breaks = c("", "Decoherent Gate", "SPAM", "Damping", "Coh.")) +
     scale_linetype_manual("", values = c(1, 1, 2, 111, 1, 2, 1, 2, 1)) +
     facet_nested(. ~ ansatz) +
-    scale_x_continuous("Step", breaks = seq(0, 1000, 500)) +
+    scale_x_continuous("Step", breaks = seq(0, 1000, 400)) +
     scale_y_continuous("MSE") +
     theme_paper() +
     guides(
@@ -233,7 +233,7 @@ g <- ggplot(
     geom_line(linewidth = LINE.SIZE) +
     geom_ribbon(aes(ymin = ent_lower_bound, ymax = ent_upper_bound), fill = "black", alpha = 0.2, colour = NA) +
     facet_nested(ansatz ~ noise_category + noise_type) +
-    scale_x_continuous("Step", breaks = seq(0, 1000, 500)) +
+    scale_x_continuous("Step", breaks = seq(0, 1000, 400)) +
     scale_y_continuous("Entangling Capability") +
     theme_paper() +
     guides(colour = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE)))
@@ -253,9 +253,10 @@ for (filtered_seed in 1000:1009) {
         scale_fill_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), values = COLOURS.LIST) +
         facet_nested(problem_seed + ansatz ~ noise_category + noise_type,
             labeller = labeller(problem_seed = problem_labeller),
+            scale = "free_y",
         ) +
-        scale_x_continuous("Step", breaks = seq(0, 1000, 500)) +
-        scale_y_continuous(ifelse(use_tikz, "$\\lvert c_{\\boldsymbol{\\omega}} \\rvert$", "c"), limits=c(-0.005, 0.06)) +
+        scale_x_continuous("Step", breaks = seq(0, 1000, 400)) +
+        scale_y_continuous(ifelse(use_tikz, "$\\lvert c_{\\boldsymbol{\\omega}} \\rvert$", "c")) +
         theme_paper() +
         theme(
             legend.margin = margin(b = -4),
