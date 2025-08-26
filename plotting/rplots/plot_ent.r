@@ -111,7 +111,7 @@ g <- ggplot(
     theme(
         legend.margin = margin(b = -4),
     ) +
-    force_panelsizes(cols = c(4, 7)) +
+    force_panelsizes(cols = c(5, 7)) +
     facetted_pos_scales(
         x = list(
             measure == "MW" ~ scale_x_continuous("Noise Level", limits = c(-0.001, 0.001), breaks = seq(-1, 1, 1), labels = ifelse(use_tikz, latex_percent, scales::percent))
