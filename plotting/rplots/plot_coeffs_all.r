@@ -150,7 +150,7 @@ for (n_q in 3:6) {
             scale_colour_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "Frequency"), values = COLOURS.LIST) +
             scale_x_continuous("Noise Level", labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.02)) +
             theme_paper() +
-            guides(colour = guide_legend(nrow = 2, theme = theme(legend.byrow = TRUE))) +
+            guides(colour = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE))) +
             scale_y_log10(ifelse(use_tikz, "$\\mu_c({\\boldsymbol{{\\boldsymbol{\\omega}}}})$ [log]", "|c| Mean [log]"),
                 breaks = scales::trans_breaks("log10", function(x) 10^x),
                 labels = trans_format("log10", math_format(10^.x))
@@ -166,7 +166,7 @@ for (n_q in 3:6) {
             )
 
         save_name <- str_c("coeff_mean_qubits", n_q, "_", enc)
-        create_plot(g, save_name, COLWIDTH, 0.3 * HEIGHT)
+        create_plot(g, save_name, COLWIDTH, 0.7 * HEIGHT)
 
         g <- ggplot(d_coeffs_q, aes(x = noise_value, y = rel_sd, colour = as.factor(freq1))) +
             geom_point(size = POINT.SIZE) +
@@ -174,7 +174,7 @@ for (n_q in 3:6) {
             scale_colour_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "Frequency"), values = COLOURS.LIST) +
             scale_x_continuous("Noise Level", labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.02)) +
             theme_paper() +
-            guides(colour = guide_legend(nrow = 2, theme = theme(legend.byrow = TRUE))) +
+            guides(colour = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE))) +
             scale_y_log10(ifelse(use_tikz, "$\\sigma_c({\\boldsymbol{\\omega}})$ [log]", "|c| Relative Standard Deviation"), ) +
             facet_nested(noise_category + noise_type ~ ansatz,
                 labeller = labeller(
@@ -187,7 +187,7 @@ for (n_q in 3:6) {
             )
 
         save_name <- str_c("coeff_sd_qubits", n_q, "_", enc)
-        create_plot(g, save_name, COLWIDTH, 0.3 * HEIGHT)
+        create_plot(g, save_name, COLWIDTH, 0.7 * HEIGHT)
 
         d_coeffs_q <- d_coeffs_q %>%
             filter(noise_value %in% c(0, 0.03))
@@ -237,7 +237,7 @@ for (n_q in 3:6) {
                 legend.key.width = unit(0.2, "cm"),
             )
         save_name <- str_c("coeff_covar_qubits", n_q, "_", enc)
-        create_plot(g, save_name, COLWIDTH, n_q * 0.11 * HEIGHT)
+        create_plot(g, save_name, COLWIDTH, n_q * 0.15 * HEIGHT)
     }
 
     d_coeffs_q <- d_coeffs %>%
@@ -249,7 +249,7 @@ for (n_q in 3:6) {
         scale_colour_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}^{(2)}$", "Frequency 2"), values = COLOURS.LIST) +
         scale_x_continuous("Noise Level", labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.02)) +
         theme_paper() +
-        guides(colour = guide_legend(nrow = 2, theme = theme(legend.byrow = TRUE))) +
+        guides(colour = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE))) +
         scale_y_log10(ifelse(use_tikz, "$\\mu_c({\\boldsymbol{{\\boldsymbol{\\omega}}}})$ [log]", "|c| Mean [log]"),
             breaks = scales::trans_breaks("log10", function(x) 10^(-15:-1)),
             labels = trans_format("log10", math_format(10^.x))
@@ -265,7 +265,7 @@ for (n_q in 3:6) {
         )
 
     save_name <- str_c("coeff_mean_qubits", n_q, "_2D")
-    create_plot(g, save_name, COLWIDTH, (0.5 * n_q + 0.15) * HEIGHT)
+    create_plot(g, save_name, COLWIDTH, (0.65 * n_q + 0.15) * HEIGHT)
 
     g <- ggplot(d_coeffs_q, aes(x = noise_value, y = rel_sd, colour = as.factor(freq2))) +
         geom_point(size = POINT.SIZE) +
@@ -273,7 +273,7 @@ for (n_q in 3:6) {
         scale_colour_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}^{(2)}$", "Frequency 2"), values = COLOURS.LIST) +
         scale_x_continuous("Noise Level", labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.02)) +
         theme_paper() +
-        guides(colour = guide_legend(nrow = 2, theme = theme(legend.byrow = TRUE))) +
+        guides(colour = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE))) +
         scale_y_log10(ifelse(use_tikz, "$\\sigma_c({\\boldsymbol{\\omega}})$ [log]", "|c| Relative Standard Deviation"), ) +
         facet_nested(noise_category + noise_type + freq1 ~ ansatz,
             labeller = labeller(
@@ -286,7 +286,7 @@ for (n_q in 3:6) {
         )
 
     save_name <- str_c("coeff_sd_qubits", n_q, "_2D")
-    create_plot(g, save_name, COLWIDTH, (0.5 * n_q + 0.15) * HEIGHT)
+    create_plot(g, save_name, COLWIDTH, (0.65 * n_q + 0.15) * HEIGHT)
 
     d_coeffs_q <- d_coeffs_q %>%
         filter(noise_value %in% c(0, 0.03))
@@ -337,5 +337,5 @@ for (n_q in 3:6) {
             legend.key.width = unit(0.2, "cm"),
         )
     save_name <- str_c("coeff_covar_qubits", n_q, "_2D")
-    create_plot(g, save_name, COLWIDTH, (n_q * n_q * 0.11) * HEIGHT)
+    create_plot(g, save_name, COLWIDTH, (n_q * n_q * 0.15) * HEIGHT)
 }

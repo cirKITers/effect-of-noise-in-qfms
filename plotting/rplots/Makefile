@@ -117,4 +117,4 @@ img-tikz/training_mse.tex: layout.r plot_training.r csv_data/training.csv
 clean:
 	rm -rf build img-tikz img-pdf img-gen
 
-.PHONY: all pdf clean plot_coeffs plot_ent plot_expr plot_coeffs_mean plot_coherent plot_coeffs_encoding plot_coeffs_all
+.PHONY: all pdf clean plot_coeffs plot_ent plot_expr plot_coeffs_mean plot_coherent plot_coeffs_encoding plot_coeffs_all plot_training
