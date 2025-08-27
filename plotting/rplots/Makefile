@@ -1,7 +1,7 @@
 all: plot
 
-plot: plot_expr plot_ent plot_coeffs_mean plot_coeffs_encoding plot_coherent plot_coeffs_all gen
-pdf: plot_expr_pdf plot_ent_pdf plot_coeffs_mean_pdf plot_coeffs_encoding_pdf plot_coherent_pdf plot_coeffs_all_pdf
+plot: plot_expr plot_ent plot_coeffs_mean plot_coeffs_encoding plot_coherent plot_coeffs_all plot_training gen
+pdf: plot_expr_pdf plot_ent_pdf plot_coeffs_mean_pdf plot_coeffs_encoding_pdf plot_coherent_pdf plot_coeffs_all_pdf plot_training_pdf
 single_coeff: img-pdf/single/coeffs.pdf
 single_expr: img-pdf/single/expr.pdf
 single_ent: img-pdf/single/ent.pdf
