@@ -22,6 +22,7 @@ if (length(args) == 1) {
 coeffs_path <- "csv_data/single/coeffs_stat.csv"
 expr_path <- "csv_data/single/expr.csv"
 ent_path <- "csv_data/single/ent.csv"
+train_path <- "csv_data/single/training.csv"
 
 if(file.exists(coeffs_path)) {
     d_coeffs <- read_csv(coeffs_path)
@@ -395,4 +396,184 @@ if(file.exists(ent_path)) {
 
     save_name <- str_c("single/ent")
     create_plot(g, save_name, COLWIDTH, 0.38 * HEIGHT)
+}
+
+if(file.exists(train_path)) {
+    d_train <- read_csv(train_path)
+
+    d_train <- d_train %>%
+        pivot_longer(
+            c(
+                BitFlip, PhaseFlip, Depolarizing,
+                AmplitudeDamping, PhaseDamping,
+                StatePreparation, Measurement, GateError
+            ),
+            names_to = "noise_type", values_to = "noise_value"
+        ) %>%
+        filter(!is.na(noise_value))
+
+
+    d_train$noise_type[d_train$noise_value == 0] <- "Noiseless"
+
+    d_train <- d_train %>%
+        distinct(noise_type, noise_value, ansatz, qubits, frequencies, step, problem_seed, seed, .keep_all = TRUE) %>%
+        mutate(
+            coeff_abs = sqrt(coeffs_real^2 + coeffs_imag^2),
+            abs_target = sqrt(target_coefficients_real^2 + target_coefficients_imag^2),
+            coeff_abs_dist = abs(coeff_abs - abs_target),
+            noise_category = ifelse(
+                noise_type %in% c("BitFlip", "PhaseFlip", "Depolarizing"),
+                "Decoherent Gate",
+                ifelse(
+                    noise_type %in% c("StatePreparation", "Measurement"),
+                    "SPAM",
+                    ifelse(
+                        noise_type %in% c("AmplitudeDamping", "PhaseDamping"),
+                        "Damping",
+                        ifelse(
+                            noise_type == "GateError",
+                            "Coh.",
+                            ""
+                        )
+                    )
+                )
+            ),
+            noise_value = round(noise_value, digits = 3),
+        )
+
+    d_train$noise_category <- factor(d_train$noise_category, levels = c("", "Decoherent Gate", "SPAM", "Damping", "Coh."))
+    d_train$noise_type <- factor(d_train$noise_type,
+        levels = c(
+            "Noiseless", "BitFlip", "PhaseFlip", "Depolarizing",
+            "AmplitudeDamping", "PhaseDamping",
+            "StatePreparation", "Measurement",
+            "GateError"
+        ),
+        labels = c(
+            "Noiseless", "BF", "PF", "DP",
+            "AD", "PD",
+            "SP", "ME",
+            "CGE"
+        ),
+    )
+
+    d_train$ansatz <- factor(d_train$ansatz,
+        levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_15", "Circuit_19"),
+        labels = c("SEA", "HEA", "C15", "C19")
+    )
+
+
+
+    d_summarised_freq <- d_train %>%
+        group_by(noise_category, noise_type, ansatz, qubits, step, frequencies) %>%
+        summarise(
+            mean_abs_dist = mean(coeff_abs_dist),
+            sd_abs_dist = sd(coeff_abs_dist),
+        ) %>%
+        mutate(
+            dist_lower_bound = mean_abs_dist - sd_abs_dist,
+            dist_upper_bound = mean_abs_dist + sd_abs_dist,
+        )
+
+
+    d_summarised <- d_train %>%
+        group_by(noise_category, noise_type, ansatz, qubits, step) %>%
+        summarise(
+            mean_mse = mean(mse),
+            sd_mse = sd(mse),
+            mean_dist = mean(coeff_dist),
+            sd_dist = sd(coeff_dist),
+            mean_ent = mean(entanglement),
+            sd_ent = sd(entanglement),
+        ) %>%
+        mutate(
+            mse_lower_bound = mean_mse - sd_mse,
+            mse_upper_bound = mean_mse + sd_mse,
+            dist_lower_bound = mean_dist - sd_dist,
+            dist_upper_bound = mean_dist + sd_dist,
+            ent_lower_bound = mean_ent - sd_ent,
+            ent_upper_bound = mean_ent + sd_ent,
+        )
+
+    d_train <- d_train %>%
+        group_by(noise_category, noise_type, noise_value, ansatz, qubits, frequencies, step, problem_seed) %>%
+        summarise(
+            abs_target = mean(abs_target),
+            mean_coeff_abs = mean(coeff_abs),
+            sd_coeff_abs = sd(coeff_abs),
+            mean_abs_dist = mean(coeff_abs_dist),
+            sd_abs_dist = sd(coeff_abs_dist),
+        ) %>%
+        mutate(
+            coeff_lower_bound = mean_coeff_abs - sd_coeff_abs,
+            coeff_upper_bound = mean_coeff_abs + sd_coeff_abs,
+        )
+
+    g <- ggplot(
+        d_summarised_freq,
+        aes(x = step, y = mean_abs_dist, colour = as.factor(frequencies))
+    ) +
+        geom_line(linewidth = LINE.SIZE) +
+        geom_ribbon(aes(ymin = dist_lower_bound, ymax = dist_upper_bound, fill = as.factor(frequencies)), alpha = 0.2, colour = NA) +
+        scale_colour_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), values = COLOURS.LIST) +
+        scale_fill_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), values = COLOURS.LIST) +
+        facet_nested(ansatz ~ noise_category + noise_type) +
+        scale_x_continuous("Step") +
+        scale_y_continuous(ifelse(use_tikz, "$\\lvert \\lvert c_{\\boldsymbol{\\omega}}(\\boldsymbol{\\theta})\\rvert - \\lvert c'_{\\boldsymbol{\\omega}} \\rvert \\rvert$", "Diff")) +
+        theme_paper() +
+        guides(colour = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE)))
+    save_name <- str_c("single/training_coeff_dist")
+    create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)
+
+    g <- ggplot(
+        d_summarised,
+        aes(x = step, y = mean_mse, colour = noise_category, linetype = noise_type)
+    ) +
+        geom_line(linewidth = LINE.SIZE) +
+        geom_ribbon(aes(ymin = mse_lower_bound, ymax = mse_upper_bound, fill = noise_category), alpha = 0.1, colour = NA) +
+        scale_colour_manual("", values = COLOURS.LIST, breaks = c("", "Decoherent Gate", "SPAM", "Damping", "Coh.")) +
+        scale_fill_manual("", values = COLOURS.LIST, breaks = c("", "Decoherent Gate", "SPAM", "Damping", "Coh.")) +
+        scale_linetype_manual("Noise Type", values = c(1, 1, 2, 111, 1, 2, 1, 2, 1)) +
+        facet_nested(. ~ ansatz) +
+        scale_x_continuous("Step") +
+        scale_y_continuous("MSE") +
+        theme_paper() +
+        guides(linetype = guide_legend(nrow = 2, theme = theme(legend.byrow = TRUE)))
+    save_name <- str_c("single/training_mse")
+    create_plot(g, save_name, 0.6 * TEXTWIDTH, 0.25 * HEIGHT)
+
+    g <- ggplot(
+        d_summarised,
+        aes(x = step, y = mean_ent), colour = "black"
+    ) +
+        geom_line(linewidth = LINE.SIZE) +
+        geom_ribbon(aes(ymin = ent_lower_bound, ymax = ent_upper_bound), fill = "black", alpha = 0.2, colour = NA) +
+        facet_nested(ansatz ~ noise_category + noise_type) +
+        scale_x_continuous("Step") +
+        scale_y_continuous("Entangling Capability") +
+        theme_paper() +
+        guides(colour = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE)))
+    save_name <- str_c("single/training_ent")
+    create_plot(g, save_name, TEXTWIDTH, 0.3 * HEIGHT)
+
+
+    g <- ggplot(
+        d_train,
+        aes(x = step, y = mean_coeff_abs, colour = as.factor(frequencies))
+    ) +
+        geom_line(linewidth = LINE.SIZE) +
+        geom_line(aes(y = abs_target), linewidth = LINE.SIZE, linetype = "dashed") +
+        geom_ribbon(aes(ymin = coeff_lower_bound, ymax = coeff_upper_bound, fill = as.factor(frequencies)), alpha = 0.2, colour = NA) +
+        scale_colour_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), values = COLOURS.LIST) +
+        scale_fill_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), values = COLOURS.LIST) +
+        facet_nested(problem_seed + ansatz ~ noise_category + noise_type,
+            labeller = labeller(problem_seed = problem_labeller),
+            scale = "free_y",
+        ) +
+        scale_x_continuous("Step") +
+        scale_y_continuous(ifelse(use_tikz, "$\\lvert c_{\\boldsymbol{\\omega}} \\rvert$", "c")) +
+        theme_paper() +
+        guides(colour = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE)))
+    save_name <- str_c("single/training_coeffs")
+    create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)
 }

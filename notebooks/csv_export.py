@@ -368,7 +368,7 @@ def export_training_data(
     training_df = get_training_df(training_run_ids)
 
     result_file = f"{dest}/training.csv"
-    if os.path.exists(result_file):
+    if os.path.exists(result_file) and not single:
         training_df.to_csv(result_file, index=False, mode="a", header=False)
     else:
         training_df.to_csv(result_file, index=False)

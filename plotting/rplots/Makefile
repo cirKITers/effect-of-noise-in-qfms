@@ -5,6 +5,7 @@ pdf: plot_expr_pdf plot_ent_pdf plot_coeffs_mean_pdf plot_coeffs_encoding_pdf pl
 single_coeff: img-pdf/single/coeffs.pdf
 single_expr: img-pdf/single/expr.pdf
 single_ent: img-pdf/single/ent.pdf
+single_train: img-pdf/single/training.pdf
 
 plot_coeffs_pdf: img-pdf/coeff_real_imag_qubits6.pdf
 plot_coeffs_all_pdf: img-pdf/coeff_mean_qubits5.pdf
@@ -39,6 +40,10 @@ img-pdf/single/expr.pdf: layout.r csv_data/single/expr.csv plot_single.r
 	Rscript plot_single.r pdf
 
 img-pdf/single/coeffs.pdf: layout.r csv_data/single/coeffs_stat.csv plot_single.r
+	mkdir -p img-pdf/single
+	Rscript plot_single.r pdf
+
+img-pdf/single/training.pdf: layout.r csv_data/single/training.csv plot_single.r
 	mkdir -p img-pdf/single
 	Rscript plot_single.r pdf
 

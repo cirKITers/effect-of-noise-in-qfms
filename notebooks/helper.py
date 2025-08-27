@@ -169,7 +169,11 @@ def get_training_df(run_ids, debug=False):
         noise_params = client.get_run(run_id).data.params["model.noise_params"]
         noise = [
             k for k, v in ast.literal_eval(noise_params).items() if float(v) > 0.0
-        ][0]
+        ]
+        if len(noise) > 0:
+            noise = noise[0]
+        else:
+            noise = "noiseless"
         all_cfgs[ansatz][qubits][seed][noise]["0.03"][encoding][problem_seed] += 1
 
         converter_dict = {c: list_converter for c in array_cols}

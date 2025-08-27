@@ -16,6 +16,9 @@ elif [ "$1" = "entanglement" ]; then
 elif [ "$1" = "expressibility" ]; then
 	./run_expressibility_config.sh
 	./plot_single.sh expressibility
+elif [ "$1" = "training" ]; then
+	./run_training_config.sh
+	./plot_single.sh training
 elif [ "$1" = "plot_paper_results" ]; then
 	./plot_all.sh only_plot
 elif [ "$1" = "bash" ]; then
@@ -24,7 +27,7 @@ elif [ "$1" = "bash" ]; then
 	/bin/bash
 	exit 0
 else
-    echo "Usage: ./scripts/run.sh [coefficients|expressibility|entanglement|experiments_paper|plot_paper_results|bash]"
+    echo "Usage: ./scripts/run.sh [coefficients|expressibility|entanglement|training|experiments_paper|plot_paper_results|bash]"
 fi
 
 cd -
