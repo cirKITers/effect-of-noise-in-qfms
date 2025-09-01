@@ -4,8 +4,10 @@ nav:
   - index.md
   - setup.md
   - coefficients.md
-  - coefficients1d.md
+  - coefficients1d_rx.md
+  - coefficients1d_ry.md
   - coefficients2d.md
+  - training.md
   - entanglement.md
   - expressibility.md
 theme:
