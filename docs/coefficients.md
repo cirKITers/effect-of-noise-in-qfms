@@ -50,7 +50,7 @@ Our Figure 7 in the paper:
 ![Coefficients Num Freq](figures/coeff_mean_subsampling_light.png#only-light)
 ![Coefficients Num Freq](figures/coeff_mean_subsampling_dark.png#only-dark)
 
-Absolute coefficient mean $\mu_c(\boldsymbol{\omega})$ for 6 qubits and $R_Y$ encodings over frequencies for different noise levels $[0,\dots,3]\%$ and different ansätze. Noise is applied either on the encoding gates ($\bepsilon_{\bx}$), the trainable gates ($\bepsilon_{\btheta}$) or on the full VQC ($\bepsilon_{\bx}$ and $\bepsilon_{\btheta}$).
+Absolute coefficient mean $\mu_c(\boldsymbol{\omega})$ for 6 qubits and $R_Y$ encodings over frequencies for different noise levels $[0,\dots,3]\%$ and different ansätze. Noise is applied either on the encoding gates ($\boldsymbol{\epsilon}_{\boldsymbol{x}}$), the trainable gates ($\boldsymbol{\epsilon}_{\boldsymbol{\theta}}$) or on the full VQC ($\boldsymbol{\epsilon}_{\boldsymbol{x}}$ and $\boldsymbol{\epsilon}_{\boldsymbol{\theta}}$).
 
 
 Our Figure 8 in the paper:
