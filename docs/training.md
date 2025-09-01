@@ -23,39 +23,39 @@ Problem instance seed 1000 (Our Figure 18 in the paper):
 ![Training Coefficients seed 1000](figures/training_coeffs_seed1000_light.png#only-light)
 ![Training Coefficients seed 1000](figures/training_coeffs_seed1000_dark.png#only-dark)
 
-Problem instance seed 1001 (Our Figure 18 in the paper):
+Problem instance seed 1001:
 ![Training Coefficients seed 1001](figures/training_coeffs_seed1001_light.png#only-light)
 ![Training Coefficients seed 1001](figures/training_coeffs_seed1001_dark.png#only-dark)
 
-Problem instance seed 1002 (Our Figure 18 in the paper):
+Problem instance seed 1002:
 ![Training Coefficients seed 1002](figures/training_coeffs_seed1002_light.png#only-light)
 ![Training Coefficients seed 1002](figures/training_coeffs_seed1002_dark.png#only-dark)
 
-Problem instance seed 1003 (Our Figure 18 in the paper):
+Problem instance seed 1003:
 ![Training Coefficients seed 1003](figures/training_coeffs_seed1003_light.png#only-light)
 ![Training Coefficients seed 1003](figures/training_coeffs_seed1003_dark.png#only-dark)
 
-Problem instance seed 1004 (Our Figure 18 in the paper):
+Problem instance seed 1004:
 ![Training Coefficients seed 1004](figures/training_coeffs_seed1004_light.png#only-light)
 ![Training Coefficients seed 1004](figures/training_coeffs_seed1004_dark.png#only-dark)
 
-Problem instance seed 1005 (Our Figure 18 in the paper):
+Problem instance seed 1005:
 ![Training Coefficients seed 1005](figures/training_coeffs_seed1005_light.png#only-light)
 ![Training Coefficients seed 1005](figures/training_coeffs_seed1005_dark.png#only-dark)
 
-Problem instance seed 1006 (Our Figure 18 in the paper):
+Problem instance seed 1006:
 ![Training Coefficients seed 1006](figures/training_coeffs_seed1006_light.png#only-light)
 ![Training Coefficients seed 1006](figures/training_coeffs_seed1006_dark.png#only-dark)
 
-Problem instance seed 1007 (Our Figure 18 in the paper):
+Problem instance seed 1007:
 ![Training Coefficients seed 1007](figures/training_coeffs_seed1007_light.png#only-light)
 ![Training Coefficients seed 1007](figures/training_coeffs_seed1007_dark.png#only-dark)
 
-Problem instance seed 1008 (Our Figure 18 in the paper):
+Problem instance seed 1008:
 ![Training Coefficients seed 1008](figures/training_coeffs_seed1008_light.png#only-light)
 ![Training Coefficients seed 1008](figures/training_coeffs_seed1008_dark.png#only-dark)
 
-Problem instance seed 1009 (Our Figure 18 in the paper):
+Problem instance seed 1009:
 ![Training Coefficients seed 1009](figures/training_coeffs_seed1009_light.png#only-light)
 ![Training Coefficients seed 1009](figures/training_coeffs_seed1009_dark.png#only-dark)
 
