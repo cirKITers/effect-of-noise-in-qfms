@@ -9,6 +9,6 @@ authors:
     orcid: "https://orcid.org/0000-0003-0229-9897"
 title: "Reproduction Package for 'Out of Tune: Demystifying Noise-Effects on Quantum Fourier Models'"
 version: 0.1.0
-doi: 10.5281/zenodo.15211318
-date-released: 2025-04-14
+doi: 10.5281/zenodo.16963959
+date-released: 2025-08-15
 url: "https://github.com/cirKITers/effect-of-noise-in-qfms"
