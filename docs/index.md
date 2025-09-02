@@ -17,8 +17,7 @@ Nevertheless, it remains an open problem if and how quantum Fourier models (QFMs
 In this work, we study VQCs with Fourier lenses, which provides possibilities to improve their understanding, while also illuminating and quantifying constraints and challenges.
 We seek to elucidate critical characteristics of QFMs under the influence of noise.
 Specifically, we undertake a systematic investigation into the impact of noise on the Fourier spectrum, expressibility, and entangling capability of QFMs through extensive numerical simulations and link these properties to training performance. The insights may inform more efficient utilisation of quantum hardware and support the design of tailored error mitigation and correction strategies.
+
 Decoherence imparts an expected and broad detrimental influence across all Ansätze.
 Nonetheless, we observe that the severity of these deleterious effects varies among different model architectures, suggesting that certain configurations may exhibit enhanced robustness to noise and show computational utility.
-
-
 
