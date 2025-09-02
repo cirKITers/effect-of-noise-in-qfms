@@ -1,7 +1,7 @@
 # Out of Tune: Demystifying Noise-Effects on Quantum Fourier Models
 
 This repository contains the source code and additional results for our paper "Out of Tune: Demystifying Noise-Effects on Quantum Fourier Models".
-A preprint is available on [ArXiv](https://arxiv.org/abs/2506.09527)
+A preprint is available on [ArXiv](https://arxiv.org/abs/2506.09527).
 
 ## Results
 
