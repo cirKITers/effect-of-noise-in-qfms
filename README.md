@@ -1,6 +1,7 @@
 # Out of Tune: Demystifying Noise-Effects on Quantum Fourier Models
 
-This repository contains the source code and additional results for our paper "Out of Tune: Demystifying Noise-Effects on Quantum Fourier Models" submitted at QCE25.
+This repository contains the source code and additional results for our paper "Out of Tune: Demystifying Noise-Effects on Quantum Fourier Models".
+A preprint is available on [ArXiv](https://arxiv.org/abs/2506.09527).
 
 ## Results
 
@@ -38,7 +39,7 @@ Download image from github registry:
 docker pull ghcr.io/cirkiters/effect-of-noise-in-qfms/effect_of_noise_repro:latest
 ```
 
-Or download `effect_of_noise_repro.tar` from [Zenodo](https://doi.org/10.5281/zenodo.15211318) and load:
+Or download `effect_of_noise_repro.tar` from [Zenodo](https://doi.org/10.5281/zenodo.16963959) and load:
 ```
 docker load -i effect_of_noise_repro.tar
 ```
@@ -59,10 +60,11 @@ The `<option>` specifies which operations are performed on container start.
 
 Available options are:
 * `experiments_paper`\*: performs all experiments shown in the paper
-* `plot_paper_results`: generates the the plots for the paper using R (only available if either the paper experiments are run first, or result data is downloaded from [Zenodo](https://doi.org/10.5281/zenodo.15211318))
+* `plot_paper_results`: generates the the plots for the paper using R (only available if either the paper experiments are run first, or result data is downloaded from [Zenodo](https://doi.org/10.5281/zenodo.16963959))
 * `coefficients`: performs coefficient experiment based on the [configuration](conf/base/parameters.yml)
 * `entanglement`: performs entanglement experiment based on the [configuration](conf/base/parameters.yml)
 * `expressibility`: performs entanglement experiment based on the [configuration](conf/base/parameters.yml)
+* `training`: performs training experiment based on the [configuration](conf/base/parameters.yml)
 * `bash`(default): does not perform any operation, but launches interactive shell, default
 
 Feel free to define additional `<-flags>`, we recommend volumes, e.g.:

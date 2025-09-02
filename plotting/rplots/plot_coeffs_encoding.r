@@ -28,8 +28,8 @@ index_labeller <- function(layer) {
 }
 
 d_coeffs$ansatz <- factor(d_coeffs$ansatz,
-    levels = c("Strongly_Entangling", "Strongly_Entangling_Plus", "Hardware_Efficient", "Circuit_15", "Circuit_19"),
-    labels = c("SEA", "SEA+", "HEA", "Circuit 15", "Circuit 19")
+    levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_15", "Circuit_19"),
+    labels = c("SEA", "HEA", "C15", "C19")
 )
 d_coeffs$frequency <- as.factor(d_coeffs$freq1)
 if (use_tikz) {
@@ -58,12 +58,9 @@ g <- ggplot(d_coeffs %>% filter(qubits == 6 & coeffs_abs > 1e-14), aes(x = coeff
     theme_paper() +
     scale_x_continuous("Real Part", limits = c(-0.3, 0.3)) +
     scale_y_continuous("Imaginary Part", limits = c(-0.3, 0.3)) +
-    guides(colour = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE), override.aes = list(alpha = 1, size = 3 * POINT.SIZE))) +
-    theme(
-        legend.margin = margin(b = -6, t = 0)
-    )
+    guides(colour = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE), override.aes = list(alpha = 1, size = 3 * POINT.SIZE)))
 save_name <- str_c("coeff_real_imag_encoding")
-create_plot(g, save_name, TEXTWIDTH, 0.3 * HEIGHT)
+create_plot(g, save_name, 0.6 * TEXTWIDTH, 0.3 * HEIGHT)
 
 d_coeffs <- d_coeffs %>%
     group_by(ansatz, qubits, freq1, encoding) %>%
@@ -97,9 +94,6 @@ g <- ggplot(d_coeffs, aes(x = freq1, y = mean_coeff, colour = qubits)) +
     ) +
     scale_colour_manual(ifelse(use_tikz, "\\# Qubits", "# Qubits"), values = rev(head(COLOURS.LIST, 4))) +
     theme_paper() +
-    theme(
-        legend.margin = margin(b = -4, t = 0)
-    ) +
     guides(colour = guide_legend(reverse = T))
 
 save_name <- str_c("coeff_mean_encoding")
@@ -121,9 +115,6 @@ g <- ggplot(d_coeffs, aes(x = freq1, y = sd_coeff, colour = qubits)) +
     ) +
     scale_colour_manual(ifelse(use_tikz, "\\# Qubits", "# Qubits"), values = rev(head(COLOURS.LIST, 4))) +
     theme_paper() +
-    theme(
-        legend.margin = margin(b = -4, t = 0)
-    ) +
     guides(colour = guide_legend(reverse = T))
 
 save_name <- str_c("coeff_sd_encoding")

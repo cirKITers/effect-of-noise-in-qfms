@@ -11,6 +11,7 @@ from helper import (
 from typing import Optional
 from runs.coefficient_runs import experiment_ids as coeff_eids
 from runs.coefficient_runs import experiment_ids_encoding as coeff_enc_eids
+from runs.coefficient_runs import experiment_ids_subsampling as coeff_sub
 from runs.expressibility_runs import experiment_ids as expr_eids
 from runs.entanglement_runs import experiment_ids as ent_eids
 from runs.training_runs import experiment_ids as training_eids
@@ -133,6 +134,8 @@ def export_coeff_data(
     ],
     experiment_id: Optional[str] = None,
     single: bool = False,
+    subsampling: bool = False,
+    export_min_max: bool = False,
 ):
     global CSV_DESTINATION
     if single:
@@ -140,17 +143,22 @@ def export_coeff_data(
     else:
         dest = CSV_DESTINATION
     os.makedirs(dest, exist_ok=True)
+
+    prefix = "subsampling" if subsampling else ""
     id_coeff_file = (
-        f"{dest}/coeffs_ids.csv"
+        f"{dest}/{prefix}coeffs_ids.csv"
         if export_full
-        else f"{CSV_DESTINATION}/coeffs_ids_small.csv"
+        else f"{CSV_DESTINATION}/{prefix}coeffs_ids_small.csv"
     )
     if os.path.exists(id_coeff_file):
         id_coeffs = pd.read_csv(id_coeff_file)
     else:
         id_coeffs = pd.DataFrame(columns=["run_id"])
 
-    eids = coeff_eids if experiment_id is None else [experiment_id]
+    if subsampling:
+        eids = coeff_sub if experiment_id is None else [experiment_id]
+    else:
+        eids = coeff_eids if experiment_id is None else [experiment_id]
     coeff_run_ids = run_ids_from_experiment_id(
         eids,
         existing_run_ids=id_coeffs["run_id"].to_list(),
@@ -161,17 +169,16 @@ def export_coeff_data(
     all_coeffs_df = get_coeffs_df(
         coeff_run_ids,
         export_full_coeffs=export_full,
-        skip_rx_circ15=not single,
         export_qubits=export_qubits,
         export_noise_types=export_noise_types,
+        export_selective_noise=subsampling,
+        export_min_max=export_min_max,
     )
     if all_coeffs_df.size == 0:
         return
 
     array_columns = [
         "coeffs_abs_mean",
-        "coeffs_abs_min",
-        "coeffs_abs_max",
         "coeffs_real_mean",
         "coeffs_imag_mean",
         "coeffs_abs_var",
@@ -181,6 +188,8 @@ def export_coeff_data(
         "coeffs_co_var_real_imag",
         "frequencies",
     ]
+    if export_min_max:
+        array_columns.extend(["coeffs_abs_min", "coeffs_abs_max"])
 
     big_array_columns = [
         "coeffs_full_real",
@@ -213,6 +222,9 @@ def export_coeff_data(
             coeffs_df["frequencies"].to_list(), index=coeffs_df.index
         )
         coeffs_df = coeffs_df.drop(columns=["frequencies"])
+        if not export_min_max:
+            coeffs_df["coeffs_abs_min"] = 0.0
+            coeffs_df["coeffs_abs_max"] = 0.0
 
         if export_full:
             for ac in big_array_columns:
@@ -231,7 +243,7 @@ def export_coeff_data(
                         & (coeffs_df_full["qubits"] == q)
                     ]
                     result_file = (
-                        f"{dest}/coeffs_full_dims{n_dims}_q{q}_{noise_type}.csv"
+                        f"{dest}/{prefix}coeffs_full_dims{n_dims}_q{q}_{noise_type}.csv"
                     )
                     if os.path.exists(result_file):
                         coeffs_selected.to_csv(
@@ -244,9 +256,9 @@ def export_coeff_data(
                     )
         else:
             if single:
-                result_file = f"{dest}/coeffs_stat.csv"
+                result_file = f"{dest}/{prefix}coeffs_stat.csv"
             else:
-                result_file = f"{dest}/coeffs_stat_dims{n_dims}.csv"
+                result_file = f"{dest}/{prefix}coeffs_stat_dims{n_dims}.csv"
             if os.path.exists(result_file) and not single:
                 coeffs_df.to_csv(result_file, index=False, mode="a", header=False)
             else:
@@ -356,7 +368,7 @@ def export_training_data(
     training_df = get_training_df(training_run_ids)
 
     result_file = f"{dest}/training.csv"
-    if os.path.exists(result_file):
+    if os.path.exists(result_file) and not single:
         training_df.to_csv(result_file, index=False, mode="a", header=False)
     else:
         training_df.to_csv(result_file, index=False)
@@ -400,6 +412,13 @@ def get_arg_parser():
         action="store_true",
         default=False,
         help="Store coefficient data",
+    )
+    parser.add_argument(
+        "-coeffsub",
+        "--coefficients_subsampling",
+        action="store_true",
+        default=False,
+        help="Store coefficient data for subsampling experiments",
     )
     parser.add_argument(
         "-fullcoeff",
@@ -454,6 +473,13 @@ if __name__ == "__main__":
             False,
             experiment_id=p.experiment_id,
             single=p.single,
+            **kwargs,
+        )
+    if p.coefficients_subsampling:
+        export_coeff_data(
+            False,
+            experiment_id=p.experiment_id,
+            subsampling=True,
             **kwargs,
         )
     if p.full_coefficients:

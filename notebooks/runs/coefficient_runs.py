@@ -1,9 +1,11 @@
 experiment_ids = [
-    "770622959229785063", # 1D with scale 3-5 qubits
-    "656292150565298705", # 1D with scale 6 qubits
-    "171948270517227320", # 2D without scale 3-6 qubits 
+    "321000505717258223", # 1D Circuit 15 RX encoding + CGE
+    "726715300386330685", # 1D Remaining RX encoding
+    "420654457656474592", # 1D with RY encoding + 2D
 ]
 experiment_ids_encoding = [
     "527064116961015878",
 ]
-
+experiment_ids_subsampling = [
+    "626398718847857077",
+]

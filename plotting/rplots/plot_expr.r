@@ -23,7 +23,7 @@ d_expr <- read_csv(coeffs_path)
 
 d_expr$ansatz <- factor(d_expr$ansatz,
     levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_15", "Circuit_19"),
-    labels = c("SEA", "HEA", "Circuit 15", "Circuit 19")
+    labels = c("SEA", "HEA", "C15", "C19")
 )
 
 d_expr <- d_expr %>%
@@ -92,25 +92,23 @@ g <- ggplot(
     geom_ribbon(aes(ymin = lower_bound, ymax = upper_bound, fill = as.factor(qubits)), alpha = 0.5, colour = NA) +
     scale_colour_manual(ifelse(use_tikz, "\\# Qubits", "# Qubits"), values = COLOURS.LIST) +
     scale_fill_manual(ifelse(use_tikz, "\\# Qubits", "# Qubits"), values = COLOURS.LIST) +
-    facet_nested(noise_category + noise_type ~ ansatz,
+    facet_nested(ansatz ~ noise_category + noise_type,
         labeller = labeller(
             frequency = frequencies_labeller,
             qubits = qubit_labeller,
         ),
     ) +
-    scale_x_continuous("Noise Level", labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.01)) +
+    scale_x_continuous("Noise Level", labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.02)) +
     theme_paper() +
     guides(colour = guide_legend(nrow = 1)) +
     scale_y_log10(
-        ifelse(use_tikz, "\\small{more expressive} \\normalsize{$\\leftarrow\\qquad$ KL-Divergence [log] $\\qquad \\rightarrow$} \\small{less expressive}", "KL-Divergence [log]"),
+        ifelse(use_tikz, "\\quad \\scriptsize{more expr.} \\normalsize{$\\leftarrow$    KL-Divergence [log]    $\\rightarrow$} \\scriptsize{less expr.}", "KL-Divergence [log]"),
         breaks = c(1e-2, 1e0, 1e2),
         labels = trans_format("log10", math_format(10^.x)),
     ) +
     theme(
         legend.margin = margin(b = -4),
-        legend.key.height = unit(0.2, "cm"),
-        legend.key.width = unit(0.2, "cm")
     )
 
 save_name <- str_c("expr")
-create_plot(g, save_name, TEXTWIDTH, 0.7 * HEIGHT)
+create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)

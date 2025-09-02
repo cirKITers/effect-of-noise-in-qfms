@@ -145,13 +145,23 @@ def get_training_df(run_ids, debug=False):
         )
         if encoding == "['RX', 'RY']":
             encoding = "RXRY"
+        elif encoding == "['RY']":
+            encoding = "RY"
         sub_df_a.loc[it, "encoding"] = encoding
         sub_df_a.loc[it, "n_input_feat"] = n_input_feat
 
-        target_coefficients_real = ast.literal_eval(client.get_run(run_id).data.params["target_coefficients_real"])
-        target_coefficients_imag = ast.literal_eval(client.get_run(run_id).data.params["target_coefficients_imag"])
-        target_coefficients_real = np.array(target_coefficients_real[len(target_coefficients_real) // 2:], dtype=object)
-        target_coefficients_imag = np.array(target_coefficients_imag[len(target_coefficients_imag) // 2:], dtype=object)
+        target_coefficients_real = ast.literal_eval(
+            client.get_run(run_id).data.params["target_coefficients_real"]
+        )
+        target_coefficients_imag = ast.literal_eval(
+            client.get_run(run_id).data.params["target_coefficients_imag"]
+        )
+        target_coefficients_real = np.array(
+            target_coefficients_real[len(target_coefficients_real) // 2 :], dtype=object
+        )
+        target_coefficients_imag = np.array(
+            target_coefficients_imag[len(target_coefficients_imag) // 2 :], dtype=object
+        )
 
         sub_df_a.loc[it, "target_coefficients_real"] = target_coefficients_real
         sub_df_a.loc[it, "target_coefficients_imag"] = target_coefficients_imag
@@ -159,7 +169,11 @@ def get_training_df(run_ids, debug=False):
         noise_params = client.get_run(run_id).data.params["model.noise_params"]
         noise = [
             k for k, v in ast.literal_eval(noise_params).items() if float(v) > 0.0
-        ][0]
+        ]
+        if len(noise) > 0:
+            noise = noise[0]
+        else:
+            noise = "noiseless"
         all_cfgs[ansatz][qubits][seed][noise]["0.03"][encoding][problem_seed] += 1
 
         converter_dict = {c: list_converter for c in array_cols}
@@ -176,12 +190,12 @@ def get_training_df(run_ids, debug=False):
                 df_new[ac] = df_new[ac].apply(list)
 
             df_new["original_idx"] = df_new.index
-            df_new = df_new.explode(array_cols + additional_array_cols, ignore_index=True)
+            df_new = df_new.explode(
+                array_cols + additional_array_cols, ignore_index=True
+            )
             df_new["coeff_idx"] = df_new.groupby("original_idx").cumcount()
 
-            df = pd.concat(
-                [df, df_new]
-            ).reset_index(drop=True)
+            df = pd.concat([df, df_new]).reset_index(drop=True)
 
         except Exception as e:
             print(f"No results for run {run_id}")
@@ -293,9 +307,9 @@ def get_expressibility_df(
         seed = int(seed)
         sub_df_a.loc[it, "seed"] = seed
 
-        all_cfgs[ansatz][qubits][seed][noise][str(noise_value)]["RX"][2000] += 1
+        all_cfgs[ansatz][qubits][seed][noise][str(noise_value)]["RX"][1000] += 1
         if (
-            all_cfgs[ansatz][qubits][seed][noise][str(noise_value)]["RX"][2000] > 1
+            all_cfgs[ansatz][qubits][seed][noise][str(noise_value)]["RX"][1000] > 1
             or qubits == 7
         ):
             continue
@@ -306,7 +320,7 @@ def get_expressibility_df(
         ).reset_index(drop=True)
 
     if debug:
-        check_complete(all_cfgs, problem_seeds=[2000])
+        check_complete(all_cfgs, problem_seeds=[1000])
 
     return df
 
@@ -384,7 +398,7 @@ def get_entanglement_df(
             noise_value = noise_value[0]
         else:
             noise_value = 0
-        all_cfgs[ansatz][qubits][seed][noise][str(noise_value)]["RX"][2000] += 1
+        all_cfgs[ansatz][qubits][seed][noise][str(noise_value)]["RX"][1000] += 1
 
         try:
             sub_df_b = get_csv_artifact(run_id, "entangling_capability_noise")
@@ -397,7 +411,7 @@ def get_entanglement_df(
             all_cfgs[ansatz][qubits][seed][noise][str(noise_value)]["RX"] -= 1
 
     if debug:
-        check_complete(all_cfgs, problem_seeds=[2000])
+        check_complete(all_cfgs, problem_seeds=[1000])
 
     return df
 
@@ -445,7 +459,7 @@ def init_all_cfg_dict():
                             all_cfgs[circuit_type][n_qubits][seed][noise][noise_value][
                                 encoding
                             ] = dict()
-                            for problem_seed in range(2000, 2010):
+                            for problem_seed in range(1000, 1010):
                                 all_cfgs[circuit_type][n_qubits][seed][noise][
                                     noise_value
                                 ][encoding][problem_seed] = 0
@@ -467,7 +481,7 @@ def check_complete(
         "GateError",
         "noiseless",
     ],
-    problem_seeds=[2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009],
+    problem_seeds=[1000, 1001, 1002, 1003, 1004, 1005, 1006, 1007, 1008, 1009],
 ):
     for circuit_type in [
         "Hardware_Efficient",
@@ -481,14 +495,7 @@ def check_complete(
                     for noise_value in ["0.03"]:
                         if noise_value == "0" and noise != "noiseless":
                             continue
-                        for encoding in ["RX", "RY"]:
-                            if (
-                                encoding == "RX"
-                                and circuit_type == "Circuit_15"
-                                or encoding == "RY"
-                                and circuit_type != "Circuit_15"
-                            ):
-                                continue
+                        for encoding in ["RX", "RY", "RXRY"]:
                             for problem_seed in problem_seeds:
                                 if (
                                     all_cfgs[circuit_type][n_qubits][seed][noise][
@@ -506,7 +513,6 @@ def check_complete(
 def get_coeffs_df(
     run_ids,
     export_full_coeffs=False,
-    skip_rx_circ15=False,
     export_qubits=[2, 3, 4, 5, 6],
     export_noise_types=[
         "BitFlip",
@@ -520,6 +526,8 @@ def get_coeffs_df(
         "noiseless",
     ],
     debug=False,
+    export_selective_noise=False,
+    export_min_max=False,
 ):
     columns = [
         "run_id",
@@ -536,6 +544,8 @@ def get_coeffs_df(
         "Measurement",
         "GateError",
     ]
+    if export_selective_noise:
+        columns.append("selective_noise")
     array_cols = [
         "coeffs_abs_var",
         "coeffs_abs_mean",
@@ -632,6 +642,10 @@ def get_coeffs_df(
         )
         if encoding == "['RX', 'RY']":
             encoding = "RXRY"
+        elif encoding == "['RY']":
+            encoding = "RY"
+        elif encoding == "['RX']":
+            encoding = "RX"
         sub_df_a.loc[it, "encoding"] = encoding
         sub_df_a.loc[it, "n_input_feat"] = n_input_feat
 
@@ -648,16 +662,19 @@ def get_coeffs_df(
         if noise not in export_noise_types:
             continue
 
-        all_cfgs[ansatz][qubits][seed][noise][str(noise_value)][encoding][2000] += 1
-        if (
-            skip_rx_circ15
-            and encoding != "RY"
-            and ansatz == "Circuit_15"
-            and n_input_feat == 1
-        ):
-            continue
+        all_cfgs[ansatz][qubits][seed][noise][str(noise_value)][encoding][1000] += 1
 
-        converter_dict = {c: list_converter for c in array_cols + big_array_cols}
+        if export_selective_noise:
+            selective_noise = client.get_run(run_id).data.params.get(
+                "coefficients.selective_noise", "both"
+            )
+            sub_df_a.loc[it, "selective_noise"] = selective_noise
+
+        if export_min_max:
+            converter_dict = {c: list_converter for c in array_cols + big_array_cols}
+        else:
+            converter_dict = {c: list_converter for c in array_cols}
+            converter_dict.update({c: do_nothing_converter for c in big_array_cols})
 
         try:
             sub_df_b = get_csv_artifact(
@@ -665,17 +682,18 @@ def get_coeffs_df(
                 "coefficients_noise",
                 converters=converter_dict,
             )
-            sub_df_b["coeffs_abs"] = (
-                sub_df_b["coeffs_full_real"] ** 2 + sub_df_b["coeffs_full_imag"] ** 2
-            )
-            sub_df_b["coeffs_abs"] = sub_df_b["coeffs_abs"].map(np.sqrt)
-            sub_df_b["coeffs_abs_min"] = sub_df_b["coeffs_abs"].map(
-                lambda x: np.min(x, axis=-1)
-            )
-            sub_df_b["coeffs_abs_max"] = sub_df_b["coeffs_abs"].map(
-                lambda x: np.max(x, axis=-1)
-            )
-            sub_df_b.drop(columns=["coeffs_abs"], inplace=True)
+            if export_min_max:
+                sub_df_b["coeffs_abs"] = (
+                    sub_df_b["coeffs_full_real"] ** 2 + sub_df_b["coeffs_full_imag"] ** 2
+                )
+                sub_df_b["coeffs_abs"] = sub_df_b["coeffs_abs"].map(np.sqrt)
+                sub_df_b["coeffs_abs_min"] = sub_df_b["coeffs_abs"].map(
+                    lambda x: np.min(x, axis=-1)
+                )
+                sub_df_b["coeffs_abs_max"] = sub_df_b["coeffs_abs"].map(
+                    lambda x: np.max(x, axis=-1)
+                )
+                sub_df_b.drop(columns=["coeffs_abs"], inplace=True)
 
             if not export_full_coeffs:
                 sub_df_b.drop(columns=big_array_cols, inplace=True)
@@ -687,11 +705,11 @@ def get_coeffs_df(
         except Exception:
             print(f"No coefficients for run {run_id}")
             sub_df_b = pd.DataFrame()
-            all_cfgs[ansatz][qubits][seed][noise][str(noise_value)][encoding][2000] -= 1
+            all_cfgs[ansatz][qubits][seed][noise][str(noise_value)][encoding][1000] -= 1
 
     if debug:
         check_complete(
-            all_cfgs, export_qubits, export_noise_types, problem_seeds=[2000]
+            all_cfgs, export_qubits, export_noise_types, problem_seeds=[1000]
         )
 
     return df

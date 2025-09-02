@@ -1,5 +1,8 @@
 # 2D-Coefficients
 
+This page lists the individual results for for circuits with the two-dimensional encoding $R_X R_Y$ and varying qubit counts $[3\dots 6]$.
+In particular, for each configuration the results comprise of the absolute coefficient mean $\mu_c(\boldsymbol{\omega})$, the corresponding relative standard deviation $\sigma_c(\boldsymbol{\omega})$ and the covariance ($\text{Cov}(\cdot, \cdot)$). We denote the first frequency component as $\omega^{(1)}$ and the second as $\omega^{(2)}$ resulting in the individual frequency $(\omega^{(1)}, \omega^{(2)})$ in each facet and quite lengthy plots.
+
 ## 3 Qubits
 
 Mean:

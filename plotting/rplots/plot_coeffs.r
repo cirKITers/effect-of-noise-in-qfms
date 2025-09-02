@@ -26,7 +26,7 @@ d_coeffs <- d_coeffs %>% filter(qubits == 6)
 
 d_coeffs$ansatz <- factor(d_coeffs$ansatz,
     levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_15", "Circuit_19"),
-    labels = c("SEA", "HEA", "Circuit 15", "Circuit 19")
+    labels = c("SEA", "HEA", "C15", "C19")
 )
 d_coeffs$freq1 <- as.factor(d_coeffs$freq1)
 
@@ -101,7 +101,7 @@ save_name <- str_c("coeff_real_imag_qubits6")
 create_plot(g, save_name, COLWIDTH, 0.28 * HEIGHT)
 
 g <- ggplot(d_coeffs_ansatz %>% filter(noise_type %in% c("Noiseless", "AD") & freq1 == 0), aes(x = coeffs_full_real, y = "none", colour = noise_type, shape = noise_type)) +
-    geom_boxplot(lwd = 0.3, outlier.size = 0.05 * POINT.SIZE) +
+    geom_boxplot(lwd = 0.4, outlier.size = 0.05 * POINT.SIZE) +
     facet_nested(. ~ ansatz,
         labeller = labeller(
             freq1 = frequencies_labeller,
@@ -114,9 +114,8 @@ g <- ggplot(d_coeffs_ansatz %>% filter(noise_type %in% c("Noiseless", "AD") & fr
     scale_x_continuous(ifelse(use_tikz, "$c_{\\boldsymbol{0}}(\\boldsymbol{\\theta})$", "c"), limits = c(-0.3, 0.3)) +
     scale_y_discrete("", breaks = c("Noiseless", "AD")) +
     theme(
-        legend.margin = margin(b = -4, t = 0),
         axis.text.y = element_blank(),
-        legend.key.height = unit(0.2, "cm"),
+        legend.key.height = unit(0.2, "cm")
     )
 save_name <- str_c("coeff_real_AD_qubits6")
-create_plot(g, save_name, TEXTWIDTH, 0.1 * HEIGHT)
+create_plot(g, save_name, 0.6 * TEXTWIDTH, 0.12 * HEIGHT)

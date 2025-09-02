@@ -57,6 +57,25 @@ done
 sed -i "s/effects_of_noise_in_qfm/paper_experiments/g" mlruns/$(ls -rt mlruns| tail -n 1)/meta.yaml
 
 # Run training with all frameworks
+echo "Started training experiments..."
+for problem_seed in {1000..1009}; do
+	for seed in {1000..1009}; do
+		for n_qubits in {3..6}; do
+			for circuit in Hardware_Efficient Strongly_Entangling Circuit_19 Circuit_15; do
+				if [ "$circuit" = "Circuit_15" ]; then
+					encoding=RY
+				else
+					encoding=RX
+				fi
+				for noise_type in BitFlip PhaseFlip Depolarizing StatePreparation Measurement AmplitudeDamping PhaseDamping GateError; do
+					echo "Started experiment training with problem_seed=$problem_seed, seed=$seed, n_qubits=$n_qubits, $circuit, encoding=$encoding and noise_type=$noise_type"
+						$GIT_BASE_DIR/.venv/bin/kedro run --pipeline training --params="data.seed=$problem_seed,data.omegas=$n_qubits,model.n_qubits=$n_qubits,model.encoding=$encoding,model.circuit_type=$circuit,seed=$seed,model.noise_params.$noise_type=0.03"
+				done
+			done
+		done
+	done
+done
+
 echo "all experiments done."
 
 cd -

@@ -1,4 +1,4 @@
-BASE.SIZE <- 8
+BASE.SIZE <- 9
 INCH.PER.CM <- 1 / 2.54
 TEXTWIDTH <- 13.07245 * INCH.PER.CM
 COLWIDTH <- 13.07245 * INCH.PER.CM
@@ -19,7 +19,10 @@ theme_paper <- function() {
       axis.title.y = element_text(size = BASE.SIZE),
       legend.title = element_text(size = BASE.SIZE),
       legend.position = "top",
-      plot.margin = unit(c(0, 0, 0, 0), "cm")
+      plot.margin = unit(c(0, 0, 0, 0), "cm"),
+      legend.margin = margin(b = -4),
+      legend.key.height = unit(0.4, "cm"),
+      legend.key.width = unit(0.4, "cm")
     ))
 }
 
@@ -57,6 +60,10 @@ circuit_labeller <- function(layer) {
   paste0("Circuit ", layer)
 }
 
+problem_labeller <- function(layer) {
+  paste0("Problem Seed=", layer)
+}
+
 frequencies_labeller <- function(layer) {
     paste0(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), " = ", layer)
 }
@@ -70,5 +77,9 @@ freq2_labeller <- function(layer) {
 }
 
 latex_percent <- function (x) {
-    stringr::str_c(x * 100, "\\%")
+    if(use_tikz) {
+        stringr::str_c(x * 100, "\\%")
+    } else {
+        stringr::str_c(x * 100, "%")
+    }
 }
