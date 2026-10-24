@@ -47,8 +47,17 @@ docker load -i effect_of_noise_repro.tar
 Or build image:
 
 ```
-docker build -t effect_of_noise_repro .
+docker build --build-arg UID=$(id -u) --build-arg GID=$(id -g) -t effect_of_noise_repro .
 ```
+
+The image is built from the local checkout; experiment results (e.g. `mlruns`) and
+generated plots are excluded via `.dockerignore`.
+The build arguments `UID` and `GID` (default: 1000) create the container user
+with the same user and group id as the host user, so that the directories
+mounted below are writable from within the container.
+Make sure that these directories (in particular `mlruns`) exist and are owned
+by your user before starting the container, otherwise docker creates them
+owned by root.
 
 #### Create Container
 

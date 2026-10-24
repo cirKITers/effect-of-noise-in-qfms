@@ -36,9 +36,14 @@ RUN apt-get install -y \
 # Let Python 3.12 be global python version
 RUN ln -s /usr/bin/python3.12 /usr/bin/python
 
-# Add user
+# Add user. Use the same UID/GID as the host user to make the mounted volumes
+# writable, e.g. docker build --build-arg UID=$(id -u) --build-arg GID=$(id -g) ...
+ARG UID=1000
+ARG GID=1000
 RUN userdel -r ubuntu
-RUN useradd -m -u 1000 -G sudo -o -s /bin/bash repro && echo "repro:repro" | chpasswd
+RUN groupadd -g "$GID" -o repro \
+    && useradd -m -u "$UID" -g "$GID" -G sudo -o -s /bin/bash repro \
+    && echo "repro:repro" | chpasswd
 USER repro
 
 # Install R packages for plotting
