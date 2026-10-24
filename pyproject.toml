@@ -1,15 +1,37 @@
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "effects_of_noise_in_qfm"
+version = "0.2.0"
+description = ""
+authors = [{ name = "Melvin Strobl", email = "melvin.strobl@kit.edu" }, { name = "Maja Franz", email = "maja.franz@othr.de"}]
 readme = "README.md"
-dynamic = [ "dependencies", "version",]
+requires-python = ">=3.12,<3.15"
+dependencies = [
+    "mlflow>=2.18.0,<3",
+    "kedro>=0.19.11,<0.20",
+    "kedro-mlflow>=0.14.3,<0.15",
+    "kedro-viz>=10.1.0,<11",
+    "kaleido==0.2.1",
+    "pandas>=2.2.3,<3",
+    "pyyaml>=6.0.2,<7",
+    "mkdocs>=1.6.1,<2",
+    "mkdocs-material>=9.6.11,<10",
+    "mkdocs-glightbox>=0.4.0,<0.5",
+    "markdown-include>=0.8.1,<0.9",
+    "qml-essentials==0.3.1",
+    "jax>=0.9.0.1",
+    "optax>=0.2.8",
+]
 
 [project.scripts]
 effects_of_noise_in_qfm = "effects_of_noise_in_qfm.__main__:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/effects_of_noise_in_qfm"]
 
 [tool.kedro]
 package_name = "effects_of_noise_in_qfm"
@@ -29,48 +51,16 @@ fail_under = 0
 show_missing = true
 exclude_lines = [ "pragma: no cover", "raise NotImplementedError",]
 
-[tool.setuptools.dynamic.dependencies]
-file = "requirements.txt"
-
-[tool.setuptools.dynamic.version]
-attr = "effects_of_noise_in_qfm.__version__"
-
-[tool.setuptools.packages.find]
-where = [ "src",]
-namespaces = false
-
-[tool.poetry]
-name = "effects_of_noise_in_qfm"
-version = "0.1.0"
-description = ""
-authors = ["Melvin Strobl <lc3267@kit.edu>"]
-readme = "README.md"
-package-mode = false
-
-[tool.poetry.dependencies]
-python = ">=3.11,<3.13"
-mlflow = "^2.18.0"
-pytest = "^8.2.2"
-kedro = "^0.19.11"
-kedro-mlflow = "^0.14.3"
-kedro-viz = "^10.1.0"
-kaleido = "0.2.1"
-pandas = "^2.2.3"
-pyyaml = "^6.0.2"
-mkdocs = "^1.6.1"
-mkdocs-material = "^9.6.11"
-mkdocs-glightbox = "^0.4.0"
-markdown-include = "^0.8.1"
-qml-essentials = "^0.1.36"
-
-[tool.poetry.group.docs]
-optional = true
-
-[tool.poetry.group.docs.dependencies]
-mkdocs = "^1.6.1"
-mkdocs-material = "^9.6.11"
-mkdocs-glightbox = "^0.4.0"
-markdown-include = "^0.8.1"
+[dependency-groups]
+dev = [
+    "pytest>=8.2.2,<9",
+]
+docs = [
+    "mkdocs>=1.6.1,<2",
+    "mkdocs-material>=9.6.11,<10",
+    "mkdocs-glightbox>=0.4.0,<0.5",
+    "markdown-include>=0.8.1,<0.9",
+]
 
 [tool.kedro_telemetry]
 project_id = "9afb68ff0fe045cf975e94fc0ede1279"

@@ -1,6 +1,5 @@
 from qml_essentials.model import Model
 from qml_essentials.coefficients import Coefficients
-from pennylane import Hadamard
 
 from typing import List, Union, Optional
 import numpy as np
@@ -22,7 +21,6 @@ def create_model(
     shots: int,
     output_qubit: int,
     seed: int,
-    mp_threshold: int,
 ) -> Model:
     log.info(
         f"Creating model with {n_qubits} qubits, {n_layers} layers, and {circuit_type} circuit."
@@ -30,7 +28,7 @@ def create_model(
 
     if circuit_type[-5:] == "_Plus":
         circuit_type = circuit_type[:-5]
-        sp = [lambda wires, **kwargs: Hadamard(wires)]
+        sp = "H"
     else:
         sp = None
 
@@ -39,14 +37,13 @@ def create_model(
         n_layers=n_layers,
         circuit_type=circuit_type,
         data_reupload=data_reupload,
-        output_qubit=output_qubit,
+        observables=output_qubit,
         initialization=initialization,
         initialization_domain=initialization_domain,
         shots=shots,
         random_seed=seed,
         state_preparation=sp,
         encoding=encoding,
-        mp_threshold=mp_threshold,
     )
     return model
 

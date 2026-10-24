@@ -1,10 +1,12 @@
 from qml_essentials.entanglement import Entanglement
 from qml_essentials.coefficients import Coefficients
 from qml_essentials.model import Model
-from qml_essentials.ansaetze import Gates
+from jaqsi.unitary import UnitaryGates
 
-import pennylane as qml
-import pennylane.numpy as np
+import jax
+import jax.numpy as jnp
+import optax
+import numpy as np
 import mlflow
 from typing import Dict, Tuple, Callable
 from rich.progress import track
@@ -27,11 +29,14 @@ def validate_problem(omegas: int, model: Model):
         model (Model): The function approximating model.
     """
     if model.n_layers == 1 or model.n_qubits == 1:
-        if model.degree < omegas:
+        # model.degree is the number of coefficients, so compare the
+        # highest reachable frequency instead
+        max_freq = int(np.max(model.frequencies[0]))
+        if max_freq < omegas:
             log.warning(
                 f"Model is too small to use {omegas} frequencies. Consider adjusting the model degree."
             )
-        elif model.degree > omegas:
+        elif max_freq > omegas:
             log.warning(
                 f"Model is too large to use {omegas} frequencies. Consider adjusting the model degree."
             )
@@ -43,35 +48,37 @@ def validate_problem(omegas: int, model: Model):
 
 ## TODO: move to qml_essentials
 def step_cost_and_grads(
-    opt: qml.GradientDescentOptimizer, objective_fn: Callable, *args, **kwargs
-) -> Tuple[np.ndarray, float, np.ndarray]:
+    opt: optax.GradientTransformation,
+    opt_state: optax.OptState,
+    objective_fn: Callable,
+    params: jnp.ndarray,
+    **kwargs,
+) -> Tuple[jnp.ndarray, optax.OptState, float, jnp.ndarray]:
     """
-    Same as qml.GradientDescentOptimizer.step_and_cost but with returning the
+    Same as an optax update step but with returning the cost and the
     gradients
 
-    Update trainable arguments with one step of the optimizer and return the
+    Update trainable parameters with one step of the optimizer and return the
     corresponding objective function value prior to the step.
 
     Args:
-        opt (qml.GradientDescentOptimizer): PennyLane Optimiser.
+        opt (optax.GradientTransformation): Optax Optimiser.
+        opt_state (optax.OptState): Current state of the optimiser.
         objective_fn (Callable): The objective function for optimisation.
+        params (jnp.ndarray): The trainable parameters :math:`x^{(t)}`.
+        kwargs: Additional keyword arguments for the objective function.
 
     Returns:
-        Tuple[np.ndarray, float, np.ndarray]:
+        Tuple[jnp.ndarray, optax.OptState, float, jnp.ndarray]:
             - The new variable values :math:`x^{(t+1)}`.
+            - The updated optimiser state.
             - The objective function output prior to the step.
             - The gradients.
     """
-    g, forward = opt.compute_grad(objective_fn, args, kwargs)
-    new_args = opt.apply_grad(g, args)
+    forward, g = jax.value_and_grad(objective_fn)(params, **kwargs)
+    updates, opt_state = opt.update(g, opt_state, params)
 
-    if forward is None:
-        forward = objective_fn(*args, **kwargs)
-
-    # unwrap from list if one argument, cleaner return
-    if len(new_args) == 1:
-        return new_args[0], forward, g
-    return new_args, forward, g
+    return optax.apply_updates(params, updates), opt_state, forward, g
 
 
 def train_model(
@@ -114,16 +121,20 @@ def train_model(
             - "metrics": Metrics occuring during the training (MSE, FS dist,
                 Entanglement, Fourier Coefficients).
     """
-    opt = qml.AdamOptimizer(stepsize=learning_rate)
+    # same hyperparameters as the previously used PennyLane AdamOptimizer
+    opt = optax.adam(learning_rate=learning_rate, b1=0.9, b2=0.99, eps=1e-8)
+    opt_state = opt.init(model.params)
 
     # Indices for logging params and gradients
+    # (model params carry a leading batch dimension of size one)
+    params_shape = model.params.shape[-2:]
     df_param_index_names = ["layer_dim", "param_dim"]
     df_params_index = pd.MultiIndex.from_product(
-        [range(s) for s in model.params.shape], names=df_param_index_names
+        [range(s) for s in params_shape], names=df_param_index_names
     )
     df_grads_index_names = ["out_dim", "layer_dim", "param_dim"]
     df_grads_index = pd.MultiIndex.from_product(
-        [range(s) for s in (1, *model.params.shape)], names=df_grads_index_names
+        [range(s) for s in (1, *params_shape)], names=df_grads_index_names
     )
     df_params = pd.DataFrame()
     df_grads = pd.DataFrame()
@@ -140,9 +151,10 @@ def train_model(
     )
 
     def mse(prediction, target):
-        return np.mean((prediction - target) ** 2)
+        return jnp.mean((prediction - target) ** 2)
 
     def cost(params, **kwargs):
+        # force_mean already averages over the measured qubits
         prediction = model(params=params, **kwargs)
         if model.execution_type == "probs":
             # convert probabilities for zero state to expectation value
@@ -151,8 +163,6 @@ def train_model(
                 f"{model.execution_type} in conjunction with shots."
             )
             prediction = 2 * prediction[:, 0] - 1
-        elif isinstance(model.output_qubit, list):
-            prediction = np.mean(prediction, axis=0)
         return mse(prediction, fourier_series)
 
     log.info(f"Training model for {steps} steps")
@@ -163,9 +173,9 @@ def train_model(
     pqc = model.pqc
 
     def pqc_no_batch_gate_error(*args, **kwargs):
-        Gates.batch_gate_error = False
+        UnitaryGates.batch_gate_error = False
         ret = pqc(*args, **kwargs)
-        Gates.batch_gate_error = True
+        UnitaryGates.batch_gate_error = True
         return ret
 
     for step in track(range(steps), description="Training..", total=steps):
@@ -175,9 +185,7 @@ def train_model(
         ent_cap = Entanglement.entanglement_of_formation(
             model=model,
             n_samples=0,  # disable sampling, use model params
-            seed=None,  # set seed none to disable warnings
             noise_params=noise_params,
-            cache=False,
         )
         log.debug(f"Entangling capability in step {step}: {ent_cap}")
         mlflow.log_metric("entangling_capability", ent_cap, step)
@@ -191,7 +199,6 @@ def train_model(
             shift=True,
             trim=True,
             noise_params=noise_params,
-            cache=False,
         )
         # HACK
         model.pqc = pqc
@@ -216,15 +223,18 @@ def train_model(
         df_metrics.loc[step, "coeffs_imag"] = np.array(coeffs).T.imag.tolist()
 
         # actual training step
-        model.params, cost_val, grads = step_cost_and_grads(
+        model.params, opt_state, cost_val, grads = step_cost_and_grads(
             opt,
+            opt_state,
             cost,
             model.params,
             inputs=domain_samples,
             noise_params=noise_params,
-            cache=False,  # disable caching because currently no gradients are being stored
             execution_type="expval",
             force_mean=True,
+            # fresh randomness (gate errors, shots) has to be passed in
+            # explicitly when the model is called inside a JAX transform
+            random_key=model.next_key(),
         )
 
         # log params and gradients
@@ -257,12 +267,12 @@ def train_model(
         control_params = np.array(
             [
                 model.pqc.get_control_angles(params, model.n_qubits)
-                for params in model.params
+                for params in model.params[0]
             ]
         )
         indices = model.pqc.get_control_indices(model.n_qubits)
         if indices is not None:
-            control_params = model.params[:, indices[0] : indices[1] : indices[2]]
+            control_params = model.params[..., indices[0] : indices[1] : indices[2]]
             control_rotation_mean = (
                 np.sum(np.abs(control_params) % (2 * np.pi)) / control_params.size
             )
@@ -357,7 +367,7 @@ def iterate_noise(
         part_noise_params = noise_params * (step / noise_steps)
 
         # Reset Model
-        model.initialize_params(np.random.default_rng(seed))
+        model.initialize_params(jax.random.key(seed))
         res = train_model(
             model,
             domain_samples,

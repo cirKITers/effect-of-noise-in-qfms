@@ -31,7 +31,6 @@ model:
       # T2: 10000.0
       # t_factor: 5
   noise_steps: 1
-  mp_threshold: -1
 
 seed: 1000
 
@@ -45,7 +44,6 @@ entanglement:
 expressibility:
   # Expressibility Params
   n_samples: 250
-  n_input_samples: 0
   n_bins: 75
 
 coefficients:

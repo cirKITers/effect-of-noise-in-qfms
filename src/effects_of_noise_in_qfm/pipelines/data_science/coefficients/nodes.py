@@ -1,11 +1,13 @@
 from qml_essentials.model import Model
 from qml_essentials.coefficients import Coefficients
-from qml_essentials.ansaetze import Gates
-import pennylane.numpy as np
+from jaqsi.unitary import UnitaryGates
+import jax
+import numpy as np
 from rich.progress import Progress
 from typing import Dict
 import pandas as pd
 from functools import partial
+from copy import copy
 import logging
 
 from effects_of_noise_in_qfm.helpers.utils import NoiseDict
@@ -45,7 +47,7 @@ def iterate_noise(
             "frequencies",
         ]
     )
-    rng = np.random.default_rng(seed)
+    random_key = jax.random.key(seed)
 
     enc = model._enc
 
@@ -61,15 +63,18 @@ def iterate_noise(
         return pqc(*args, **kwargs)
 
     def pqc_no_batch_gate_error(*args, **kwargs):
-        Gates.batch_gate_error = False
+        UnitaryGates.batch_gate_error = False
         ret = pqc(*args, **kwargs)
-        Gates.batch_gate_error = True
+        UnitaryGates.batch_gate_error = True
         return ret
 
     if selective_noise == "iec":
         model.pqc = pqc_noise_free
     elif selective_noise == "pqc":
-        model._enc = [partial(enc_noise_free, i) for i in range(len(model._enc))]
+        # keep the Encoding object (the model reads its attributes) and only
+        # replace the encoding gates by their noise-free versions
+        model._enc = copy(enc)
+        model._enc.callable = [partial(enc_noise_free, i) for i in range(len(enc))]
         model.pqc = pqc_no_batch_gate_error
     elif selective_noise != "both":
         raise ValueError(
@@ -94,7 +99,7 @@ def iterate_noise(
             coeffs = []
             freqs = []
             # Re-initialize model, because it triggers new sampling
-            model.initialize_params(rng=rng, repeat=n_samples)
+            random_key = model.initialize_params(random_key, repeat=n_samples)
 
             cs, f = Coefficients.get_spectrum(
                 model=model,

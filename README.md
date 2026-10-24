@@ -12,15 +12,15 @@ Head over to the [results page](https://cirkiters.github.io/effect-of-noise-in-q
 
 This repository uses [Kedro](https://kedro.org/). To get started, follow these steps:
 1. Clone this repository
-2. Run `poetry install` or `pip install -r requirements.txt`
-3. Run the experiment: `kedro run`
+2. Run `uv sync` or `pip install -r requirements.txt`
+3. Run the experiment: `uv run kedro run`
 
 Experiments are automatically recorded using [MlFlow](https://mlflow.org/). You can view the experiments by
-1. Running `poetry run kedro mlflow ui`
+1. Running `uv run kedro mlflow ui`
 2. Navigating to [http://127.0.0.1:5000](http://127.0.0.1:5000)
 
 To visualize the nodes and pipeline
-1. Run `poetry run kedro viz`
+1. Run `uv run kedro viz`
 2. Navigating to [http://127.0.0.1:4141](http://127.0.0.1:4141)
 
 ## Tweaking :wrench:

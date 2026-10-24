@@ -1,5 +1,6 @@
-from typing import Dict, List
+from typing import Dict
 import logging
+import jax
 import mlflow
 import plotly.graph_objects as go
 import plotly.express as px
@@ -20,20 +21,15 @@ def calculate_expressibility(
     n_bins: int,
     seed: int,
     noise_params: Dict,
-    n_input_samples: int = None,
-    input_domain: List[float] = None,
     iterator=None,
 ):
-    x, _, z = Expressibility.state_fidelities(
+    _, z = Expressibility.state_fidelities(
         n_bins=n_bins,
         n_samples=n_samples,
-        input_domain=input_domain,
-        n_input_samples=n_input_samples,
-        seed=seed,
+        random_key=jax.random.key(seed),
         model=model,
         noise_params=noise_params,
         scale=True,
-        cache=False,
     )
 
     _, y_haar = Expressibility.haar_integral(
@@ -49,15 +45,7 @@ def calculate_expressibility(
     for i, prob in enumerate(y_haar):
         mlflow.log_metric("haar_probability", prob, i)
 
-    # TODO: I feel like the following part should rather go into a dataframe
-    if n_input_samples is not None and n_input_samples > 0 and input_domain is not None:
-        for i, (x_sample, kl) in enumerate(zip(x, kl_divergence)):
-            mlflow.log_metric("kl_divergence", kl, i)
-            mlflow.log_metric("x", x_sample, i)
-
-            for j, fidelity in enumerate(z[i]):
-                mlflow.log_metric(f"x_{x_sample:.2f}_fidelity", fidelity, j)
-    elif iterator is not None:
+    if iterator is not None:
         mlflow.log_metric("kl_divergence", kl_divergence, step=iterator)
 
     return kl_divergence

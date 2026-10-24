@@ -3,6 +3,7 @@ from qml_essentials.entanglement import Entanglement
 from rich.progress import Progress
 import pandas as pd
 from typing import Dict
+import jax
 import mlflow
 import logging
 
@@ -36,7 +37,7 @@ def calculate_entanglement(
     entangling_capability = ent_measure(
         model=model,
         n_samples=samples,
-        seed=seed,
+        random_key=jax.random.key(seed),
         scale=scale,
         inputs=None,
         noise_params=noise_params,

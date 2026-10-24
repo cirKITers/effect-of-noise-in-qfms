@@ -2,18 +2,17 @@ FROM ubuntu:24.04
 
 LABEL author="Maja Franz <maja.franz@othr.de>, Melvin Strobl <melvin.strobl@kit.edu>"
 
+# uv manages the python environment
+COPY --from=ghcr.io/astral-sh/uv:0.13.4 /uv /uvx /bin/
+
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LANG="C.UTF-8"
 ENV LC_ALL="C.UTF-8"
 
 # Install required packages
 RUN apt-get update -y
-RUN apt-get install -y software-properties-common
-RUN add-apt-repository ppa:deadsnakes/ppa # For Python 3.12
 RUN apt-get install -y \
     python3.12 \
-    python3-pip \
-    python3-venv \
     python3.12-dev \
     git \
     r-base \
@@ -61,8 +60,11 @@ ENV PATH=$PATH:/home/repro/.local/bin
 # set default python version to 3.12
 RUN echo 'alias python="python3.12"' >> /home/repro/.bashrc
 
-RUN /usr/bin/python3.12 -m venv .venv
-RUN .venv/bin/python -m pip install -r requirements.txt
+# install the locked dependencies into .venv using the system python 3.12
+# (the scripts in scripts/ rely on .venv/bin/kedro and .venv/bin/python)
+ENV UV_PYTHON_DOWNLOADS=never
+ENV UV_LINK_MODE=copy
+RUN uv sync --frozen --no-dev
 
 ENV GIT_DISCOVERY_ACROSS_FILESSYSTEM=1
 
