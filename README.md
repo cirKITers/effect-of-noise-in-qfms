@@ -12,7 +12,7 @@ Head over to the [results page](https://cirkiters.github.io/effect-of-noise-in-q
 
 This repository uses [Kedro](https://kedro.org/). To get started, follow these steps:
 1. Clone this repository
-2. Run `uv sync` or `pip install -r requirements.txt`
+2. Run `uv sync`
 3. Run the experiment: `uv run kedro run`
 
 Experiments are automatically recorded using [MlFlow](https://mlflow.org/). You can view the experiments by
