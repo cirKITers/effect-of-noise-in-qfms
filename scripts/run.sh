@@ -1,5 +1,7 @@
 #!/bin/bash
-export GIT_BASE_DIR=$(git rev-parse --show-toplevel)
+# fall back to the parent directory of this script if not inside a git checkout
+# (e.g. in the docker image, which contains a copy of the repository without .git)
+export GIT_BASE_DIR=$(git rev-parse --show-toplevel 2>/dev/null || realpath "$(dirname "$0")/..")
 
 # in case the script is not started from within the toplevel directory
 cd $GIT_BASE_DIR/scripts

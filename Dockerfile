@@ -50,10 +50,9 @@ RUN R -e "install.packages('ggrastr',dependencies=TRUE, repos='http://cran.rstud
 RUN R -e "install.packages('tikzDevice',dependencies=TRUE, repos='http://cran.rstudio.com/')"
 RUN R -e "install.packages('ggnewscale',dependencies=TRUE, repos='http://cran.rstudio.com/')"
 
-# Clone Repo
-WORKDIR /home/repro
-RUN git clone https://github.com/cirKITers/effect-of-noise-in-qfms
+# Copy the local checkout (result directories are excluded via .dockerignore)
 WORKDIR /home/repro/effect-of-noise-in-qfms
+COPY --chown=repro:repro . .
 
 # install python packages
 ENV PATH=$PATH:/home/repro/.local/bin
