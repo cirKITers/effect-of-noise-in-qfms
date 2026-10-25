@@ -31,6 +31,7 @@ RUN apt-get install -y \
     libtiff-dev \
     libudunits2-dev \
     libcairo2-dev \
+    libuv1-dev \
     sudo
 
 # Let Python 3.12 be global python version
