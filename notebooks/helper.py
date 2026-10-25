@@ -1,7 +1,3 @@
-import plotly
-from plotly.validators.scatter.marker import SymbolValidator
-import re
-import json
 import hashlib
 import pandas as pd
 import mlflow
@@ -13,39 +9,9 @@ import ast
 import traceback
 
 
-def save_fig(fig, name, run_ids, experiment_id, font_size=16, scale=1):
-    hs = generate_hash(run_ids)
-    path = f"results/{experiment_id}/{hs}/"
-    os.makedirs(path, exist_ok=True)
-    print(f"Saving figure to {path}{name}.pdf")
-    fig.update_layout(font=dict(size=font_size))
-    fig.write_image(f"{path}{name}.pdf", scale=scale)
-
-
-def get_qual_color_iterator():
-    main_colors_it = iter(plotly.colors.qualitative.Dark2)
-    sec_colors_it = iter(plotly.colors.qualitative.Pastel2)
-
-    return main_colors_it, sec_colors_it
-
-
-def get_seq_color_iterator(n=10):
-    return iter(plotly.colors.sample_colorscale(plotly.colors.sequential.Emrld, n))
-
-
 def generate_hash(run_ids):
     hs = hashlib.md5(repr(run_ids).encode("utf-8")).hexdigest()
     return hs
-
-
-def read_from_html(path):
-    with open(path) as f:
-        html = f.read()
-    call_arg_str = re.findall(r"Plotly\.newPlot\((.*)\)", html[-(2**16) :])[0]
-    call_args = json.loads(f"[{call_arg_str}]")
-    plotly_json = {"data": call_args[1], "layout": call_args[2]}
-
-    return plotly.io.from_json(json.dumps(plotly_json))
 
 
 def read_from_csv(path, **kwargs):
@@ -216,23 +182,6 @@ def get_csv_artifact(run_id, identifier: str, **kwargs):
     os.remove(csv_path)
 
     return df
-
-
-def get_plotly_artifact(run_id, identifier=""):
-    client = mlflow.tracking.MlflowClient()
-
-    sub_fig_path = client.download_artifacts(run_id, f"{identifier}.html", "./")
-    sub_fig = read_from_html(sub_fig_path)
-    sub_fig_trace = sub_fig.data[0]
-    sub_fig_trace.update(
-        # coloraxis=f"coloraxis",
-        zmax=1.0,
-        zmin=0.0,
-    )
-
-    os.remove(sub_fig_path)
-
-    return sub_fig_trace
 
 
 def get_expressibility_df(
@@ -414,15 +363,6 @@ def get_entanglement_df(
         check_complete(all_cfgs, problem_seeds=[1000])
 
     return df
-
-
-def get_symbol_iterator():
-    raw_symbols = SymbolValidator().values
-    symbols = []
-    for i in range(0, len(raw_symbols), 12):
-        symbols.append(raw_symbols[i])
-
-    return iter(symbols)
 
 
 def init_all_cfg_dict():

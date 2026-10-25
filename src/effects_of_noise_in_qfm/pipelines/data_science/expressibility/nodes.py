@@ -2,8 +2,6 @@ from typing import Dict
 import logging
 import jax
 import mlflow
-import plotly.graph_objects as go
-import plotly.express as px
 from rich.progress import Progress, Task
 import pandas as pd
 
