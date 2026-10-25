@@ -211,9 +211,9 @@ def train_model(
             coeffs = coeffs[len(coeffs) // 2 :]
             freqs = freqs[len(freqs) // 2 :]
         else:
-            freqs = np.stack(np.meshgrid(*[freqs] * model.n_input_feat)).T.reshape(
-                *coeffs.shape, model.n_input_feat
-            )
+            # freqs holds one frequency vector per input feature;
+            # build the grid of frequency tuples matching the axes of coeffs
+            freqs = np.stack(np.meshgrid(*freqs, indexing="ij"), axis=-1)
 
         log.debug(f"Frequencies in step {step}: {freqs}")
         log.debug(f"Coefficients in step {step}: {coeffs}")

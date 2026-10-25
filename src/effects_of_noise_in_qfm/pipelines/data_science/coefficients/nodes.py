@@ -120,9 +120,9 @@ def iterate_noise(
                         freqs.append(f[len(f) // 2 + 1 :])
                 else:
                     coeffs.append(c)
-                    _f = np.stack(np.meshgrid(*[f] * model.n_input_feat)).T.reshape(
-                        *c.shape, model.n_input_feat
-                    )
+                    # f holds one frequency vector per input feature;
+                    # build the grid of frequency tuples matching the axes of c
+                    _f = np.stack(np.meshgrid(*f, indexing="ij"), axis=-1)
                     freqs.append(_f)
 
                 progress.update(sample_coeff_task, advance=1)
