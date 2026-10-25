@@ -153,8 +153,11 @@ def iterate_noise(
             df.loc[step, "coeffs_abs_mean"] = np.abs(coeffs).mean(axis=0).tolist()
             df.loc[step, "coeffs_real_mean"] = mean_real.tolist()
             df.loc[step, "coeffs_imag_mean"] = mean_imag.tolist()
-            df.loc[step, "coeffs_full_real"] = np.array(coeffs).T.real.tolist()
-            df.loc[step, "coeffs_full_imag"] = np.array(coeffs).T.imag.tolist()
+            # move the sample axis to the end (.T would also swap the frequency
+            # axes for multi-dimensional inputs)
+            coeffs_full = np.moveaxis(np.array(coeffs), 0, -1)
+            df.loc[step, "coeffs_full_real"] = coeffs_full.real.tolist()
+            df.loc[step, "coeffs_full_imag"] = coeffs_full.imag.tolist()
             df.loc[step, "frequencies"] = freqs[0].tolist()
 
             progress.advance(noise_it_task)

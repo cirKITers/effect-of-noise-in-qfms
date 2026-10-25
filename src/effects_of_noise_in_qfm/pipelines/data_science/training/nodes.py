@@ -219,8 +219,8 @@ def train_model(
         log.debug(f"Coefficients in step {step}: {coeffs}")
 
         df_metrics.loc[step, "frequencies"] = freqs.tolist()
-        df_metrics.loc[step, "coeffs_real"] = np.array(coeffs).T.real.tolist()
-        df_metrics.loc[step, "coeffs_imag"] = np.array(coeffs).T.imag.tolist()
+        df_metrics.loc[step, "coeffs_real"] = np.array(coeffs).real.tolist()
+        df_metrics.loc[step, "coeffs_imag"] = np.array(coeffs).imag.tolist()
 
         # actual training step
         model.params, opt_state, cost_val, grads = step_cost_and_grads(

@@ -610,7 +610,7 @@ def get_coeffs_df(
             )
             sub_df_a.loc[it, "selective_noise"] = selective_noise
 
-        if export_min_max:
+        if export_min_max or export_full_coeffs:
             converter_dict = {c: list_converter for c in array_cols + big_array_cols}
         else:
             converter_dict = {c: list_converter for c in array_cols}

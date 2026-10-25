@@ -238,9 +238,14 @@ def export_coeff_data(
 
             for q in export_qubits:
                 for noise_type in export_noise_types:
+                    if noise_type == "noiseless":
+                        # there is no column for the noiseless case, use the
+                        # noise level 0 of all runs instead
+                        noise_mask = coeffs_df_full["noise_level"] == 0
+                    else:
+                        noise_mask = coeffs_df_full[noise_type] > 0
                     coeffs_selected = coeffs_df_full[
-                        (coeffs_df_full[noise_type] > 0)
-                        & (coeffs_df_full["qubits"] == q)
+                        noise_mask & (coeffs_df_full["qubits"] == q)
                     ]
                     result_file = (
                         f"{dest}/{prefix}coeffs_full_dims{n_dims}_q{q}_{noise_type}.csv"
