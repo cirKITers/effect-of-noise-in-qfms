@@ -29,6 +29,22 @@ for experiment in coefficients entanglement expressibility; do
 	done
 done
 
+# Entanglement Noiseless study (Meyer-Wallach)
+echo "Started computing Meyer-Wallach Entanglement (noiseless) ..."
+for seed in {1000..1004}; do
+	for n_qubits in {3..6}; do
+		for circuit in $circuits; do
+			if [ "$circuit" = "Circuit_20" ]; then
+				encoding=RY
+			else
+				encoding=RX
+			fi
+			echo "Started experiment $experiment with seed=$seed, n_qubits=$n_qubits, $circuit and encoding=$encoding"
+					$GIT_BASE_DIR/.venv/bin/kedro run --pipeline entanglement --params="data.omegas=$n_qubits,model.n_qubits=$n_qubits,model.encoding=$encoding,model.circuit_type=$circuit,seed=$seed,entanglement.measure=MW"
+		done
+	done
+done
+
 # 2D coefficients
 # Explicitly set the encoding in the parameters (Kedro not supporting python lists in CLI)
 sed -i "s/encoding: .*$/encoding: [\"RX\", \"RY\"]/" conf/base/parameters.yml
