@@ -29,6 +29,17 @@ for experiment in coefficients entanglement expressibility; do
 	done
 done
 
+# Coefficient runs for 6 qubit Figure with RY encoding (missing runs from step 1)
+echo "Started computing missing coefficients runs for 6 qubits and RY encoding..."
+for seed in {1000..1004}; do
+		for circuit in Hardware_Efficient Strongly_Entangling Circuit_19; do
+			for noise_type in $noise_types; do
+				echo "Started coefficients computation with seed=$seed, n_qubits=6, $circuit, encoding=RY and noise_type=$noise_type"
+					$GIT_BASE_DIR/.venv/bin/kedro run --pipeline coefficients --params="data.omegas=6,model.n_qubits=6,model.encoding=RY,model.circuit_type=$circuit,seed=$seed,model.noise_params.$noise_type=0.03,model.noise_steps=6"
+			done
+		done
+done
+
 # Entanglement Noiseless study (Meyer-Wallach)
 echo "Started computing Meyer-Wallach Entanglement (noiseless) ..."
 for seed in {1000..1004}; do
