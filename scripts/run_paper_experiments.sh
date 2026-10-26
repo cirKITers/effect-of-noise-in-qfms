@@ -22,7 +22,7 @@ for experiment in coefficients entanglement expressibility; do
 				fi
 				for noise_type in $noise_types; do
 					echo "Started experiment $experiment with seed=$seed, n_qubits=$n_qubits, $circuit, encoding=$encoding and noise_type=$noise_type"
-						$GIT_BASE_DIR/.venv/bin/kedro run --pipeline $experiment --params="data.omegas=$n_qubits,model.n_qubits=$n_qubits,model.encoding=$encoding,model.circuit_type=$circuit,seed=$seed,model.noise_params.$noise_type=0.03,model.noise_steps=7"
+						$GIT_BASE_DIR/.venv/bin/kedro run --pipeline $experiment --params="data.omegas=$n_qubits,model.n_qubits=$n_qubits,model.encoding=$encoding,model.circuit_type=$circuit,seed=$seed,model.noise_params.$noise_type=0.03,model.noise_steps=6"
 				done
 			done
 		done
@@ -38,7 +38,7 @@ for seed in {1000..1004}; do
 		for circuit in $circuits; do
 			for noise_type in $noise_types; do
 				echo "Started 2D coefficients with seed=$seed, n_qubits=$n_qubits, $circuit, and noise_type=$noise_type"
-					$GIT_BASE_DIR/.venv/bin/kedro run --pipeline coefficients --params="data.omegas=$n_qubits,model.n_qubits=$n_qubits,model.circuit_type=$circuit,seed=$seed,coefficients.scale=False,model.noise_params.$noise_type=0.03,model.noise_steps=7"
+					$GIT_BASE_DIR/.venv/bin/kedro run --pipeline coefficients --params="data.omegas=$n_qubits,model.n_qubits=$n_qubits,model.circuit_type=$circuit,seed=$seed,coefficients.scale=False,model.noise_params.$noise_type=0.03,model.noise_steps=6"
 			done
 		done
 	done
@@ -51,7 +51,7 @@ for seed in {1000..1004}; do
 		for circuit in $circuits; do
 			for encoding in RX RY RZ; do
 				echo "Started coefficient experiments for encoding with seed=$seed, n_qubits=$n_qubits, $circuit, and encoding=$encoding"
-					$GIT_BASE_DIR/.venv/bin/kedro run --pipeline coefficients --params="data.omegas=$n_qubits,model.n_qubits=$n_qubits,model.circuit_type=$circuit,seed=$seed,model.encoding=$encoding,model.noise_steps=7"
+					$GIT_BASE_DIR/.venv/bin/kedro run --pipeline coefficients --params="data.omegas=$n_qubits,model.n_qubits=$n_qubits,model.circuit_type=$circuit,seed=$seed,model.encoding=$encoding,model.noise_steps=6"
 			done
 		done
 	done
