@@ -22,8 +22,8 @@ coeffs_path <- "csv_data/expr.csv"
 d_expr <- read_csv(coeffs_path)
 
 d_expr$ansatz <- factor(d_expr$ansatz,
-    levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_15", "Circuit_19"),
-    labels = c("SEA", "HEA", "C15", "C19")
+    levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_19", "Circuit_20"),
+    labels = c("SEA", "HEA", "CRA", "RYA")
 )
 
 d_expr <- d_expr %>%

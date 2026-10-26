@@ -32,10 +32,11 @@ We use the following ansaetze throughout our experiments:
 ![Hardware Efficient](figures/Hardware_Efficient_light.png#circuit#only-light)
 ![Hardware Efficient](figures/Hardware_Efficient_dark.png#circuit#only-dark)
 
-### Circuit 15
-![Circuit 15](figures/Circuit_15_light.png#circuit#only-light)
-![Circuit 15](figures/Circuit_15_dark.png#circuit#only-dark)
-
-### Circuit 19
+### Controlled Rotation Ansatz (Circuit 19)
 ![Circuit 19](figures/Circuit_19_light.png#circuit#only-light)
 ![Circuit 19](figures/Circuit_19_dark.png#circuit#only-dark)
+
+### RY-Rotation-Only Ansatz (Circuit 20)
+![Circuit 20](figures/Circuit_20_light.png#circuit#only-light)
+![Circuit 20](figures/Circuit_20_dark.png#circuit#only-dark)
+

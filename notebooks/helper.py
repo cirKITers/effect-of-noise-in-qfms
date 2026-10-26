@@ -373,6 +373,7 @@ def init_all_cfg_dict():
         "Strongly_Entangling_Plus",
         "Circuit_15",
         "Circuit_19",
+        "Circuit_20",
     ]:
         all_cfgs[circuit_type] = dict()
         for n_qubits in range(1, 8):
@@ -426,8 +427,8 @@ def check_complete(
     for circuit_type in [
         "Hardware_Efficient",
         "Strongly_Entangling",
-        "Circuit_15",
         "Circuit_19",
+        "Circuit_20",
     ]:
         for n_qubits in export_qubits:
             for seed in range(1000, 1005):

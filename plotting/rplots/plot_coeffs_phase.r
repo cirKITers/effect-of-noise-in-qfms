@@ -29,8 +29,8 @@ index_labeller <- function(layer) {
 }
 
 d_coeffs_full$ansatz <- factor(d_coeffs_full$ansatz,
-    levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_15", "Circuit_19"),
-    labels = c("SEA", "HEA", "C15", "C19")
+    levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_19", "Circuit_20"),
+    labels = c("SEA", "HEA", "CRA", "RYA")
 )
 d_coeffs_full$freq1 <- as.factor(d_coeffs_full$freq1)
 
