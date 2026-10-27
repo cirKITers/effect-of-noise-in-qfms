@@ -15,14 +15,9 @@ for experiment in entanglement expressibility; do
 	for seed in {1000..1004}; do
 		for n_qubits in {3..6}; do
 			for circuit in $circuits; do
-				if [ "$circuit" = "Circuit_20" ]; then
-					encoding=RY
-				else
-					encoding=RX
-				fi
 				for noise_type in $noise_types; do
-					echo "Started experiment $experiment with seed=$seed, n_qubits=$n_qubits, $circuit, encoding=$encoding and noise_type=$noise_type"
-						$GIT_BASE_DIR/.venv/bin/kedro run --pipeline $experiment --params="data.omegas=$n_qubits,model.n_qubits=$n_qubits,model.encoding=$encoding,model.circuit_type=$circuit,seed=$seed,model.noise_params.$noise_type=0.03,model.noise_steps=6"
+					echo "Started experiment $experiment with seed=$seed, n_qubits=$n_qubits, $circuit and noise_type=$noise_type"
+						$GIT_BASE_DIR/.venv/bin/kedro run --pipeline $experiment --params="data.omegas=$n_qubits,model.n_qubits=$n_qubits,model.encoding=RY,model.circuit_type=$circuit,seed=$seed,model.noise_params.$noise_type=0.03,model.noise_steps=6"
 				done
 			done
 		done
@@ -49,13 +44,8 @@ echo "Started computing Meyer-Wallach Entanglement (noiseless) ..."
 for seed in {1000..1004}; do
 	for n_qubits in {3..6}; do
 		for circuit in $circuits; do
-			if [ "$circuit" = "Circuit_20" ]; then
-				encoding=RY
-			else
-				encoding=RX
-			fi
-			echo "Started experiment of noiseless entanglement with seed=$seed, n_qubits=$n_qubits, $circuit and encoding=$encoding"
-					$GIT_BASE_DIR/.venv/bin/kedro run --pipeline entanglement --params="data.omegas=$n_qubits,model.n_qubits=$n_qubits,model.encoding=$encoding,model.circuit_type=$circuit,seed=$seed,entanglement.measure=MW"
+			echo "Started experiment of noiseless entanglement with seed=$seed, n_qubits=$n_qubits and $circuit"
+					$GIT_BASE_DIR/.venv/bin/kedro run --pipeline entanglement --params="data.omegas=$n_qubits,model.n_qubits=$n_qubits,model.encoding=RY,model.circuit_type=$circuit,seed=$seed,entanglement.measure=MW"
 		done
 	done
 done
@@ -95,14 +85,9 @@ for problem_seed in {1000..1009}; do
 	for seed in {1000..1009}; do
 		for n_qubits in {3..6}; do
 			for circuit in $circuits; do
-				if [ "$circuit" = "Circuit_20" ]; then
-					encoding=RY
-				else
-					encoding=RX
-				fi
 				for noise_type in $noise_types; do
-					echo "Started experiment training with problem_seed=$problem_seed, seed=$seed, n_qubits=$n_qubits, $circuit, encoding=$encoding and noise_type=$noise_type"
-						$GIT_BASE_DIR/.venv/bin/kedro run --pipeline training --params="data.seed=$problem_seed,data.omegas=$n_qubits,model.n_qubits=$n_qubits,model.encoding=$encoding,model.circuit_type=$circuit,seed=$seed,model.noise_params.$noise_type=0.03"
+					echo "Started experiment training with problem_seed=$problem_seed, seed=$seed, n_qubits=$n_qubits, $circuit and noise_type=$noise_type"
+						$GIT_BASE_DIR/.venv/bin/kedro run --pipeline training --params="data.seed=$problem_seed,data.omegas=$n_qubits,model.n_qubits=$n_qubits,model.encoding=RY,model.circuit_type=$circuit,seed=$seed,model.noise_params.$noise_type=0.03"
 				done
 			done
 		done
