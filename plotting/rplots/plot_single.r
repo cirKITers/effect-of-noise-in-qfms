@@ -102,10 +102,7 @@ if(file.exists(coeffs_path)) {
         ),
     )
 
-    d_coeffs$ansatz <- factor(d_coeffs$ansatz,
-        levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_19", "Circuit_20"),
-        labels = c("SEA", "HEA", "CRA", "RYA")
-    )
+    d_coeffs$ansatz <- ansatz_to_factor(d_coeffs$ansatz)
 
     g <- ggplot(d_coeffs, aes(x = noise_value, y = mean_abs, colour = as.factor(freq1))) +
             geom_point(size = POINT.SIZE) +
@@ -206,10 +203,7 @@ if(file.exists(coeffs_path)) {
 if(file.exists(expr_path)) {
     d_expr <- read_csv(expr_path)
 
-    d_expr$ansatz <- factor(d_expr$ansatz,
-        levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_19", "Circuit_20"),
-        labels = c("SEA", "HEA", "CRA", "RYA")
-    )
+    d_expr$ansatz <- ansatz_to_factor(d_expr$ansatz)
 
     d_expr <- d_expr %>%
         pivot_longer(
@@ -305,10 +299,8 @@ if(file.exists(expr_path)) {
 if(file.exists(ent_path)) {
     d_ent <- read_csv(ent_path)
 
-    d_ent$ansatz <- factor(d_ent$ansatz,
-        levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_19", "Circuit_20"),
-        labels = c("SEA", "HEA", "CRA", "RYA")
-    )
+    d_ent$ansatz <- ansatz_to_factor(d_ent$ansatz)
+
     d_ent <- d_ent %>%
         pivot_longer(
             c(
@@ -457,12 +449,7 @@ if(file.exists(train_path)) {
         ),
     )
 
-    d_train$ansatz <- factor(d_train$ansatz,
-        levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_19", "Circuit_20"),
-        labels = c("SEA", "HEA", "CRA", "RYA")
-    )
-
-
+    d_train$ansatz <- ansatz_to_factor(d_train$ansatz)
 
     d_summarised_freq <- d_train %>%
         group_by(noise_category, noise_type, ansatz, qubits, step, frequencies) %>%

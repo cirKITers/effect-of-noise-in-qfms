@@ -91,10 +91,7 @@ d_coeffs_2D <- d_coeffs_2D %>%
     mutate(max_freq = (2 * qubits + 1)^2)
 
 d_coeffs <- rbind(d_coeffs_1D, d_coeffs_2D) %>% filter(qubits < 7 & noise_value < 0.1 & ansatz %in% c("Hardware_Efficient", "Circuit_20"))
-d_coeffs$ansatz <- factor(d_coeffs$ansatz,
-    levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_19", "Circuit_20"),
-    labels = c("SEA", "HEA", "CRA", "RYA")
-)
+d_coeffs$ansatz <- ansatz_to_factor(d_coeffs$ansatz)
 
 d_coeffs_n <- d_coeffs %>%
     mutate(noise_value = round(noise_value, digits = 3)) %>%
@@ -137,10 +134,7 @@ index_labeller <- function(layer) {
     paste0("i = ", layer)
 }
 
-d_coeffs$ansatz <- factor(d_coeffs$ansatz,
-    levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_19", "Circuit_20"),
-    labels = c("SEA", "HEA", "CRA", "RYA")
-)
+d_coeffs$ansatz <- ansatz_to_factor(d_coeffs$ansatz)
 d_coeffs$frequency <- as.factor(d_coeffs$freq1)
 
 print(colnames(d_coeffs))

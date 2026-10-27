@@ -27,10 +27,7 @@ index_labeller <- function(layer) {
     paste0("i = ", layer)
 }
 
-d_coeffs$ansatz <- factor(d_coeffs$ansatz,
-    levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_19", "Circuit_20"),
-    labels = c("SEA", "HEA", "CRA", "RYA")
-)
+d_coeffs$ansatz <- ansatz_to_factor(d_coeffs$ansatz)
 d_coeffs$frequency <- as.factor(d_coeffs$freq1)
 if (use_tikz) {
     d_coeffs$encoding <- factor(d_coeffs$encoding, labels = c("$R_X$", "$R_Y$", "$R_Z$"))

@@ -21,10 +21,8 @@ if (length(args) == 1) {
 ent_path <- "csv_data/ent.csv"
 d_ent <- read_csv(ent_path)
 
-d_ent$ansatz <- factor(d_ent$ansatz,
-    levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_19", "Circuit_20"),
-    labels = c("SEA", "HEA", "CRA", "RYA")
-)
+d_ent$ansatz <- ansatz_to_factor(d_ent$ansatz)
+
 d_ent <- d_ent %>%
     pivot_longer(
         c(

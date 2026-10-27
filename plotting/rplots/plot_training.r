@@ -83,12 +83,7 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
         ),
     )
 
-    d$ansatz <- factor(d$ansatz,
-        levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_19", "Circuit_20"),
-        labels = c("SEA", "HEA", "CRA", "RYA")
-    )
-
-
+    d$ansatz <- ansatz_to_factor(d$ansatz)
 
     d_summarised_freq <- d %>%
         group_by(noise_category, noise_type, ansatz, qubits, step, frequencies) %>%
