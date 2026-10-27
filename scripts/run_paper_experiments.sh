@@ -9,8 +9,8 @@ echo "Started running experiments..."
 circuits="Hardware_Efficient Strongly_Entangling Circuit_19 Circuit_20"
 noise_types="BitFlip PhaseFlip Depolarizing StatePreparation Measurement AmplitudeDamping PhaseDamping GateError"
 
-# Main paper study (1D coefficients, expressibility, entanglement)
-for experiment in coefficients entanglement expressibility; do
+# Main paper study (expressibility, entanglement)
+for experiment in entanglement expressibility; do
 	echo "Started computing $experiment..."
 	for seed in {1000..1004}; do
 		for n_qubits in {3..6}; do
@@ -29,15 +29,19 @@ for experiment in coefficients entanglement expressibility; do
 	done
 done
 
-# Coefficient runs for 6 qubit Figure with RY encoding (missing runs from step 1)
-echo "Started computing missing coefficients runs for 6 qubits and RY encoding..."
+# Main paper study (1D coefficients)
+echo "Started computing coefficients..."
 for seed in {1000..1004}; do
-		for circuit in Hardware_Efficient Strongly_Entangling Circuit_19; do
-			for noise_type in $noise_types; do
-				echo "Started coefficients computation with seed=$seed, n_qubits=6, $circuit, encoding=RY and noise_type=$noise_type"
-					$GIT_BASE_DIR/.venv/bin/kedro run --pipeline coefficients --params="data.omegas=6,model.n_qubits=6,model.encoding=RY,model.circuit_type=$circuit,seed=$seed,model.noise_params.$noise_type=0.03,model.noise_steps=6"
+	for n_qubits in {3..6}; do
+		for circuit in $circuits; do
+			for encoding in RX RY; do
+				for noise_type in $noise_types; do
+					echo "Started experiment coefficients with seed=$seed, n_qubits=$n_qubits, $circuit, encoding=$encoding and noise_type=$noise_type"
+						$GIT_BASE_DIR/.venv/bin/kedro run --pipeline coefficients --params="data.omegas=$n_qubits,model.n_qubits=$n_qubits,model.encoding=$encoding,model.circuit_type=$circuit,seed=$seed,model.noise_params.$noise_type=0.03,model.noise_steps=6"
+				done
 			done
 		done
+	done
 done
 
 # Entanglement Noiseless study (Meyer-Wallach)
@@ -50,7 +54,7 @@ for seed in {1000..1004}; do
 			else
 				encoding=RX
 			fi
-			echo "Started experiment $experiment with seed=$seed, n_qubits=$n_qubits, $circuit and encoding=$encoding"
+			echo "Started experiment of noiseless entanglement with seed=$seed, n_qubits=$n_qubits, $circuit and encoding=$encoding"
 					$GIT_BASE_DIR/.venv/bin/kedro run --pipeline entanglement --params="data.omegas=$n_qubits,model.n_qubits=$n_qubits,model.encoding=$encoding,model.circuit_type=$circuit,seed=$seed,entanglement.measure=MW"
 		done
 	done
