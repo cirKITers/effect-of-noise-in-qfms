@@ -29,6 +29,7 @@ def create_noise_iteration_pipeline() -> Pipeline:
                     "convergence_threshold": "params:training.convergence.threshold",
                     "convergence_gradient": "params:training.convergence.gradient",
                     "convergence_steps": "params:training.convergence.steps",
+                    "metric_steps": "params:training.metric_steps",
                     "seed": "params:seed",
                 },
                 outputs={
@@ -67,6 +68,7 @@ def create_pipeline() -> Pipeline:
                     "convergence_threshold": "params:training.convergence.threshold",
                     "convergence_gradient": "params:training.convergence.gradient",
                     "convergence_steps": "params:training.convergence.steps",
+                    "metric_steps": "params:training.metric_steps",
                 },
                 outputs={
                     "params": "trained_params",

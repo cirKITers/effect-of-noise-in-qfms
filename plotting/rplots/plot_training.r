@@ -5,6 +5,7 @@ library(ggh4x)
 library(tikzDevice)
 library(scales)
 library(ggrastr)
+library(patchwork)
 source("layout.r")
 
 options(tikzLatexPackages = c(
@@ -23,8 +24,9 @@ data_path <- "csv_data/training.csv"
 data_path_processed <- "csv_data/training_processed.csv"
 data_path_summarised <- "csv_data/training_summarised.csv"
 data_path_summarised_freq <- "csv_data/training_summarised_freq.csv"
+data_path_summarised_seed <- "csv_data/training_summarised_seed.csv"
 
-if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq) || !file.exists(data_path_processed)) {
+if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq) || !file.exists(data_path_summarised_seed) || !file.exists(data_path_processed)) {
     d <- read_csv(data_path)
 
     d <- d %>%
@@ -83,12 +85,7 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
         ),
     )
 
-    d$ansatz <- factor(d$ansatz,
-        levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_19", "Circuit_20"),
-        labels = c("SEA", "HEA", "CRA", "RYA")
-    )
-
-
+    d$ansatz <- ansatz_to_factor(d$ansatz)
 
     d_summarised_freq <- d %>%
         group_by(noise_category, noise_type, ansatz, qubits, step, frequencies) %>%
@@ -122,6 +119,18 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
         )
     print(d_summarised)
 
+    # MSE per problem seed (mean/sd over the initialisation seeds)
+    d_summarised_seed <- d %>%
+        group_by(noise_category, noise_type, ansatz, qubits, step, problem_seed) %>%
+        summarise(
+            mean_mse = mean(mse),
+            sd_mse = sd(mse),
+        ) %>%
+        mutate(
+            mse_lower_bound = mean_mse - sd_mse,
+            mse_upper_bound = mean_mse + sd_mse,
+        )
+
     d <- d %>%
         group_by(noise_category, noise_type, noise_value, ansatz, qubits, frequencies, step, problem_seed) %>%
         summarise(
@@ -140,10 +149,12 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
     write_csv(d, data_path_processed)
     write_csv(d_summarised, data_path_summarised)
     write_csv(d_summarised_freq, data_path_summarised_freq)
+    write_csv(d_summarised_seed, data_path_summarised_seed)
 } else {
     d <- read_csv(data_path_processed)
     d_summarised <- read_csv(data_path_summarised)
     d_summarised_freq <- read_csv(data_path_summarised_freq)
+    d_summarised_seed <- read_csv(data_path_summarised_seed)
 
     d$noise_category[is.na(d$noise_category)] <- ""
     d$noise_category <- factor(d$noise_category, levels = c("", "Decoherent Gate", "SPAM", "Damping", "Coh."))
@@ -182,6 +193,19 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
         ),
     )
     d_summarised_freq$ansatz <- factor(d_summarised_freq$ansatz,
+        levels = c("SEA", "HEA", "C15", "C19")
+    )
+    d_summarised_seed$noise_category[is.na(d_summarised_seed$noise_category)] <- ""
+    d_summarised_seed$noise_category <- factor(d_summarised_seed$noise_category, levels = c("", "Decoherent Gate", "SPAM", "Damping", "Coh."))
+    d_summarised_seed$noise_type <- factor(d_summarised_seed$noise_type,
+        levels = c(
+            "Noiseless", "BF", "PF", "DP",
+            "AD", "PD",
+            "SP", "ME",
+            "CGE"
+        ),
+    )
+    d_summarised_seed$ansatz <- factor(d_summarised_seed$ansatz,
         levels = c("SEA", "HEA", "C15", "C19")
     )
 }
@@ -266,5 +290,64 @@ for (filtered_seed in 1000:1009) {
         guides(colour = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE)))
     save_name <- str_c("training_coeffs_seed", filtered_seed)
     create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)
-}
 
+    # Joined plot of the noiseless training for this problem seed:
+    # top row MSE (mean +- sd over the initialisation seeds), bottom row
+    # the noiseless coefficient curves of the plot above, one column per ansatz.
+    d_mse_noiseless <- d_summarised_seed %>%
+        filter(problem_seed == filtered_seed & noise_type == "Noiseless")
+    d_coeffs_noiseless <- d %>%
+        filter(problem_seed == filtered_seed & noise_type == "Noiseless")
+    if (nrow(d_mse_noiseless) == 0 || nrow(d_coeffs_noiseless) == 0) {
+        next
+    }
+
+    g_mse <- ggplot(
+        d_mse_noiseless,
+        aes(x = step, y = mean_mse)
+    ) +
+        geom_line(linewidth = LINE.SIZE) +
+        geom_ribbon(aes(ymin = mse_lower_bound, ymax = mse_upper_bound), fill = "black", alpha = 0.2, colour = NA) +
+        facet_nested(. ~ problem_seed + ansatz,
+            labeller = labeller(problem_seed = problem_labeller),
+        ) +
+        scale_x_continuous("Step", breaks = seq(0, 1000, 400)) +
+        scale_y_continuous("MSE") +
+        theme_paper() +
+        theme(
+            axis.title.x = element_blank(),
+            axis.text.x = element_blank(),
+            axis.ticks.x = element_blank()
+        )
+
+    g_coeffs <- ggplot(
+        d_coeffs_noiseless,
+        aes(x = step, y = mean_coeff_abs, colour = as.factor(frequencies))
+    ) +
+        geom_line(linewidth = LINE.SIZE) +
+        geom_line(aes(y = abs_target), linewidth = LINE.SIZE, linetype = "dashed") +
+        geom_ribbon(aes(ymin = coeff_lower_bound, ymax = coeff_upper_bound, fill = as.factor(frequencies)), alpha = 0.2, colour = NA) +
+        scale_colour_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), values = COLOURS.LIST) +
+        scale_fill_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), values = COLOURS.LIST) +
+        facet_nested(. ~ ansatz) +
+        scale_x_continuous("Step", breaks = seq(0, 1000, 400)) +
+        scale_y_continuous(ifelse(use_tikz, "$\\lvert c_{\\boldsymbol{\\omega}} \\rvert$", "c")) +
+        theme_paper() +
+        theme(
+            # the ansatz strips are already shown in the MSE row
+            strip.text.x = element_blank(),
+            strip.background.x = element_blank()
+        ) +
+        guides(colour = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE)))
+
+    g <- (g_mse / g_coeffs) +
+        plot_layout(guides = "collect") &
+        theme(
+            legend.position = "top",
+            legend.margin = margin(b = -4),
+            legend.key.height = unit(0.4, "cm"),
+            legend.key.width = unit(0.4, "cm")
+        )
+    save_name <- str_c("training_noiseless_seed", filtered_seed)
+    create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)
+}

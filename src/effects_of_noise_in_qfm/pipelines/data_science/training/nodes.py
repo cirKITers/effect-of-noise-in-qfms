@@ -92,6 +92,7 @@ def train_model(
     convergence_threshold: float,
     convergence_gradient: float,
     convergence_steps: int,
+    metric_steps: int,
 ) -> Dict[str, pd.DataFrame]:
     """
     Train a given model on the regression task of a target Fourier series.
@@ -113,14 +114,21 @@ def train_model(
             -1 to disable.
         convergence_steps (int): Number of steps over which the gradient is
             checked if convergence_gradient is set.
+        metric_steps (int): Interval (in training steps) at which the
+            expensive entanglement metric is computed. Entanglement is
+            evaluated at step 0 and every ``metric_steps`` steps afterwards;
+            in all other steps the "entanglement" column is left empty (NaN).
 
     Returns:
         Dict[str, pd.DataFrame]: Result dict containing the following:
             - "params": Parameter at each step.
             - "grads": Gradients at each step.
             - "metrics": Metrics occuring during the training (MSE, FS dist,
-                Entanglement, Fourier Coefficients).
+                Entanglement (every ``metric_steps``), Fourier Coefficients).
     """
+    if metric_steps < 1:
+        raise ValueError(f"metric_steps must be >= 1, got {metric_steps}")
+
     # same hyperparameters as the previously used PennyLane AdamOptimizer
     opt = optax.adam(learning_rate=learning_rate, b1=0.9, b2=0.99, eps=1e-8)
     opt_state = opt.init(model.params)
@@ -176,15 +184,21 @@ def train_model(
     for step in track(range(steps), description="Training..", total=steps):
         df_metrics.loc[step, "step"] = step
 
-        # log entanglement
-        ent_cap = Entanglement.entanglement_of_formation(
-            model=model,
-            n_samples=0,  # disable sampling, use model params
-            noise_params=noise_params,
-        )
-        log.debug(f"Entangling capability in step {step}: {ent_cap}")
-        mlflow.log_metric("entangling_capability", ent_cap, step)
-        df_metrics.loc[step, "entanglement"] = ent_cap
+        # log entanglement (expensive, therefore only every metric_steps)
+        if step % metric_steps == 0:
+            ent_cap = float(
+                Entanglement.entanglement_of_formation(
+                    model=model,
+                    n_samples=0,  # disable sampling, use model params
+                    noise_params=noise_params,
+                )
+            )
+            log.debug(f"Entangling capability in step {step}: {ent_cap}")
+            mlflow.log_metric("entangling_capability", ent_cap, step)
+            df_metrics.loc[step, "entanglement"] = ent_cap
+        else:
+            # leave the column empty for steps without entanglement data
+            df_metrics.loc[step, "entanglement"] = np.nan
 
         # log coefficients
         coeffs, freqs = Coefficients.get_spectrum(
@@ -312,6 +326,7 @@ def iterate_noise(
     convergence_gradient: float,
     convergence_steps: int,
     seed: int,
+    metric_steps: int,
 ):
     """
     Iterate over different noise levels and train a given model on the
@@ -337,6 +352,8 @@ def iterate_noise(
         convergence_steps (int): Number of steps over which the gradient is
             checked if convergence_gradient is set.
         seed (int): Seed for model initialisation each noise param iteration.
+        metric_steps (int): Interval (in training steps) at which the
+            entanglement metric is computed.
 
     Returns:
         Dict[str, pd.DataFrame]: Result dict containing the following for all
@@ -372,6 +389,7 @@ def iterate_noise(
             convergence_threshold,
             convergence_gradient,
             convergence_steps,
+            metric_steps,
         )
 
         # Add noise data to dfs

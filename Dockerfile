@@ -55,6 +55,7 @@ RUN R -e "install.packages('ggh4x',dependencies=TRUE, repos='http://cran.rstudio
 RUN R -e "install.packages('ggrastr',dependencies=TRUE, repos='http://cran.rstudio.com/')"
 RUN R -e "install.packages('tikzDevice',dependencies=TRUE, repos='http://cran.rstudio.com/')"
 RUN R -e "install.packages('ggnewscale',dependencies=TRUE, repos='http://cran.rstudio.com/')"
+RUN R -e "install.packages('patchwork',dependencies=TRUE, repos='http://cran.rstudio.com/')"
 
 # Copy the local checkout (result directories are excluded via .dockerignore)
 WORKDIR /home/repro/effect-of-noise-in-qfms

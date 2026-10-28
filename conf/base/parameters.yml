@@ -57,6 +57,7 @@ coefficients:
 training:
   steps: 1000
   learning_rate: 0.01
+  metric_steps: 10 # compute expensive metrics (entanglement) only every n steps
   convergence:
     threshold: -1 # threshold for the cost, -1 to disable
     gradient: -1 # threshold for the cost gradient, -1 to disable

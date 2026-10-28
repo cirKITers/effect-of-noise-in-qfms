@@ -22,10 +22,76 @@ id_ent_file = f"{CSV_DESTINATION}/ent_ids.csv"
 id_expr_file = f"{CSV_DESTINATION}/expr_ids.csv"
 id_training_file = f"{CSV_DESTINATION}/training_ids.csv"
 
+DEFAULT_MAX_SAMPLES = 1000
+
+
+def limit_samples_per_config(
+    df: pd.DataFrame, max_samples: Optional[int] = DEFAULT_MAX_SAMPLES
+) -> pd.DataFrame:
+    """
+    Limit the number of exported full coefficient samples per configuration.
+
+    A configuration is defined by everything that is not run- or sample-
+    specific, i.e. ansatz, number of qubits, encoding, noise type and level,
+    and the frequency of the coefficient. Samples of different runs (seeds)
+    of the same configuration are interleaved by their ``sample_idx`` before
+    cutting, so that the exported samples are balanced across seeds.
+
+    Args:
+        df (pd.DataFrame): Exploded full coefficient data, one sample per row
+            with a ``sample_idx`` column.
+        max_samples (Optional[int]): Upper limit of samples per configuration.
+            ``None`` or a value < 1 disables the limit.
+
+    Returns:
+        pd.DataFrame: The (possibly) reduced data frame.
+    """
+    if max_samples is None or max_samples < 1 or df.size == 0:
+        return df
+
+    config_cols = [
+        c
+        for c in [
+            "ansatz",
+            "qubits",
+            "encoding",
+            "n_input_feat",
+            "selective_noise",
+            "scale",
+            "noise_level",
+            "BitFlip",
+            "PhaseFlip",
+            "AmplitudeDamping",
+            "PhaseDamping",
+            "Depolarizing",
+            "MultiQubitDepolarizing",
+            "StatePreparation",
+            "Measurement",
+            "GateError",
+            "ThermalRelaxation",
+            "freq1",
+            "freq2",
+        ]
+        if c in df.columns
+    ]
+    sort_cols = [c for c in ["sample_idx", "seed", "run_id"] if c in df.columns]
+
+    n_before = len(df)
+    ranked = df.sort_values(config_cols + sort_cols, kind="stable")
+    rank = ranked.groupby(config_cols, sort=False, dropna=False).cumcount()
+    df = df.loc[ranked.index[rank < max_samples]].sort_index()
+    print(
+        f"Limited to max. {max_samples} samples per configuration: "
+        f"kept {len(df)} of {n_before} rows"
+    )
+    return df
+
 
 def export_encoding_coeff_data(
     export_full=True,
     export_qubits=[2, 3, 4, 5, 6],
+    max_samples: Optional[int] = DEFAULT_MAX_SAMPLES,
+    experiment_id: Optional[str] = None,
 ):
     id_coeff_file = (
         f"{CSV_DESTINATION}/coeffs_encoding_ids.csv"
@@ -37,8 +103,11 @@ def export_encoding_coeff_data(
     else:
         id_coeffs = pd.DataFrame(columns=["run_id"])
 
+    eids = coeff_enc_eids if experiment_id is None else [experiment_id]
     coeff_run_ids = run_ids_from_experiment_id(
-        coeff_enc_eids, existing_run_ids=id_coeffs["run_id"].to_list()
+        eids,
+        existing_run_ids=id_coeffs["run_id"].to_list(),
+        experiment_type="coefficients",
     )
     if len(coeff_run_ids) == 0:
         return
@@ -49,10 +118,10 @@ def export_encoding_coeff_data(
         export_noise_types=["noiseless"],
     )
 
+    # coeffs_abs_min/max are only computed by get_coeffs_df when
+    # export_min_max is set, so they are not exploded here (see export_coeff_data)
     array_columns = [
         "coeffs_abs_mean",
-        "coeffs_abs_min",
-        "coeffs_abs_max",
         "coeffs_real_mean",
         "coeffs_imag_mean",
         "coeffs_abs_var",
@@ -86,6 +155,8 @@ def export_encoding_coeff_data(
             coeffs_df["frequencies"].to_list(), index=coeffs_df.index
         )
         coeffs_df = coeffs_df.drop(columns=["frequencies"])
+        coeffs_df["coeffs_abs_min"] = 0.0
+        coeffs_df["coeffs_abs_max"] = 0.0
 
         if export_full:
             for ac in big_array_columns:
@@ -96,6 +167,7 @@ def export_encoding_coeff_data(
             coeffs_df_full["sample_idx"] = coeffs_df_full.groupby(
                 "original_coeff_idx"
             ).cumcount()
+            coeffs_df_full = limit_samples_per_config(coeffs_df_full, max_samples)
 
             result_file = f"{CSV_DESTINATION}/coeffs_enc_full_dims{n_dims}.csv"
             if os.path.exists(result_file):
@@ -136,6 +208,7 @@ def export_coeff_data(
     single: bool = False,
     subsampling: bool = False,
     export_min_max: bool = False,
+    max_samples: Optional[int] = DEFAULT_MAX_SAMPLES,
 ):
     global CSV_DESTINATION
     if single:
@@ -235,6 +308,7 @@ def export_coeff_data(
             coeffs_df_full["sample_idx"] = coeffs_df_full.groupby(
                 "original_coeff_idx"
             ).cumcount()
+            coeffs_df_full = limit_samples_per_config(coeffs_df_full, max_samples)
 
             for q in export_qubits:
                 for noise_type in export_noise_types:
@@ -397,7 +471,11 @@ def get_arg_parser():
         "-nt",
         "--noise_type",
         default="all",
-        help='"all" or one of [BitFlip|PhaseFlip|Depolarizing|AmplitudeDamping|PhaseDamping|StatePreparation|Measurement|GateError]',
+        help=(
+            '"all" or a comma separated list of '
+            "[BitFlip|PhaseFlip|Depolarizing|AmplitudeDamping|PhaseDamping|"
+            "StatePreparation|Measurement|GateError|noiseless]"
+        ),
     )
     parser.add_argument(
         "-s",
@@ -431,6 +509,16 @@ def get_arg_parser():
         action="store_true",
         default=False,
         help="Store full coefficient data",
+    )
+    parser.add_argument(
+        "-maxs",
+        "--max_samples",
+        type=int,
+        default=DEFAULT_MAX_SAMPLES,
+        help=(
+            "Upper limit of samples per configuration in the full coefficient "
+            f"exports (default: {DEFAULT_MAX_SAMPLES}, <1 disables the limit)"
+        ),
     )
     parser.add_argument(
         "-enccoeff",
@@ -471,7 +559,7 @@ if __name__ == "__main__":
         kwargs["export_qubits"] = [int(p.n_qubits)]
 
     if p.noise_type != "all":
-        kwargs["export_noise_types"] = [p.noise_type]
+        kwargs["export_noise_types"] = [n.strip() for n in p.noise_type.split(",")]
 
     if p.coefficients:
         export_coeff_data(
@@ -491,11 +579,14 @@ if __name__ == "__main__":
         export_coeff_data(
             True,
             experiment_id=p.experiment_id,
+            max_samples=p.max_samples,
             **kwargs,
         )
     if p.encoding_coefficients:
         export_encoding_coeff_data(
             True,
+            max_samples=p.max_samples,
+            experiment_id=p.experiment_id,
             **kwargs,
         )
     if p.expressibility:

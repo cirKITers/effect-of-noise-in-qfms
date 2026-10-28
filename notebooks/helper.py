@@ -486,7 +486,7 @@ def get_coeffs_df(
         "GateError",
     ]
     if export_selective_noise:
-        columns.append("selective_noise")
+        columns.extend(["selective_noise", "oversampling"])
     array_cols = [
         "coeffs_abs_var",
         "coeffs_abs_mean",
@@ -603,13 +603,27 @@ def get_coeffs_df(
         if noise not in export_noise_types:
             continue
 
-        all_cfgs[ansatz][qubits][seed][noise][str(noise_value)][encoding][1000] += 1
-
+        # The selective (coherent) noise study (export_selective_noise=True)
+        # is identified by a non-default selective_noise and/or oversampling
+        # (the study was run with oversampling=20). When reproduced locally,
+        # it shares the MLflow experiment with the main coefficient study,
+        # which must only contain runs with the default configuration.
+        selective_noise = client.get_run(run_id).data.params.get(
+            "coefficients.selective_noise", "both"
+        )
+        oversampling = int(
+            client.get_run(run_id).data.params.get("coefficients.oversampling", 1)
+        )
+        is_selective_run = selective_noise != "both" or oversampling != 1
         if export_selective_noise:
-            selective_noise = client.get_run(run_id).data.params.get(
-                "coefficients.selective_noise", "both"
-            )
+            if not is_selective_run:
+                continue
             sub_df_a.loc[it, "selective_noise"] = selective_noise
+            sub_df_a.loc[it, "oversampling"] = oversampling
+        elif is_selective_run:
+            continue
+
+        all_cfgs[ansatz][qubits][seed][noise][str(noise_value)][encoding][1000] += 1
 
         if export_min_max or export_full_coeffs:
             converter_dict = {c: list_converter for c in array_cols + big_array_cols}
