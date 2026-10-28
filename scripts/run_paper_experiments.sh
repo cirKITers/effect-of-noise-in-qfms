@@ -108,12 +108,10 @@ done
 echo "Started training experiments..."
 for problem_seed in {1000..1009}; do
 	for seed in {1000..1009}; do
-		for n_qubits in {3..6}; do
-			for circuit in $circuits; do
-				for noise_type in $noise_types; do
-					echo "Started experiment training with problem_seed=$problem_seed, seed=$seed, n_qubits=$n_qubits, $circuit and noise_type=$noise_type"
-						$GIT_BASE_DIR/.venv/bin/kedro run --pipeline training --params="data.seed=$problem_seed,data.omegas=$n_qubits,model.n_qubits=$n_qubits,model.encoding=RY,model.circuit_type=$circuit,seed=$seed,model.noise_params.$noise_type=0.03"
-				done
+		for circuit in $circuits; do
+			for noise_type in $noise_types; do
+				echo "Started experiment training with problem_seed=$problem_seed, seed=$seed, n_qubits=6, $circuit and noise_type=$noise_type"
+					$GIT_BASE_DIR/.venv/bin/kedro run --pipeline training --params="data.seed=$problem_seed,data.omegas=6,model.n_qubits=6,model.encoding=RY,model.circuit_type=$circuit,seed=$seed,model.noise_params.$noise_type=0.03"
 			done
 		done
 	done
