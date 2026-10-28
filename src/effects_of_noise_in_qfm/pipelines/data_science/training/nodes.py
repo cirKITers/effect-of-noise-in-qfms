@@ -169,14 +169,9 @@ def train_model(
 
     costs = np.zeros(steps)
 
-    # HACK
-    pqc = model.pqc
-
-    def pqc_no_batch_gate_error(*args, **kwargs):
-        UnitaryGates.batch_gate_error = False
-        ret = pqc(*args, **kwargs)
-        UnitaryGates.batch_gate_error = True
-        return ret
+    # Coherent gate errors are quasi-static
+    # thus, one gate error realisation should be used
+    UnitaryGates.batch_gate_error = False
 
     for step in track(range(steps), description="Training..", total=steps):
         df_metrics.loc[step, "step"] = step
@@ -191,8 +186,6 @@ def train_model(
         mlflow.log_metric("entangling_capability", ent_cap, step)
         df_metrics.loc[step, "entanglement"] = ent_cap
 
-        # HACK
-        model.pqc = pqc_no_batch_gate_error
         # log coefficients
         coeffs, freqs = Coefficients.get_spectrum(
             model=model,
@@ -200,8 +193,6 @@ def train_model(
             trim=True,
             noise_params=noise_params,
         )
-        # HACK
-        model.pqc = pqc
 
         dist = np.sum(np.abs(coeffs - fourier_coefficients))
         log.debug(f"Coefficients dist: {dist}")
@@ -232,7 +223,7 @@ def train_model(
             noise_params=noise_params,
             execution_type="expval",
             force_mean=True,
-            # fresh randomness (gate errors, shots) has to be passed in
+            # fresh randomness (shots) has to be passed in
             # explicitly when the model is called inside a JAX transform
             random_key=model.next_key(),
         )
@@ -294,6 +285,8 @@ def train_model(
                 f"Convergence gradient {convergence_gradient} reached after {step} steps."
             )
             break
+
+    UnitaryGates.batch_gate_error = True
 
     # Convert indices to columns
     df_params = df_params.rename_axis(df_param_index_names).reset_index()

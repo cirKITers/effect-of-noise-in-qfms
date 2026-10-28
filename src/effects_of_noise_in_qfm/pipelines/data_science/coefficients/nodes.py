@@ -62,12 +62,6 @@ def iterate_noise(
         kwargs["noise_params"] = None
         return pqc(*args, **kwargs)
 
-    def pqc_no_batch_gate_error(*args, **kwargs):
-        UnitaryGates.batch_gate_error = False
-        ret = pqc(*args, **kwargs)
-        UnitaryGates.batch_gate_error = True
-        return ret
-
     if selective_noise == "iec":
         model.pqc = pqc_noise_free
     elif selective_noise == "pqc":
@@ -75,13 +69,14 @@ def iterate_noise(
         # replace the encoding gates by their noise-free versions
         model._enc = copy(enc)
         model._enc.callable = [partial(enc_noise_free, i) for i in range(len(enc))]
-        model.pqc = pqc_no_batch_gate_error
     elif selective_noise != "both":
         raise ValueError(
             f"selective_noise must be 'both', 'iec' or 'pqc', got {selective_noise}"
         )
-    else:
-        model.pqc = pqc_no_batch_gate_error
+
+    # Coherent gate errors are quasi-static: use one error realisation for all
+    # inputs and parameter samples instead of redrawing it per batch element
+    UnitaryGates.batch_gate_error = False
 
     if scale:
         n_samples = int(np.power(2, model.n_qubits) * n_samples)
@@ -162,4 +157,5 @@ def iterate_noise(
 
             progress.advance(noise_it_task)
 
+    UnitaryGates.batch_gate_error = True
     return {"coefficients_noise": df}
