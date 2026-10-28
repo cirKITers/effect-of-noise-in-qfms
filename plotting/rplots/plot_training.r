@@ -308,7 +308,7 @@ for (filtered_seed in 1000:1009) {
     ) +
         geom_line(linewidth = LINE.SIZE) +
         geom_ribbon(aes(ymin = mse_lower_bound, ymax = mse_upper_bound), fill = "black", alpha = 0.2, colour = NA) +
-        facet_nested(. ~ problem_seed + ansatz,
+        facet_nested(. ~ ansatz,
             labeller = labeller(problem_seed = problem_labeller),
         ) +
         scale_x_continuous("Step", breaks = seq(0, 1000, 400)) +
@@ -331,7 +331,7 @@ for (filtered_seed in 1000:1009) {
         scale_fill_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), values = COLOURS.LIST) +
         facet_nested(. ~ ansatz) +
         scale_x_continuous("Step", breaks = seq(0, 1000, 400)) +
-        scale_y_continuous(ifelse(use_tikz, "$\\lvert c_{\\boldsymbol{\\omega}} \\rvert$", "c")) +
+        scale_y_continuous(ifelse(use_tikz, "$\\lvert c_{\\boldsymbol{\\omega}} \\rvert$", "c"), limits = c(0, 0.1)) +
         theme_paper() +
         theme(
             # the ansatz strips are already shown in the MSE row
@@ -349,5 +349,5 @@ for (filtered_seed in 1000:1009) {
             legend.key.width = unit(0.4, "cm")
         )
     save_name <- str_c("training_noiseless_seed", filtered_seed)
-    create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)
+    create_plot(g, save_name, TEXTWIDTH, 0.3 * HEIGHT)
 }
