@@ -167,7 +167,7 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
         ),
     )
     d$ansatz <- factor(d$ansatz,
-        levels = c("SEA", "HEA", "C15", "C19")
+        levels = c("SEA", "HEA", "RYA", "CRA")
     )
     d_summarised$noise_category[is.na(d_summarised$noise_category)] <- ""
     d_summarised$noise_category <- factor(d_summarised$noise_category, levels = c("", "Decoherent Gate", "SPAM", "Damping", "Coh."))
@@ -180,7 +180,7 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
         ),
     )
     d_summarised$ansatz <- factor(d_summarised$ansatz,
-        levels = c("SEA", "HEA", "C15", "C19")
+        levels = c("SEA", "HEA", "RYA", "CRA")
     )
     d_summarised_freq$noise_category[is.na(d_summarised_freq$noise_category)] <- ""
     d_summarised_freq$noise_category <- factor(d_summarised_freq$noise_category, levels = c("", "Decoherent Gate", "SPAM", "Damping", "Coh."))
@@ -193,7 +193,7 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
         ),
     )
     d_summarised_freq$ansatz <- factor(d_summarised_freq$ansatz,
-        levels = c("SEA", "HEA", "C15", "C19")
+        levels = c("SEA", "HEA", "RYA", "CRA")
     )
     d_summarised_seed$noise_category[is.na(d_summarised_seed$noise_category)] <- ""
     d_summarised_seed$noise_category <- factor(d_summarised_seed$noise_category, levels = c("", "Decoherent Gate", "SPAM", "Damping", "Coh."))
@@ -206,7 +206,7 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
         ),
     )
     d_summarised_seed$ansatz <- factor(d_summarised_seed$ansatz,
-        levels = c("SEA", "HEA", "C15", "C19")
+        levels = c("SEA", "HEA", "RYA", "CRA")
     )
 }
 
