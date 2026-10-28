@@ -118,10 +118,10 @@ def export_encoding_coeff_data(
         export_noise_types=["noiseless"],
     )
 
+    # coeffs_abs_min/max are only computed by get_coeffs_df when
+    # export_min_max is set, so they are not exploded here (see export_coeff_data)
     array_columns = [
         "coeffs_abs_mean",
-        "coeffs_abs_min",
-        "coeffs_abs_max",
         "coeffs_real_mean",
         "coeffs_imag_mean",
         "coeffs_abs_var",
@@ -155,6 +155,8 @@ def export_encoding_coeff_data(
             coeffs_df["frequencies"].to_list(), index=coeffs_df.index
         )
         coeffs_df = coeffs_df.drop(columns=["frequencies"])
+        coeffs_df["coeffs_abs_min"] = 0.0
+        coeffs_df["coeffs_abs_max"] = 0.0
 
         if export_full:
             for ac in big_array_columns:
