@@ -91,6 +91,7 @@ def export_encoding_coeff_data(
     export_full=True,
     export_qubits=[2, 3, 4, 5, 6],
     max_samples: Optional[int] = DEFAULT_MAX_SAMPLES,
+    experiment_id: Optional[str] = None,
 ):
     id_coeff_file = (
         f"{CSV_DESTINATION}/coeffs_encoding_ids.csv"
@@ -102,8 +103,11 @@ def export_encoding_coeff_data(
     else:
         id_coeffs = pd.DataFrame(columns=["run_id"])
 
+    eids = coeff_enc_eids if experiment_id is None else [experiment_id]
     coeff_run_ids = run_ids_from_experiment_id(
-        coeff_enc_eids, existing_run_ids=id_coeffs["run_id"].to_list()
+        eids,
+        existing_run_ids=id_coeffs["run_id"].to_list(),
+        experiment_type="coefficients",
     )
     if len(coeff_run_ids) == 0:
         return
@@ -576,6 +580,7 @@ if __name__ == "__main__":
         export_encoding_coeff_data(
             True,
             max_samples=p.max_samples,
+            experiment_id=p.experiment_id,
             **kwargs,
         )
     if p.expressibility:

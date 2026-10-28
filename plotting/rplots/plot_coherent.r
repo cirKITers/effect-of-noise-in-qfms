@@ -128,7 +128,8 @@ create_plot(g, save_name, 0.6 * TEXTWIDTH, 0.25 * HEIGHT)
 
 coeffs_path <- "csv_data/subsamplingcoeffs_stat_dims1.csv"
 
-d_coeffs <- read_csv(coeffs_path)
+# the selective noise study is shown for the RY encoding only
+d_coeffs <- read_csv(coeffs_path) %>% filter(encoding == "RY")
 
 index_labeller <- function(layer) {
     paste0("i = ", layer)

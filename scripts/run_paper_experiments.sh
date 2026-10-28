@@ -9,6 +9,12 @@ echo "Started running experiments..."
 circuits="Hardware_Efficient Strongly_Entangling Circuit_19 Circuit_20"
 noise_types="BitFlip PhaseFlip Depolarizing StatePreparation Measurement AmplitudeDamping PhaseDamping GateError"
 
+# All runs below are recorded in the same MLflow experiment (the default one
+# named after the package). It is renamed to "paper_experiments" at the very
+# end, because renaming it in between would make kedro-mlflow create a new
+# experiment for the remaining runs and the data export in plot_all.sh only
+# reads the most recent experiment.
+
 # Main paper study (expressibility, entanglement)
 for experiment in entanglement expressibility; do
 	echo "Started computing $experiment..."
@@ -65,6 +71,9 @@ for seed in {1000..1004}; do
 	done
 done
 
+# Restore the default (1D) encoding in the parameters
+sed -i "s/encoding: .*$/encoding: [\"RY\"]/" conf/base/parameters.yml
+
 # Coefficient encoding experiments
 echo "Started coefficient encoding experiment"
 for seed in {1000..1004}; do
@@ -77,7 +86,21 @@ for seed in {1000..1004}; do
 		done
 	done
 done
-sed -i "s/effects_of_noise_in_qfm/paper_experiments/g" mlruns/$(ls -rt mlruns| tail -n 1)/meta.yaml
+
+# Selective coherent noise study (coefficient mean over frequencies when the
+# coherent gate error acts only on the encoding gates (iec), only on the
+# variational gates (pqc) or on the full circuit (both)). These runs use an
+# oversampling of 20 for the coefficient spectrum, which is also what
+# distinguishes them from the main coefficient study in the data export.
+echo "Started selective coherent noise coefficient experiments"
+for seed in {1000..1004}; do
+	for circuit in $circuits; do
+		for selective_noise in iec pqc both; do
+			echo "Started selective noise coefficients with seed=$seed, n_qubits=6, $circuit and selective_noise=$selective_noise"
+				$GIT_BASE_DIR/.venv/bin/kedro run --pipeline coefficients --params="data.omegas=6,model.n_qubits=6,model.encoding=RY,model.circuit_type=$circuit,seed=$seed,model.noise_params.GateError=0.03,model.noise_steps=6,coefficients.selective_noise=$selective_noise,coefficients.oversampling=20"
+		done
+	done
+done
 
 # Run training with all frameworks
 echo "Started training experiments..."
@@ -93,6 +116,8 @@ for problem_seed in {1000..1009}; do
 		done
 	done
 done
+
+sed -i "s/effects_of_noise_in_qfm/paper_experiments/g" mlruns/$(ls -rt mlruns| tail -n 1)/meta.yaml
 
 echo "all experiments done."
 
