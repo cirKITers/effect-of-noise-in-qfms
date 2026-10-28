@@ -74,14 +74,16 @@ done
 # Restore the default (1D) encoding in the parameters
 sed -i "s/encoding: .*$/encoding: [\"RY\"]/" conf/base/parameters.yml
 
-# Coefficient encoding experiments
+# Coefficient encoding experiments (noiseless only). These are the only
+# noiseless coefficient runs, which is how the data export tells them apart
+# from the main coefficient study.
 echo "Started coefficient encoding experiment"
 for seed in {1000..1004}; do
 	for n_qubits in {3..6}; do
 		for circuit in $circuits; do
 			for encoding in RX RY RZ; do
 				echo "Started coefficient experiments for encoding with seed=$seed, n_qubits=$n_qubits, $circuit, and encoding=$encoding"
-					$GIT_BASE_DIR/.venv/bin/kedro run --pipeline coefficients --params="data.omegas=$n_qubits,model.n_qubits=$n_qubits,model.circuit_type=$circuit,seed=$seed,model.encoding=$encoding,model.noise_steps=6"
+					$GIT_BASE_DIR/.venv/bin/kedro run --pipeline coefficients --params="data.omegas=$n_qubits,model.n_qubits=$n_qubits,model.circuit_type=$circuit,seed=$seed,model.encoding=$encoding"
 			done
 		done
 	done

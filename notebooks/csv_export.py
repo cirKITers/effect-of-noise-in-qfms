@@ -469,7 +469,11 @@ def get_arg_parser():
         "-nt",
         "--noise_type",
         default="all",
-        help='"all" or one of [BitFlip|PhaseFlip|Depolarizing|AmplitudeDamping|PhaseDamping|StatePreparation|Measurement|GateError]',
+        help=(
+            '"all" or a comma separated list of '
+            "[BitFlip|PhaseFlip|Depolarizing|AmplitudeDamping|PhaseDamping|"
+            "StatePreparation|Measurement|GateError|noiseless]"
+        ),
     )
     parser.add_argument(
         "-s",
@@ -553,7 +557,7 @@ if __name__ == "__main__":
         kwargs["export_qubits"] = [int(p.n_qubits)]
 
     if p.noise_type != "all":
-        kwargs["export_noise_types"] = [p.noise_type]
+        kwargs["export_noise_types"] = [n.strip() for n in p.noise_type.split(",")]
 
     if p.coefficients:
         export_coeff_data(
