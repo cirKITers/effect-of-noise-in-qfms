@@ -306,13 +306,13 @@ for (filtered_seed in 1000:1009) {
         d_mse_noiseless,
         aes(x = step, y = mean_mse)
     ) +
-        geom_line(linewidth = LINE.SIZE) +
-        geom_ribbon(aes(ymin = mse_lower_bound, ymax = mse_upper_bound), fill = "black", alpha = 0.2, colour = NA) +
+        geom_line(linewidth = LINE.SIZE, colour = "#666666") +
+        geom_ribbon(aes(ymin = mse_lower_bound, ymax = mse_upper_bound), fill = "#666666", alpha = 0.2, colour = NA) +
         facet_nested(. ~ ansatz,
             labeller = labeller(problem_seed = problem_labeller),
         ) +
         scale_x_continuous("Step", breaks = seq(0, 1000, 400)) +
-        scale_y_continuous("MSE") +
+        scale_y_continuous("MSE", limits = c(-0.005, 0.06)) +
         theme_paper() +
         theme(
             axis.title.x = element_blank(),
@@ -331,7 +331,7 @@ for (filtered_seed in 1000:1009) {
         scale_fill_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), values = COLOURS.LIST) +
         facet_nested(. ~ ansatz) +
         scale_x_continuous("Step", breaks = seq(0, 1000, 400)) +
-        scale_y_continuous(ifelse(use_tikz, "$\\lvert c_{\\boldsymbol{\\omega}} \\rvert$", "c"), limits = c(0, 0.1)) +
+        scale_y_continuous(ifelse(use_tikz, "$\\lvert c_{\\boldsymbol{\\omega}} \\rvert$", "c"), limits = c(-0.005, 0.07)) +
         theme_paper() +
         theme(
             # the ansatz strips are already shown in the MSE row
@@ -340,14 +340,15 @@ for (filtered_seed in 1000:1009) {
         ) +
         guides(colour = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE)))
 
-    g <- (g_mse / g_coeffs) +
-        plot_layout(guides = "collect") &
+    g <- (g_mse / plot_spacer() / g_coeffs) +
+        plot_layout(guides = "collect", heights = c(22,1,29)) &
         theme(
             legend.position = "top",
             legend.margin = margin(b = -4),
             legend.key.height = unit(0.4, "cm"),
-            legend.key.width = unit(0.4, "cm")
+            legend.key.width = unit(0.4, "cm"),
+            plot.margin = margin(0,0,0,0)
         )
     save_name <- str_c("training_noiseless_seed", filtered_seed)
-    create_plot(g, save_name, TEXTWIDTH, 0.3 * HEIGHT)
+    create_plot(g, save_name, 0.6*TEXTWIDTH, 0.25 * HEIGHT)
 }
