@@ -28,7 +28,6 @@ def calculate_entanglement(
         kwargs["n_sigmas"] = sigmas
     elif measure == "EF":
         ent_measure = Entanglement.entanglement_of_formation
-        kwargs["always_decompose"] = True
     elif measure == "MW":
         ent_measure = Entanglement.meyer_wallach
     else:
