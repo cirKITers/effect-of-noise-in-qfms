@@ -48,6 +48,7 @@ def get_training_df(run_ids, debug=False):
         "step",
         "coeff_dist",
         "entanglement",
+        "measure",
         "original_idx",
         "coeff_idx",
     ]
@@ -98,6 +99,9 @@ def get_training_df(run_ids, debug=False):
 
         problem_seed = int(client.get_run(run_id).data.params["data.seed"])
         sub_df_a.loc[it, "problem_seed"] = problem_seed
+
+        measure = client.get_run(run_id).data.params.get("training.measure", "MN")
+        sub_df_a.loc[it, "measure"] = measure
 
         encoding = client.get_run(run_id).data.params.get("model.encoding", "RX")
 
