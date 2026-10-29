@@ -658,7 +658,7 @@ requires-dist = [
     { name = "optax", specifier = ">=0.2.8" },
     { name = "pandas", specifier = ">=2.2.3,<3" },
     { name = "pyyaml", specifier = ">=6.0.2,<7" },
-    { name = "qml-essentials", git = "https://github.com/cirKITers/qml-essentials?rev=6b36992bc0f62011da3a73a8b28e0061037f3847" },
+    { name = "qml-essentials", git = "https://github.com/cirKITers/qml-essentials?rev=1bfa1e5a753af6c56cadc21122b3af14e32dc046" },
 ]
 
 [package.metadata.requires-dev]
@@ -2517,7 +2517,7 @@ wheels = [
 [[package]]
 name = "qml-essentials"
 version = "0.3.1"
-source = { git = "https://github.com/cirKITers/qml-essentials?rev=6b36992bc0f62011da3a73a8b28e0061037f3847#6b36992bc0f62011da3a73a8b28e0061037f3847" }
+source = { git = "https://github.com/cirKITers/qml-essentials?rev=1bfa1e5a753af6c56cadc21122b3af14e32dc046#1bfa1e5a753af6c56cadc21122b3af14e32dc046" }
 dependencies = [
     { name = "jaqsi" },
     { name = "jax" },

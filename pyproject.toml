@@ -27,7 +27,7 @@ dependencies = [
 ]
 
 [tool.uv.sources]
-qml-essentials = { git = "https://github.com/cirKITers/qml-essentials", rev = "6b36992bc0f62011da3a73a8b28e0061037f3847" }
+qml-essentials = { git = "https://github.com/cirKITers/qml-essentials", rev = "1bfa1e5a753af6c56cadc21122b3af14e32dc046" }
 
 [project.scripts]
 effects_of_noise_in_qfm = "effects_of_noise_in_qfm.__main__:main"
