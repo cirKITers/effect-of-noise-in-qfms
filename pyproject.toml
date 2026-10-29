@@ -21,10 +21,13 @@ dependencies = [
     "mkdocs-material>=9.6.11,<10",
     "mkdocs-glightbox>=0.4.0,<0.5",
     "markdown-include>=0.8.1,<0.9",
-    "qml-essentials==0.3.1",
+    "qml-essentials",
     "jax>=0.9.0.1",
     "optax>=0.2.8",
 ]
+
+[tool.uv.sources]
+qml-essentials = { git = "https://github.com/cirKITers/qml-essentials", rev = "6b36992bc0f62011da3a73a8b28e0061037f3847" }
 
 [project.scripts]
 effects_of_noise_in_qfm = "effects_of_noise_in_qfm.__main__:main"

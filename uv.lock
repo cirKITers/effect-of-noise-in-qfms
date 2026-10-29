@@ -1,5 +1,5 @@
 version = 1
-revision = 5
+revision = 3
 requires-python = ">=3.12, <3.15"
 resolution-markers = [
     "python_full_version >= '3.14' and sys_platform != 'win32'",
@@ -658,7 +658,7 @@ requires-dist = [
     { name = "optax", specifier = ">=0.2.8" },
     { name = "pandas", specifier = ">=2.2.3,<3" },
     { name = "pyyaml", specifier = ">=6.0.2,<7" },
-    { name = "qml-essentials", specifier = "==0.3.1" },
+    { name = "qml-essentials", git = "https://github.com/cirKITers/qml-essentials?rev=6b36992bc0f62011da3a73a8b28e0061037f3847" },
 ]
 
 [package.metadata.requires-dev]
@@ -868,7 +868,7 @@ name = "gunicorn"
 version = "23.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "packaging" },
+    { name = "packaging", marker = "sys_platform != 'win32'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/34/72/9614c465dc206155d93eff0ca20d42e1e35afc533971379482de953521a4/gunicorn-23.0.0.tar.gz", hash = "sha256:f014447a0101dc57e294f6c18ca6b40227a4c90e9bdb586042628030cba004ec", size = 375031, upload-time = "2024-08-10T20:25:27.378Z" }
 wheels = [
@@ -1998,7 +1998,7 @@ name = "pexpect"
 version = "4.9.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "ptyprocess" },
+    { name = "ptyprocess", marker = "sys_platform != 'win32'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/42/92/cc564bf6381ff43ce1f4d06852fc19a2f11d180f23dc32d9588bee2f149d/pexpect-4.9.0.tar.gz", hash = "sha256:ee7d41123f3c9911050ea2c2dac107568dc43b2d3b0c7557a33212c398ead30f", size = 166450, upload-time = "2023-11-25T09:07:26.339Z" }
 wheels = [
@@ -2517,16 +2517,13 @@ wheels = [
 [[package]]
 name = "qml-essentials"
 version = "0.3.1"
-source = { registry = "https://pypi.org/simple" }
+source = { git = "https://github.com/cirKITers/qml-essentials?rev=6b36992bc0f62011da3a73a8b28e0061037f3847#6b36992bc0f62011da3a73a8b28e0061037f3847" }
 dependencies = [
     { name = "jaqsi" },
     { name = "jax" },
     { name = "jaxlib" },
     { name = "numpy" },
     { name = "scipy" },
-]
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/ed/e4/d3f89e9fa0e036d6156302850276708ffa5d5ab825208e724115b26e9aad/qml_essentials-0.3.1-py3-none-any.whl", hash = "sha256:b60093970ba32fd75853021dc7a10a02e9237257f0c8e1f2abcb943f8db4932d", size = 85048, upload-time = "2026-10-03T12:29:58.607Z" },
 ]
 
 [[package]]
