@@ -93,6 +93,7 @@ def train_model(
     convergence_gradient: float,
     convergence_steps: int,
     metric_steps: int,
+    measure: str,
 ) -> Dict[str, pd.DataFrame]:
     """
     Train a given model on the regression task of a target Fourier series.
@@ -118,6 +119,8 @@ def train_model(
             expensive entanglement metric is computed. Entanglement is
             evaluated at step 0 and every ``metric_steps`` steps afterwards;
             in all other steps the "entanglement" column is left empty (NaN).
+        measure (str): Entanglement measure, either Entanglement of Formation
+            (EF), Meyer-Wallach (MW) or Mean Negativity (MN).
 
     Returns:
         Dict[str, pd.DataFrame]: Result dict containing the following:
@@ -128,6 +131,15 @@ def train_model(
     """
     if metric_steps < 1:
         raise ValueError(f"metric_steps must be >= 1, got {metric_steps}")
+
+    if measure == "EF":
+        ent_measure = Entanglement.entanglement_of_formation
+    elif measure == "MW":
+        ent_measure = Entanglement.meyer_wallach
+    elif measure == "MN":
+        ent_measure = Entanglement.mean_negativity
+    else:
+        raise ValueError(f"Unknown entanglement measure: {measure}")
 
     # same hyperparameters as the previously used PennyLane AdamOptimizer
     opt = optax.adam(learning_rate=learning_rate, b1=0.9, b2=0.99, eps=1e-8)
@@ -187,7 +199,7 @@ def train_model(
         # log entanglement (expensive, therefore only every metric_steps)
         if step % metric_steps == 0:
             ent_cap = float(
-                Entanglement.entanglement_of_formation(
+                ent_measure(
                     model=model,
                     n_samples=0,  # disable sampling, use model params
                     noise_params=noise_params,
@@ -327,6 +339,7 @@ def iterate_noise(
     convergence_steps: int,
     seed: int,
     metric_steps: int,
+    measure: str,
 ):
     """
     Iterate over different noise levels and train a given model on the
@@ -354,6 +367,7 @@ def iterate_noise(
         seed (int): Seed for model initialisation each noise param iteration.
         metric_steps (int): Interval (in training steps) at which the
             entanglement metric is computed.
+        measure (str): Entanglement measure (EF, MW or MN).
 
     Returns:
         Dict[str, pd.DataFrame]: Result dict containing the following for all
@@ -390,6 +404,7 @@ def iterate_noise(
             convergence_gradient,
             convergence_steps,
             metric_steps,
+            measure,
         )
 
         # Add noise data to dfs
