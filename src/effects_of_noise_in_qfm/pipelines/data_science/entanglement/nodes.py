@@ -30,6 +30,8 @@ def calculate_entanglement(
         ent_measure = Entanglement.entanglement_of_formation
     elif measure == "MW":
         ent_measure = Entanglement.meyer_wallach
+    elif measure == "MN":
+        ent_measure = Entanglement.mean_negativity
     else:
         exit(f"Unknown Entanglement Measure: {measure}")
 
