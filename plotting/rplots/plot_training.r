@@ -210,6 +210,8 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
     )
 }
 
+diff_label <- ifelse(use_tikz, "$\\Delta c_{\\boldsymbol{\\omega}}$", "Diff")
+
 g <- ggplot(
     d_summarised_freq,
     aes(x = step, y = mean_abs_dist, colour = as.factor(frequencies))
@@ -220,10 +222,95 @@ g <- ggplot(
     scale_fill_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), values = COLOURS.LIST) +
     facet_nested(ansatz ~ noise_category + noise_type) +
     scale_x_continuous("Step", breaks = seq(0, 1000, 400)) +
-    scale_y_continuous(ifelse(use_tikz, "$\\lvert \\lvert c_{\\boldsymbol{\\omega}}(\\boldsymbol{\\theta})\\rvert - \\lvert c'_{\\boldsymbol{\\omega}} \\rvert \\rvert$", "Diff")) +
+    scale_y_continuous(diff_label) +
     theme_paper() +
     guides(colour = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE)))
 save_name <- str_c("training_coeff_dist")
+create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)
+
+# Bar plots of the state after the last training step, joined with patchwork:
+# on the left the final MSE per noise type (noise types on the x axis), on the
+# right the final coefficient difference per frequency with the noise types as
+# columns; ansaetze in the rows, bars coloured by noise category in both plots.
+freq_label <- ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w")
+freq_levels <- as.character(sort(unique(d_summarised_freq$frequencies)))
+final_step <- max(d_summarised_freq$step)
+blank_noiseless <- function(x) ifelse(x == "Noiseless", "", x)
+y_expand <- expansion(mult = c(0, 0.05))
+d_final_diff <- d_summarised_freq %>%
+    filter(step == final_step) %>%
+    ungroup() %>%
+    mutate(
+        # the quantities are non-negative, so the error bars are not drawn below zero
+        dist_lower_bound = pmax(dist_lower_bound, 0),
+    )
+d_final_mse <- d_summarised %>%
+    filter(step == final_step) %>%
+    ungroup() %>%
+    mutate(
+        mse_lower_bound = pmax(mse_lower_bound, 0),
+    )
+mse_max <- max(d_final_mse$mse_upper_bound)
+diff_max <- max(d_final_diff$dist_upper_bound)
+
+# noise category colours as in the training_mse plot
+category_breaks <- c("", "Decoherent Gate", "SPAM", "Damping", "Coh.")
+scale_fill_category <- scale_fill_manual(
+    NULL,
+    values = COLOURS.LIST, breaks = category_breaks,
+    # the noiseless case (empty category label) needs no legend entry
+    limits = category_breaks, labels = c("Noiseless", category_breaks[-1])
+)
+
+g_final_mse <- ggplot(
+    d_final_mse,
+    aes(x = noise_type, y = mean_mse, fill = noise_category)
+) +
+    geom_col(width = 0.8) +
+    geom_errorbar(aes(ymin = mse_lower_bound, ymax = mse_upper_bound), width = 0.5, linewidth = 0.3) +
+    scale_fill_category +
+    facet_nested(ansatz ~ .) +
+    scale_x_discrete(NULL, labels=blank_noiseless) +
+    scale_y_continuous("MSE") +
+    theme_paper() +
+    theme(
+        axis.text.x = element_text(, angle = 90, hjust = 1, vjust = 0.5),
+        # the ansatz strips are shown in the coefficient plot on the right
+        strip.text.y = element_blank(),
+        strip.background.y = element_blank(),
+        plot.margin = margin(0, 0, 0, 0)
+    )
+
+g_final_diff <- ggplot(
+    d_final_diff,
+    aes(x = frequencies, y = mean_abs_dist, fill = noise_category)
+) +
+    geom_col(width = 0.8) +
+    geom_errorbar(aes(ymin = dist_lower_bound, ymax = dist_upper_bound), width = 0.5, linewidth = 0.3) +
+    scale_fill_category +
+    facet_nested(ansatz ~ noise_type, labeller = labeller(noise_type = blank_noiseless)) +
+    scale_x_continuous(freq_label) +
+    scale_y_continuous(diff_label) +
+    theme_paper() +
+    theme(
+        panel.spacing.x = unit(1.5, "pt"),
+        axis.title.x = element_text(vjust=5),
+        plot.margin = margin(0, 0, 0, 0)
+    )
+
+# MSE plot left, coefficient difference plot right, separated by a small spacer;
+# one shared noise category legend on top
+g <- (g_final_mse | plot_spacer() | g_final_diff) +
+    plot_layout(guides = "collect", widths = c(19, 1, 50)) &
+    theme(
+        legend.position = "top",
+        legend.margin = margin(b = -4),
+        legend.key.height = unit(0.4, "cm"),
+        legend.key.width = unit(0.4, "cm"),
+        plot.margin = margin(0, 0, 0, 0)
+    ) &
+    guides(fill = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE)))
+save_name <- str_c("training_coeff_dist_final")
 create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)
 
 g <- ggplot(
