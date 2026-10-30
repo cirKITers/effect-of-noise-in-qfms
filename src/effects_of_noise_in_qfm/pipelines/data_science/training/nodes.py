@@ -190,7 +190,9 @@ def train_model(
     costs = np.zeros(steps)
 
     # Coherent gate errors are quasi-static
-    # thus, one gate error realisation should be used
+    # thus, one gate error realisation should be used.
+    # Note that this sets the gate error for the entire training
+    # to a single realization; we might want to reconsider that in the future
     UnitaryGates.batch_gate_error = False
 
     for step in track(range(steps), description="Training..", total=steps):
