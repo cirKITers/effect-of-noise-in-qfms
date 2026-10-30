@@ -22,9 +22,9 @@ if (length(args) == 1) {
 
 data_path <- "csv_data/training.csv"
 data_path_processed <- "csv_data/training_processed.csv"
-data_path_summarised <- "csv_data/training_summarised.csv"
+data_path_summarised <- "csv_data/training_summarised_runs.csv"
 data_path_summarised_freq <- "csv_data/training_summarised_freq.csv"
-data_path_summarised_seed <- "csv_data/training_summarised_seed.csv"
+data_path_summarised_seed <- "csv_data/training_summarised_seed_runs.csv"
 
 if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq) || !file.exists(data_path_summarised_seed) || !file.exists(data_path_processed)) {
     d <- read_csv(data_path)
@@ -106,7 +106,11 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
         )
 
 
-    d_summarised <- d %>%
+    # Scalar metrics are repeated for every frequency in the exported data.
+    d_runs <- d %>%
+        distinct(noise_type, noise_value, ansatz, qubits, step, problem_seed, seed, .keep_all = TRUE)
+
+    d_summarised <- d_runs %>%
         group_by(noise_category, noise_type, ansatz, qubits, step) %>%
         summarise(
             mean_mse = mean(mse),
@@ -127,7 +131,7 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
     print(d_summarised)
 
     # MSE per problem seed (mean/sd over the initialisation seeds)
-    d_summarised_seed <- d %>%
+    d_summarised_seed <- d_runs %>%
         group_by(noise_category, noise_type, ansatz, qubits, step, problem_seed) %>%
         summarise(
             mean_mse = mean(mse),
