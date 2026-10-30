@@ -49,6 +49,7 @@ def get_training_df(run_ids, debug=False):
         "coeff_dist",
         "entanglement",
         "measure",
+        "loss",
         "original_idx",
         "coeff_idx",
     ]
@@ -102,6 +103,9 @@ def get_training_df(run_ids, debug=False):
 
         measure = client.get_run(run_id).data.params.get("training.measure", "MN")
         sub_df_a.loc[it, "measure"] = measure
+
+        loss = client.get_run(run_id).data.params.get("training.loss", "mse")
+        sub_df_a.loc[it, "loss"] = loss
 
         encoding = client.get_run(run_id).data.params.get("model.encoding", "RX")
 

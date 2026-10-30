@@ -26,6 +26,10 @@ data_path_summarised <- "csv_data/training_summarised_runs.csv"
 data_path_summarised_freq <- "csv_data/training_summarised_freq.csv"
 data_path_summarised_seed <- "csv_data/training_summarised_seed_runs.csv"
 
+# training objective: MSE on the training inputs ("mse") or the squared complex
+# coefficient error ("coeff"), see training.loss in conf/base/parameters.yml
+loss_to_factor <- function(loss) factor(loss, levels = c("mse", "coeff"))
+
 if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq) || !file.exists(data_path_summarised_seed) || !file.exists(data_path_processed)) {
     d <- read_csv(data_path)
 
@@ -44,7 +48,7 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
     d$noise_type[d$noise_value == 0] <- "Noiseless"
 
     d <- d %>%
-        distinct(noise_type, noise_value, ansatz, qubits, frequencies, step, problem_seed, seed, .keep_all = TRUE) %>%
+        distinct(loss, noise_type, noise_value, ansatz, qubits, frequencies, step, problem_seed, seed, .keep_all = TRUE) %>%
         mutate(
             coeff_diff = sqrt((coeffs_real - target_coefficients_real)^2 + (coeffs_imag - target_coefficients_imag)^2),
             coeff_diff_squared = coeff_diff^2,
@@ -88,9 +92,10 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
     )
 
     d$ansatz <- ansatz_to_factor(d$ansatz)
+    d$loss <- loss_to_factor(d$loss)
 
     d_summarised_freq <- d %>%
-        group_by(noise_category, noise_type, ansatz, qubits, step, frequencies) %>%
+        group_by(loss, noise_category, noise_type, ansatz, qubits, step, frequencies) %>%
         summarise(
             mean_abs_dist = mean(coeff_abs_dist),
             sd_abs_dist = sd(coeff_abs_dist),
@@ -111,7 +116,7 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
         distinct(noise_type, noise_value, ansatz, qubits, step, problem_seed, seed, .keep_all = TRUE)
 
     d_summarised <- d_runs %>%
-        group_by(noise_category, noise_type, ansatz, qubits, step) %>%
+        group_by(loss, noise_category, noise_type, ansatz, qubits, step) %>%
         summarise(
             mean_mse = mean(mse),
             sd_mse = sd(mse),
@@ -132,7 +137,7 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
 
     # MSE per problem seed (mean/sd over the initialisation seeds)
     d_summarised_seed <- d_runs %>%
-        group_by(noise_category, noise_type, ansatz, qubits, step, problem_seed) %>%
+        group_by(loss, noise_category, noise_type, ansatz, qubits, step, problem_seed) %>%
         summarise(
             mean_mse = mean(mse),
             sd_mse = sd(mse),
@@ -143,7 +148,7 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
         )
 
     d <- d %>%
-        group_by(noise_category, noise_type, noise_value, ansatz, qubits, frequencies, step, problem_seed) %>%
+        group_by(loss, noise_category, noise_type, noise_value, ansatz, qubits, frequencies, step, problem_seed) %>%
         summarise(
             abs_target = mean(abs_target),
             mean_coeff_abs = mean(coeff_abs),
@@ -186,6 +191,7 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
     d$ansatz <- factor(d$ansatz,
         levels = c("SEA", "HEA", "RYA", "CRA")
     )
+    d$loss <- loss_to_factor(d$loss)
     d_summarised$noise_category[is.na(d_summarised$noise_category)] <- ""
     d_summarised$noise_category <- factor(d_summarised$noise_category, levels = c("", "Decoherent Gate", "SPAM", "Damping", "Coh."))
     d_summarised$noise_type <- factor(d_summarised$noise_type,
@@ -199,6 +205,7 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
     d_summarised$ansatz <- factor(d_summarised$ansatz,
         levels = c("SEA", "HEA", "RYA", "CRA")
     )
+    d_summarised$loss <- loss_to_factor(d_summarised$loss)
     d_summarised_freq$noise_category[is.na(d_summarised_freq$noise_category)] <- ""
     d_summarised_freq$noise_category <- factor(d_summarised_freq$noise_category, levels = c("", "Decoherent Gate", "SPAM", "Damping", "Coh."))
     d_summarised_freq$noise_type <- factor(d_summarised_freq$noise_type,
@@ -212,6 +219,7 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
     d_summarised_freq$ansatz <- factor(d_summarised_freq$ansatz,
         levels = c("SEA", "HEA", "RYA", "CRA")
     )
+    d_summarised_freq$loss <- loss_to_factor(d_summarised_freq$loss)
     d_summarised_seed$noise_category[is.na(d_summarised_seed$noise_category)] <- ""
     d_summarised_seed$noise_category <- factor(d_summarised_seed$noise_category, levels = c("", "Decoherent Gate", "SPAM", "Damping", "Coh."))
     d_summarised_seed$noise_type <- factor(d_summarised_seed$noise_type,
@@ -225,6 +233,7 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
     d_summarised_seed$ansatz <- factor(d_summarised_seed$ansatz,
         levels = c("SEA", "HEA", "RYA", "CRA")
     )
+    d_summarised_seed$loss <- loss_to_factor(d_summarised_seed$loss)
 }
 
 diff_label <- ifelse(use_tikz, "$\\Delta c_{\\boldsymbol{\\omega}}$", "Diff")
