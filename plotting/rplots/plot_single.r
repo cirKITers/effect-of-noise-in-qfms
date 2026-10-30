@@ -464,6 +464,7 @@ if(file.exists(train_path)) {
 
 
     d_summarised <- d_train %>%
+        distinct(noise_type, noise_value, ansatz, qubits, step, problem_seed, seed, .keep_all = TRUE) %>%
         group_by(noise_category, noise_type, ansatz, qubits, step) %>%
         summarise(
             mean_mse = mean(mse),
