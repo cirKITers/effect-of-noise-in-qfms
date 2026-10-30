@@ -94,6 +94,7 @@ def train_model(
     convergence_steps: int,
     metric_steps: int,
     measure: str,
+    loss: str,
 ) -> Dict[str, pd.DataFrame]:
     """
     Train a given model on the regression task of a target Fourier series.
@@ -121,16 +122,23 @@ def train_model(
             in all other steps the "entanglement" column is left empty (NaN).
         measure (str): Entanglement measure, either Entanglement of Formation
             (EF), Meyer-Wallach (MW) or Mean Negativity (MN).
+        loss (str): Training objective, either the MSE on the training inputs
+            ("mse") or the squared complex coefficient error summed over all
+            frequencies ("coeff").
 
     Returns:
         Dict[str, pd.DataFrame]: Result dict containing the following:
             - "params": Parameter at each step.
             - "grads": Gradients at each step.
-            - "metrics": Metrics occuring during the training (MSE, FS dist,
-                Entanglement (every ``metric_steps``), Fourier Coefficients).
+            - "metrics": Metrics occuring during the training (MSE, summed
+                squared coefficient error, Entanglement (every
+                ``metric_steps``), Fourier Coefficients).
     """
     if metric_steps < 1:
         raise ValueError(f"metric_steps must be >= 1, got {metric_steps}")
+
+    if loss not in ("mse", "coeff"):
+        raise ValueError(f"Unknown loss: {loss}")
 
     if measure == "EF":
         ent_measure = Entanglement.entanglement_of_formation
@@ -173,7 +181,17 @@ def train_model(
     def mse(prediction, target):
         return jnp.mean((prediction - target) ** 2)
 
+    def coeff_error(coeffs):
+        return jnp.sum(jnp.abs(coeffs - fourier_coefficients) ** 2)
+
     def cost(params, **kwargs):
+        if loss == "coeff":
+            kwargs.pop("inputs")
+            coeffs, _ = Coefficients.get_spectrum(
+                model, shift=True, trim=True, params=params, **kwargs
+            )
+            return coeff_error(coeffs)
+
         # force_mean already averages over the measured qubits
         prediction = model(params=params, **kwargs)
         if model.execution_type == "probs":
@@ -222,7 +240,7 @@ def train_model(
             noise_params=noise_params,
         )
 
-        dist = np.sum(np.abs(coeffs - fourier_coefficients))
+        dist = float(coeff_error(coeffs))
         log.debug(f"Coefficients dist: {dist}")
         df_metrics.loc[step, "coeff_dist"] = dist
 
@@ -240,6 +258,18 @@ def train_model(
         df_metrics.loc[step, "frequencies"] = freqs.tolist()
         df_metrics.loc[step, "coeffs_real"] = np.array(coeffs).real.tolist()
         df_metrics.loc[step, "coeffs_imag"] = np.array(coeffs).imag.tolist()
+
+        if loss == "coeff":
+            mse_val = mse(
+                model(
+                    inputs=jnp.asarray(domain_samples),
+                    noise_params=noise_params,
+                    execution_type="expval",
+                    force_mean=True,
+                    random_key=model.next_key(),
+                ),
+                fourier_series,
+            )
 
         # actual training step
         model.params, opt_state, cost_val, grads = step_cost_and_grads(
@@ -278,8 +308,10 @@ def train_model(
 
         # log cost
         log.debug(f"Cost in step {step}: {cost_val}")
-        mlflow.log_metric("mse", cost_val, step)
-        df_metrics.loc[step, "mse"] = cost_val
+        if loss == "mse":
+            mse_val = cost_val
+        mlflow.log_metric("mse", mse_val, step)
+        df_metrics.loc[step, "mse"] = mse_val
         costs[step] = cost_val
 
         # log control parameters
@@ -342,6 +374,7 @@ def iterate_noise(
     seed: int,
     metric_steps: int,
     measure: str,
+    loss: str,
 ):
     """
     Iterate over different noise levels and train a given model on the
@@ -370,14 +403,16 @@ def iterate_noise(
         metric_steps (int): Interval (in training steps) at which the
             entanglement metric is computed.
         measure (str): Entanglement measure (EF, MW or MN).
+        loss (str): Training objective ("mse" or "coeff").
 
     Returns:
         Dict[str, pd.DataFrame]: Result dict containing the following for all
         noise levels:
             - "params": Parameter at each step.
             - "grads": Gradients at each step.
-            - "metrics": Metrics occuring during the training (MSE, FS dist,
-                Entanglement, Fourier Coefficients).
+            - "metrics": Metrics occuring during the training (MSE, summed
+                squared coefficient error, Entanglement, Fourier
+                Coefficients).
     """
     noise_params = NoiseDict(noise_params)
     noise_columns_df = [
@@ -407,6 +442,7 @@ def iterate_noise(
             convergence_steps,
             metric_steps,
             measure,
+            loss,
         )
 
         # Add noise data to dfs

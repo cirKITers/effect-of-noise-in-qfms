@@ -59,6 +59,7 @@ training:
   learning_rate: 0.01
   metric_steps: 10 # compute expensive metrics (entanglement) only every n steps
   measure: "EF" # Entanglement of Formation (EF), Meyer-Wallach (MW), Mean Negativity (MN)
+  loss: "mse" # mse (training inputs) or coeff (squared complex coefficient error over all frequencies)
   convergence:
     threshold: -1 # threshold for the cost, -1 to disable
     gradient: -1 # threshold for the cost gradient, -1 to disable

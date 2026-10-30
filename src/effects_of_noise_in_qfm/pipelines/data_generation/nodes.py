@@ -77,7 +77,10 @@ def sample_domain(domain: List[float], omegas: List[List[float]]) -> np.ndarray:
 
     log.info(f"Using {n_d} data points on {len(omegas)} dimensions")
 
-    tensors = tuple(dimensions * [np.linspace(domain[0], domain[1], num=n_d)])
+    # one period without the repeated endpoint (Parseval's identity)
+    tensors = tuple(
+        dimensions * [np.linspace(domain[0], domain[1], num=n_d, endpoint=False)]
+    )
 
     return np.meshgrid(*tensors)[0].reshape(-1)  # .reshape(-1, dimensions)
 
