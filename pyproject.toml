@@ -9,7 +9,7 @@ version = "0.2.0"
 description = ""
 authors = [{ name = "Melvin Strobl", email = "melvin.strobl@kit.edu" }, { name = "Maja Franz", email = "maja.franz@othr.de"}]
 readme = "README.md"
-requires-python = ">=3.12,<3.15"
+requires-python = ">=3.12,<3.13"
 dependencies = [
     "mlflow>=2.18.0,<3",
     "kedro>=0.19.11,<0.20",
