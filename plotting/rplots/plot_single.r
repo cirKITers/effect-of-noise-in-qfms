@@ -66,7 +66,7 @@ if(file.exists(coeffs_path)) {
             names_to = "noise_type", values_to = "noise_value"
         ) %>%
         filter(!is.na(noise_value) & noise_value < 0.1)
-    
+
     d_coeffs <- d_coeffs %>%
         distinct(noise_type, noise_value, ansatz, qubits, n_input_feat, freq1, freq2, .keep_all = TRUE) %>%
         mutate(
@@ -102,10 +102,7 @@ if(file.exists(coeffs_path)) {
         ),
     )
 
-    d_coeffs$ansatz <- factor(d_coeffs$ansatz,
-        levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_15", "Circuit_19"),
-        labels = c("SEA", "HEA", "C15", "C19")
-    )
+    d_coeffs$ansatz <- ansatz_to_factor(d_coeffs$ansatz)
 
     g <- ggplot(d_coeffs, aes(x = noise_value, y = mean_abs, colour = as.factor(freq1))) +
             geom_point(size = POINT.SIZE) +
@@ -159,7 +156,7 @@ if(file.exists(coeffs_path)) {
     d_coeffs$noise_category[d_coeffs$noise_value == 0] <- ""
     d_coeffs <- d_coeffs %>% distinct(noise_type, noise_value, ansatz, qubits, freq1, .keep_all = TRUE) %>%
             pivot_longer(c(coeffs_var_real, coeffs_var_imag, coeffs_covar_ri), names_to = "var_type", values_to = "var")
-    
+
     d_coeffs$var_type <- factor(
             d_coeffs$var_type,
             levels = c("coeffs_var_real", "coeffs_var_imag", "coeffs_covar_ri"),
@@ -206,10 +203,7 @@ if(file.exists(coeffs_path)) {
 if(file.exists(expr_path)) {
     d_expr <- read_csv(expr_path)
 
-    d_expr$ansatz <- factor(d_expr$ansatz,
-        levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_15", "Circuit_19"),
-        labels = c("SEA", "HEA", "C15", "C19")
-    )
+    d_expr$ansatz <- ansatz_to_factor(d_expr$ansatz)
 
     d_expr <- d_expr %>%
         pivot_longer(
@@ -232,7 +226,7 @@ if(file.exists(expr_path)) {
             upper_bound = max_expr,
             lower_bound = min_expr
         )
-    
+
     d_expr <- d_expr %>%
         filter(!is.na(noise_value) & noise_value <= 0.03) %>%
         mutate(
@@ -267,7 +261,7 @@ if(file.exists(expr_path)) {
             "GE"
         ),
     )
-    
+
     g <- ggplot(
         d_expr,
         aes(x = noise_value, y = mean_expr, colour = as.factor(qubits))
@@ -305,10 +299,8 @@ if(file.exists(expr_path)) {
 if(file.exists(ent_path)) {
     d_ent <- read_csv(ent_path)
 
-    d_ent$ansatz <- factor(d_ent$ansatz,
-        levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_15", "Circuit_19"),
-        labels = c("SEA", "HEA", "C15", "C19")
-    )
+    d_ent$ansatz <- ansatz_to_factor(d_ent$ansatz)
+
     d_ent <- d_ent %>%
         pivot_longer(
             c(
@@ -330,7 +322,7 @@ if(file.exists(ent_path)) {
             upper_bound = max_ent,
             lower_bound = min_ent
         )
-    
+
     d_ent <- d_ent %>%
         filter(!is.na(noise_value) & (noise_value == 0 | noise_value > 0.0045)) %>%
         mutate(
@@ -420,7 +412,7 @@ if(file.exists(train_path)) {
         mutate(
             coeff_abs = sqrt(coeffs_real^2 + coeffs_imag^2),
             abs_target = sqrt(target_coefficients_real^2 + target_coefficients_imag^2),
-            coeff_abs_dist = abs(coeff_abs - abs_target),
+            coeff_diff_squared = (coeffs_real - target_coefficients_real)^2 + (coeffs_imag - target_coefficients_imag)^2,
             noise_category = ifelse(
                 noise_type %in% c("BitFlip", "PhaseFlip", "Depolarizing"),
                 "Decoherent Gate",
@@ -457,26 +449,22 @@ if(file.exists(train_path)) {
         ),
     )
 
-    d_train$ansatz <- factor(d_train$ansatz,
-        levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_15", "Circuit_19"),
-        labels = c("SEA", "HEA", "C15", "C19")
-    )
-
-
+    d_train$ansatz <- ansatz_to_factor(d_train$ansatz)
 
     d_summarised_freq <- d_train %>%
         group_by(noise_category, noise_type, ansatz, qubits, step, frequencies) %>%
         summarise(
-            mean_abs_dist = mean(coeff_abs_dist),
-            sd_abs_dist = sd(coeff_abs_dist),
+            mean_squared_diff = mean(coeff_diff_squared),
+            sd_squared_diff = sd(coeff_diff_squared),
         ) %>%
         mutate(
-            dist_lower_bound = mean_abs_dist - sd_abs_dist,
-            dist_upper_bound = mean_abs_dist + sd_abs_dist,
+            dist_lower_bound = mean_squared_diff - sd_squared_diff,
+            dist_upper_bound = mean_squared_diff + sd_squared_diff,
         )
 
 
     d_summarised <- d_train %>%
+        distinct(noise_type, noise_value, ansatz, qubits, step, problem_seed, seed, .keep_all = TRUE) %>%
         group_by(noise_category, noise_type, ansatz, qubits, step) %>%
         summarise(
             mean_mse = mean(mse),
@@ -501,8 +489,8 @@ if(file.exists(train_path)) {
             abs_target = mean(abs_target),
             mean_coeff_abs = mean(coeff_abs),
             sd_coeff_abs = sd(coeff_abs),
-            mean_abs_dist = mean(coeff_abs_dist),
-            sd_abs_dist = sd(coeff_abs_dist),
+            mean_squared_diff = mean(coeff_diff_squared),
+            sd_squared_diff = sd(coeff_diff_squared),
         ) %>%
         mutate(
             coeff_lower_bound = mean_coeff_abs - sd_coeff_abs,
@@ -511,7 +499,7 @@ if(file.exists(train_path)) {
 
     g <- ggplot(
         d_summarised_freq,
-        aes(x = step, y = mean_abs_dist, colour = as.factor(frequencies))
+        aes(x = step, y = mean_squared_diff, colour = as.factor(frequencies))
     ) +
         geom_line(linewidth = LINE.SIZE) +
         geom_ribbon(aes(ymin = dist_lower_bound, ymax = dist_upper_bound, fill = as.factor(frequencies)), alpha = 0.2, colour = NA) +
@@ -519,7 +507,7 @@ if(file.exists(train_path)) {
         scale_fill_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), values = COLOURS.LIST) +
         facet_nested(ansatz ~ noise_category + noise_type) +
         scale_x_continuous("Step") +
-        scale_y_continuous(ifelse(use_tikz, "$\\lvert \\lvert c_{\\boldsymbol{\\omega}}(\\boldsymbol{\\theta})\\rvert - \\lvert c'_{\\boldsymbol{\\omega}} \\rvert \\rvert$", "Diff")) +
+        scale_y_continuous(ifelse(use_tikz, "$\\Delta c_{\\boldsymbol{\\omega}}$", "Diff")) +
         theme_paper() +
         guides(colour = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE)))
     save_name <- str_c("single/training_coeff_dist")

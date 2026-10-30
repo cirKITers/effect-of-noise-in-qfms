@@ -90,11 +90,8 @@ d_coeffs_2D <- d_coeffs_2D %>%
     ) %>%
     mutate(max_freq = (2 * qubits + 1)^2)
 
-d_coeffs <- rbind(d_coeffs_1D, d_coeffs_2D) %>% filter(qubits < 7 & noise_value < 0.1 & ansatz %in% c("Hardware_Efficient", "Circuit_15"))
-d_coeffs$ansatz <- factor(d_coeffs$ansatz,
-    levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_15", "Circuit_19"),
-    labels = c("SEA", "HEA", "C15", "C19")
-)
+d_coeffs <- rbind(d_coeffs_1D, d_coeffs_2D) %>% filter(qubits < 7 & noise_value < 0.1 & ansatz %in% c("Hardware_Efficient", "Circuit_20"))
+d_coeffs$ansatz <- ansatz_to_factor(d_coeffs$ansatz)
 
 d_coeffs_n <- d_coeffs %>%
     mutate(noise_value = round(noise_value, digits = 3)) %>%
@@ -131,16 +128,14 @@ create_plot(g, save_name, 0.6 * TEXTWIDTH, 0.25 * HEIGHT)
 
 coeffs_path <- "csv_data/subsamplingcoeffs_stat_dims1.csv"
 
-d_coeffs <- read_csv(coeffs_path)
+# the selective noise study is shown for the RY encoding only
+d_coeffs <- read_csv(coeffs_path) %>% filter(encoding == "RY")
 
 index_labeller <- function(layer) {
     paste0("i = ", layer)
 }
 
-d_coeffs$ansatz <- factor(d_coeffs$ansatz,
-    levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_15", "Circuit_19"),
-    labels = c("SEA", "HEA", "C15", "C19")
-)
+d_coeffs$ansatz <- ansatz_to_factor(d_coeffs$ansatz)
 d_coeffs$frequency <- as.factor(d_coeffs$freq1)
 
 print(colnames(d_coeffs))

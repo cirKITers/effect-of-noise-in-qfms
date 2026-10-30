@@ -21,10 +21,7 @@ if (length(args) == 1) {
 coeffs_path <- "csv_data/expr.csv"
 d_expr <- read_csv(coeffs_path)
 
-d_expr$ansatz <- factor(d_expr$ansatz,
-    levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_15", "Circuit_19"),
-    labels = c("SEA", "HEA", "C15", "C19")
-)
+d_expr$ansatz <- ansatz_to_factor(d_expr$ansatz)
 
 d_expr <- d_expr %>%
     pivot_longer(
@@ -47,6 +44,13 @@ d_expr <- d_expr %>%
         upper_bound = max_expr,
         lower_bound = min_expr
     )
+
+print(
+  str_c(
+    "Mean relative standard deviation: ",
+    mean(d_expr$sd_expr / d_expr$mean_expr)
+  )
+)
 
 d_expr <- d_expr %>%
     filter(!is.na(noise_value) & noise_value <= 0.03) %>%
@@ -83,13 +87,17 @@ d_expr$noise_type <- factor(d_expr$noise_type,
     ),
 )
 
+kl_max = max(d_expr$upper_bound)
+kl_min = min(d_expr$lower_bound)
+
 g <- ggplot(
     d_expr,
     aes(x = noise_value, y = mean_expr, colour = as.factor(qubits))
 ) +
     geom_point(size = POINT.SIZE) +
     geom_line(linewidth = LINE.SIZE) +
-    geom_ribbon(aes(ymin = lower_bound, ymax = upper_bound, fill = as.factor(qubits)), alpha = 0.5, colour = NA) +
+    geom_hline(aes(linetype="", yintercept = kl_max), linewidth = LINE.SIZE, colour = COLOURS.LIST[6]) +
+    geom_hline(aes(linetype="", yintercept = kl_min), linewidth = LINE.SIZE, colour = COLOURS.LIST[6]) +
     scale_colour_manual(ifelse(use_tikz, "\\# Qubits", "# Qubits"), values = COLOURS.LIST) +
     scale_fill_manual(ifelse(use_tikz, "\\# Qubits", "# Qubits"), values = COLOURS.LIST) +
     facet_nested(ansatz ~ noise_category + noise_type,
@@ -106,6 +114,7 @@ g <- ggplot(
         breaks = c(1e-2, 1e0, 1e2),
         labels = trans_format("log10", math_format(10^.x)),
     ) +
+    scale_linetype_manual("Min/Max", values=c("11", "11")) +
     theme(
         legend.margin = margin(b = -4),
     )

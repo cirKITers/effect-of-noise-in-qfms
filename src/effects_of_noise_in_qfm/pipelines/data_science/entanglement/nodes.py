@@ -3,6 +3,7 @@ from qml_essentials.entanglement import Entanglement
 from rich.progress import Progress
 import pandas as pd
 from typing import Dict
+import jax
 import mlflow
 import logging
 
@@ -27,16 +28,17 @@ def calculate_entanglement(
         kwargs["n_sigmas"] = sigmas
     elif measure == "EF":
         ent_measure = Entanglement.entanglement_of_formation
-        kwargs["always_decompose"] = True
     elif measure == "MW":
         ent_measure = Entanglement.meyer_wallach
+    elif measure == "MN":
+        ent_measure = Entanglement.mean_negativity
     else:
         exit(f"Unknown Entanglement Measure: {measure}")
 
     entangling_capability = ent_measure(
         model=model,
         n_samples=samples,
-        seed=seed,
+        random_key=jax.random.key(seed),
         scale=scale,
         inputs=None,
         noise_params=noise_params,

@@ -124,10 +124,7 @@ d_coeffs$noise_type <- factor(d_coeffs$noise_type,
     ),
 )
 
-d_coeffs$ansatz <- factor(d_coeffs$ansatz,
-    levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_15", "Circuit_19"),
-    labels = c("SEA", "HEA", "C15", "C19")
-)
+d_coeffs$ansatz <- ansatz_to_factor(d_coeffs$ansatz)
 
 d_coeffs_selection <- d_coeffs %>%
     filter(noise_type %in% c("DP", "ME", "AD", "CGE"))
