@@ -46,6 +46,8 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
     d <- d %>%
         distinct(noise_type, noise_value, ansatz, qubits, frequencies, step, problem_seed, seed, .keep_all = TRUE) %>%
         mutate(
+            coeff_diff = sqrt((coeffs_real - target_coefficients_real)^2 + (coeffs_imag - target_coefficients_imag)^2),
+            coeff_diff_squared = coeff_diff^2,
             coeff_abs = sqrt(coeffs_real^2 + coeffs_imag^2),
             abs_target = sqrt(target_coefficients_real^2 + target_coefficients_imag^2),
             coeff_abs_dist = abs(coeff_abs - abs_target),
@@ -92,6 +94,11 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
         summarise(
             mean_abs_dist = mean(coeff_abs_dist),
             sd_abs_dist = sd(coeff_abs_dist),
+            mean_diff = mean(coeff_diff),
+            sd_diff = sd(coeff_diff),
+            mean_squared_diff = mean(coeff_diff_squared),
+            sd_squared_diff = sd(coeff_diff_squared),
+            mean_abs_diff = sqrt(coeffs_real + coeffs_imag - target_coefficients_real - target_coefficients_imag)^2,
         ) %>%
         mutate(
             dist_lower_bound = mean_abs_dist - sd_abs_dist,
@@ -139,6 +146,10 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
             sd_coeff_abs = sd(coeff_abs),
             mean_abs_dist = mean(coeff_abs_dist),
             sd_abs_dist = sd(coeff_abs_dist),
+            mean_diff = mean(coeff_diff),
+            sd_diff = sd(coeff_diff),
+            mean_squared_diff = mean(coeff_diff_squared),
+            sd_squared_diff = sd(coeff_diff_squared),
         ) %>%
         mutate(
             coeff_lower_bound = mean_coeff_abs - sd_coeff_abs,
@@ -271,7 +282,7 @@ g_final_mse <- ggplot(
     scale_fill_category +
     facet_nested(ansatz ~ .) +
     scale_x_discrete(NULL, labels=blank_noiseless) +
-    scale_y_continuous("MSE") +
+    scale_y_continuous("MSE", breaks=seq(0,1,0.01)) +
     theme_paper() +
     theme(
         axis.text.x = element_text(, angle = 90, hjust = 1, vjust = 0.5),
