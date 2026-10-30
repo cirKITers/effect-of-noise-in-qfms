@@ -98,11 +98,11 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
             sd_diff = sd(coeff_diff),
             mean_squared_diff = mean(coeff_diff_squared),
             sd_squared_diff = sd(coeff_diff_squared),
-            mean_abs_diff = sqrt(coeffs_real + coeffs_imag - target_coefficients_real - target_coefficients_imag)^2,
         ) %>%
         mutate(
-            dist_lower_bound = mean_abs_dist - sd_abs_dist,
-            dist_upper_bound = mean_abs_dist + sd_abs_dist,
+            # squared complex error, including phase differences
+            dist_lower_bound = mean_squared_diff - sd_squared_diff,
+            dist_upper_bound = mean_squared_diff + sd_squared_diff,
         )
 
 
@@ -154,6 +154,8 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
         mutate(
             coeff_lower_bound = mean_coeff_abs - sd_coeff_abs,
             coeff_upper_bound = mean_coeff_abs + sd_coeff_abs,
+            dist_lower_bound = mean_squared_diff - sd_squared_diff,
+            dist_upper_bound = mean_squared_diff + sd_squared_diff,
         )
     print(colnames(d))
 
@@ -225,7 +227,7 @@ diff_label <- ifelse(use_tikz, "$\\Delta c_{\\boldsymbol{\\omega}}$", "Diff")
 
 g <- ggplot(
     d_summarised_freq,
-    aes(x = step, y = mean_abs_dist, colour = as.factor(frequencies))
+    aes(x = step, y = mean_squared_diff, colour = as.factor(frequencies))
 ) +
     geom_line(linewidth = LINE.SIZE) +
     geom_ribbon(aes(ymin = dist_lower_bound, ymax = dist_upper_bound, fill = as.factor(frequencies)), alpha = 0.2, colour = NA) +
@@ -294,7 +296,7 @@ g_final_mse <- ggplot(
 
 g_final_diff <- ggplot(
     d_final_diff,
-    aes(x = frequencies, y = mean_abs_dist, fill = noise_category)
+    aes(x = frequencies, y = mean_squared_diff, fill = noise_category)
 ) +
     geom_col(width = 0.8) +
     geom_errorbar(aes(ymin = dist_lower_bound, ymax = dist_upper_bound), width = 0.5, linewidth = 0.3) +
@@ -391,7 +393,7 @@ for (filtered_seed in 1000:1009) {
 
     # Joined plot of the noiseless training for this problem seed:
     # top row MSE (mean +- sd over the initialisation seeds), bottom row
-    # the noiseless coefficient curves of the plot above, one column per ansatz.
+    # the noiseless squared coefficient errors, one column per ansatz.
     d_mse_noiseless <- d_summarised_seed %>%
         filter(problem_seed == filtered_seed & noise_type == "Noiseless")
     d_coeffs_noiseless <- d %>%
@@ -420,16 +422,15 @@ for (filtered_seed in 1000:1009) {
 
     g_coeffs <- ggplot(
         d_coeffs_noiseless,
-        aes(x = step, y = mean_coeff_abs, colour = as.factor(frequencies))
+        aes(x = step, y = mean_squared_diff, colour = as.factor(frequencies))
     ) +
         geom_line(linewidth = LINE.SIZE) +
-        geom_line(aes(y = abs_target), linewidth = LINE.SIZE, linetype = "dashed") +
-        geom_ribbon(aes(ymin = coeff_lower_bound, ymax = coeff_upper_bound, fill = as.factor(frequencies)), alpha = 0.2, colour = NA) +
+        geom_ribbon(aes(ymin = dist_lower_bound, ymax = dist_upper_bound, fill = as.factor(frequencies)), alpha = 0.2, colour = NA) +
         scale_colour_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), values = COLOURS.LIST) +
         scale_fill_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), values = COLOURS.LIST) +
         facet_nested(. ~ ansatz) +
         scale_x_continuous("Step", breaks = seq(0, 1000, 400)) +
-        scale_y_continuous(ifelse(use_tikz, "$\\lvert c_{\\boldsymbol{\\omega}} \\rvert$", "c"), limits = c(-0.005, 0.07)) +
+        scale_y_continuous(diff_label) +
         theme_paper() +
         theme(
             # the ansatz strips are already shown in the MSE row
