@@ -60,16 +60,18 @@ save_name <- str_c("coeff_real_imag_encoding")
 create_plot(g, save_name, 0.6 * TEXTWIDTH, 0.3 * HEIGHT)
 
 d_coeffs <- d_coeffs %>%
+    distinct(ansatz, qubits, freq1, encoding, seed, .keep_all = TRUE) %>%
+    mutate(coeffs_abs_mean = ifelse(coeffs_abs_mean < 1e-14, NA, coeffs_abs_mean)) %>%
     group_by(ansatz, qubits, freq1, encoding) %>%
     summarise(
-        mean_coeff = mean(coeffs_abs),
-        sd_coeff = sd(coeffs_abs)
+        mean_coeff = mean(coeffs_abs_mean),
+        sd_coeff = mean(sqrt(coeffs_abs_var)),
+        relative_sd = mean(sqrt(coeffs_abs_var) / coeffs_abs_mean)
     ) %>%
-    filter(mean_coeff > 1e-14) %>%
+    filter(!is.na(mean_coeff)) %>%
     mutate(
         upper_bound = mean_coeff + sd_coeff,
         lower_bound = mean_coeff - sd_coeff,
-        relative_sd = mean_coeff * sd_coeff,
     )
 
 d_coeffs$qubits <- factor(d_coeffs$qubits, levels = c(6, 5, 4, 3))
@@ -96,7 +98,7 @@ g <- ggplot(d_coeffs, aes(x = freq1, y = mean_coeff, colour = qubits)) +
 save_name <- str_c("coeff_mean_encoding")
 create_plot(g, save_name, 0.48 * COLWIDTH, 0.25 * HEIGHT)
 
-g <- ggplot(d_coeffs, aes(x = freq1, y = sd_coeff, colour = qubits)) +
+g <- ggplot(d_coeffs, aes(x = freq1, y = relative_sd, colour = qubits)) +
     geom_point(size = POINT.SIZE) +
     geom_line(linewidth = LINE.SIZE) +
     facet_nested(encoding ~ ansatz,
@@ -106,7 +108,7 @@ g <- ggplot(d_coeffs, aes(x = freq1, y = sd_coeff, colour = qubits)) +
         ),
     ) +
     scale_x_continuous(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "Frequency")) +
-    scale_y_log10(ifelse(use_tikz, "$\\sigma_({\\boldsymbol{\\omega}})$ [log]", "|c| Standard Deviation [log]"),
+    scale_y_log10(ifelse(use_tikz, "$\\sigma_c({\\boldsymbol{\\omega}})$ [log]", "|c| Relative Standard Deviation [log]"),
         breaks = scales::trans_breaks("log10", function(x) 10^x),
         labels = trans_format("log10", math_format(10^.x))
     ) +

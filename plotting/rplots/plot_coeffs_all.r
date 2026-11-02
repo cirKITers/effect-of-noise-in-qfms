@@ -40,6 +40,7 @@ d_coeffs_1D <- d_coeffs_1D %>%
         sd_mean_abs = sd(coeffs_abs_mean),
         rel_sd_mean_abs = sd(coeffs_abs_mean) / mean(coeffs_abs_mean),
         sd_abs = mean(sqrt(coeffs_abs_var)),
+        rel_sd = mean(sqrt(coeffs_abs_var) / coeffs_abs_mean),
         coeffs_var_real = mean(coeffs_real_var),
         coeffs_var_imag = mean(coeffs_imag_var),
         coeffs_covar_ri = mean(coeffs_co_var_real_imag)
@@ -47,12 +48,11 @@ d_coeffs_1D <- d_coeffs_1D %>%
     mutate(
         upper_bound = mean_abs + sd_abs,
         lower_bound = mean_abs - sd_abs,
-        rel_sd = sd_abs / mean_abs,
         freq2 = 0
     )
 
 d_coeffs_2D <- d_coeffs_2D %>%
-    mutate(coeffs_abs_mean = ifelse(coeffs_abs_mean < 1e-14 & ansatz != "Strongly_Entangling", NA, coeffs_abs_mean)) %>%
+    mutate(coeffs_abs_mean = ifelse(coeffs_abs_mean < 1e-14, NA, coeffs_abs_mean)) %>%
     group_by(
         BitFlip, PhaseFlip, Depolarizing,
         AmplitudeDamping, PhaseDamping,
@@ -66,6 +66,7 @@ d_coeffs_2D <- d_coeffs_2D %>%
         sd_mean_abs = sd(coeffs_abs_mean),
         rel_sd_mean_abs = sd(coeffs_abs_mean) / mean(coeffs_abs_mean),
         sd_abs = mean(sqrt(coeffs_abs_var)),
+        rel_sd = mean(sqrt(coeffs_abs_var) / coeffs_abs_mean),
         coeffs_var_real = mean(coeffs_real_var),
         coeffs_var_imag = mean(coeffs_imag_var),
         coeffs_covar_ri = mean(coeffs_co_var_real_imag)
@@ -73,7 +74,6 @@ d_coeffs_2D <- d_coeffs_2D %>%
     mutate(
         upper_bound = mean_abs + sd_abs,
         lower_bound = mean_abs - sd_abs,
-        rel_sd = sd_abs / mean_abs,
     )
 
 d_coeffs <- rbind(d_coeffs_1D, d_coeffs_2D)
