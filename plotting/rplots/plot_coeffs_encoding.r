@@ -108,9 +108,11 @@ g <- ggplot(d_coeffs, aes(x = freq1, y = relative_sd, colour = qubits)) +
         ),
     ) +
     scale_x_continuous(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "Frequency")) +
+    # the relative SD spans less than one decade, so power-of-ten breaks
+    # would fall on fractional exponents and overlap; use plain numbers
     scale_y_log10(ifelse(use_tikz, "$\\sigma_c({\\boldsymbol{\\omega}})$ [log]", "|c| Relative Standard Deviation [log]"),
-        breaks = scales::trans_breaks("log10", function(x) 10^x),
-        labels = trans_format("log10", math_format(10^.x))
+        breaks = c(0.5, 1, 2, 4),
+        labels = c("0.5", "1", "2", "4")
     ) +
     scale_colour_manual(ifelse(use_tikz, "\\# Qubits", "# Qubits"), values = rev(head(COLOURS.LIST, 4))) +
     theme_paper() +
