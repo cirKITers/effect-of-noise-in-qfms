@@ -45,6 +45,13 @@ d_ent <- d_ent %>%
         lower_bound = min_ent
     )
 
+print(
+  str_c(
+    "Mean relative standard deviation: ",
+    mean(d_ent$sd_ent / d_ent$mean_ent)
+  )
+)
+
 d_ent <- d_ent %>%
     filter(!is.na(noise_value) & (noise_value == 0 | noise_value > 0.0045)) %>%
     mutate(
@@ -79,20 +86,17 @@ d_ent$noise_type <- factor(d_ent$noise_type,
     ),
 )
 
-d_ent <- d_ent %>% filter(measure == "EF" | noise_value == 0)
-d_ent$measure <- factor(d_ent$measure, levels = c("MW", "EF"), labels = c("MW", "EF"))
+ent_label <- ifelse(use_tikz, "$\\overline{\\mathcal{N}}$", "Entanglement")
 
 g <- ggplot(
     d_ent,
-    aes(x = noise_value, colour = as.factor(qubits), shape = measure)
+    aes(x = noise_value, colour = as.factor(qubits))
 ) +
     geom_point(aes(y = mean_ent), size = POINT.SIZE) +
-    geom_ribbon(aes(ymin = lower_bound, ymax = upper_bound, fill = as.factor(qubits)), alpha = 0.5, colour = NA) +
     geom_line(aes(y = mean_ent), linewidth = LINE.SIZE) +
     scale_colour_manual(ifelse(use_tikz, "\\# Qubits", "# Qubits"), values = COLOURS.LIST) +
     scale_fill_manual(ifelse(use_tikz, "\\# Qubits", "# Qubits"), values = COLOURS.LIST) +
-    scale_shape_manual("Measure", values = c(4, 19)) +
-    facet_nested(ansatz ~ noise_category + noise_type + measure,
+    facet_nested(ansatz ~ noise_category + noise_type,
         labeller = labeller(
             frequency = frequencies_labeller,
             qubits = qubit_labeller,
@@ -100,7 +104,7 @@ g <- ggplot(
         scale = "free_x",
     ) +
     scale_x_continuous("Noise Level", labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.02)) +
-    scale_y_log10("Entangling Capability [log]") +
+    scale_y_log10(str_c(ent_label, " [log]")) +
     theme_paper() +
     guides(
         colour = guide_legend(nrow = 1),
@@ -108,24 +112,16 @@ g <- ggplot(
     ) +
     theme(
         legend.margin = margin(b = -4),
-    ) +
-    force_panelsizes(cols = c(5, 7)) +
-    facetted_pos_scales(
-        x = list(
-            measure == "MW" ~ scale_x_continuous("Noise Level", limits = c(-0.001, 0.001), breaks = seq(-1, 1, 1), labels = ifelse(use_tikz, latex_percent, scales::percent))
-        )
+        plot.margin = margin(l=2)
     )
 
 
 save_name <- str_c("ent")
 create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)
 
-
-d_meyer_wallach <- d_ent %>%
-    filter(measure == "MW" & noise_value == 0)
-
 g <- ggplot(
-    d_meyer_wallach,
+  d_ent %>%
+    filter(noise_value == 0),
     aes(x = ansatz, y = mean_ent, fill = as.factor(qubits))
 ) +
     geom_bar(stat = "identity", position = position_dodge(), width = 0.7) +
@@ -136,12 +132,13 @@ g <- ggplot(
     ) +
     scale_fill_manual(ifelse(use_tikz, "\\# Qubits", "# Qubits"), values = COLOURS.LIST) +
     scale_x_discrete("") +
-    scale_y_continuous("MW Entanglement") +
+    scale_y_continuous(ent_label) +
     theme_paper() +
     guides(colour = guide_legend(nrow = 1)) +
     theme(
         legend.margin = margin(b = -4),
+        plot.margin = margin(l=2)
     )
 
-save_name <- str_c("ent_mw")
+save_name <- str_c("ent_noiseless")
 create_plot(g, save_name, 0.5 * TEXTWIDTH, 0.15 * HEIGHT)
