@@ -87,18 +87,16 @@ d_expr$noise_type <- factor(d_expr$noise_type,
     ),
 )
 
-kl_max = max(d_expr$upper_bound)
-kl_min = min(d_expr$lower_bound)
+d_expr <- d_expr %>% mutate(kl_max = (2^qubits-1)*log(75))
 
 g <- ggplot(
     d_expr,
     aes(x = noise_value, y = mean_expr, colour = as.factor(qubits))
 ) +
     geom_point(size = POINT.SIZE) +
-    geom_line(linewidth = LINE.SIZE) +
+    geom_hline(aes(linetype="", yintercept = kl_max, colour = as.factor(qubits)), linewidth = LINE.SIZE) +
     geom_ribbon(aes(ymin=lower_bound, ymax=upper_bound, fill=as.factor(qubits)), alpha = 0.2, colour = NA) +
-    geom_hline(aes(linetype="", yintercept = kl_max), linewidth = LINE.SIZE, colour = COLOURS.LIST[6]) +
-    geom_hline(aes(linetype="", yintercept = kl_min), linewidth = LINE.SIZE, colour = COLOURS.LIST[6]) +
+    geom_line(linewidth = LINE.SIZE) +
     scale_colour_manual(ifelse(use_tikz, "\\# Qubits", "# Qubits"), values = COLOURS.LIST) +
     scale_fill_manual(ifelse(use_tikz, "\\# Qubits", "# Qubits"), values = COLOURS.LIST) +
     facet_nested(ansatz ~ noise_category + noise_type,
@@ -115,7 +113,7 @@ g <- ggplot(
         breaks = c(1e-2, 1e0, 1e2),
         labels = trans_format("log10", math_format(10^.x)),
     ) +
-    scale_linetype_manual("Min/Max", values=c("11", "11")) +
+    scale_linetype_manual("Upper Bound", values=c("11")) +
     theme(
         legend.margin = margin(b = -4),
     )
