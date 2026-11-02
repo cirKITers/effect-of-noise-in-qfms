@@ -47,8 +47,8 @@ d_ent <- d_ent %>%
 
 print(
   str_c(
-    "Mean relative standard deviation: ",
-    mean(d_ent$sd_ent / d_ent$mean_ent)
+    "Max relative standard deviation: ",
+    max(d_ent$sd_ent / d_ent$mean_ent)
   )
 )
 

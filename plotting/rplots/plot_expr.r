@@ -47,8 +47,8 @@ d_expr <- d_expr %>%
 
 print(
   str_c(
-    "Mean relative standard deviation: ",
-    mean(d_expr$sd_expr / d_expr$mean_expr)
+    "Max relative standard deviation: ",
+    max(d_expr$sd_expr / d_expr$mean_expr)
   )
 )
 
@@ -96,6 +96,7 @@ g <- ggplot(
 ) +
     geom_point(size = POINT.SIZE) +
     geom_line(linewidth = LINE.SIZE) +
+    geom_ribbon(aes(ymin=lower_bound, ymax=upper_bound, fill=as.factor(qubits)), alpha = 0.2, colour = NA) +
     geom_hline(aes(linetype="", yintercept = kl_max), linewidth = LINE.SIZE, colour = COLOURS.LIST[6]) +
     geom_hline(aes(linetype="", yintercept = kl_min), linewidth = LINE.SIZE, colour = COLOURS.LIST[6]) +
     scale_colour_manual(ifelse(use_tikz, "\\# Qubits", "# Qubits"), values = COLOURS.LIST) +
