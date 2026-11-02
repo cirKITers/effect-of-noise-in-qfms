@@ -26,6 +26,7 @@ d_coeffs_1D <- read_csv(coeffs_path_1D)
 d_coeffs_2D <- read_csv(coeffs_path_2D)
 
 d_coeffs_1D <- d_coeffs_1D %>%
+    filter(encoding %in% c("RX", "RY", "RXRY")) %>%
     mutate(coeffs_abs_mean = ifelse(coeffs_abs_mean < 1e-14, NA, coeffs_abs_mean)) %>%
     group_by(
         BitFlip, PhaseFlip, Depolarizing,
