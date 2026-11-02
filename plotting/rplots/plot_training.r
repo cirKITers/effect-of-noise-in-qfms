@@ -239,7 +239,8 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
 diff_label <- ifelse(use_tikz, "$\\Delta c_{\\boldsymbol{\\omega}}$", "Diff")
 
 g <- ggplot(
-    d_summarised_freq,
+    d_summarised_freq %>%
+      mutate(dist_lower_bound = ifelse(dist_lower_bound < 0, 0, dist_lower_bound)),
     aes(x = step, y = mean_squared_diff, colour = as.factor(frequencies))
 ) +
     geom_line(linewidth = LINE.SIZE) +
@@ -248,7 +249,7 @@ g <- ggplot(
     scale_fill_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), values = COLOURS.LIST) +
     facet_nested(ansatz ~ noise_category + noise_type) +
     scale_x_continuous("Step", breaks = seq(0, 1000, 400)) +
-    scale_y_continuous(diff_label) +
+    scale_y_continuous(diff_label, limits=c(0, 0.007)) +
     theme_paper() +
     guides(colour = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE)))
 save_name <- str_c("training_coeff_dist")
@@ -316,7 +317,7 @@ g_final_diff <- ggplot(
     scale_fill_category +
     facet_nested(ansatz ~ noise_type, labeller = labeller(noise_type = blank_noiseless)) +
     scale_x_continuous(freq_label) +
-    scale_y_continuous(diff_label) +
+    scale_y_continuous(diff_label, breaks=seq(0,1,0.002)) +
     theme_paper() +
     theme(
         panel.spacing.x = unit(1.5, "pt"),
@@ -364,7 +365,7 @@ save_name <- str_c("training_mse")
 create_plot(g, save_name, 0.6 * TEXTWIDTH, 0.25 * HEIGHT)
 
 g <- ggplot(
-    d_summarised,
+    d_summarised %>% filter(!is.na(mean_ent)),
     aes(x = step, y = mean_ent), colour = "black"
 ) +
     geom_line(linewidth = LINE.SIZE) +
@@ -388,12 +389,12 @@ for (filtered_seed in 1000:1009) {
         geom_ribbon(aes(ymin = coeff_lower_bound, ymax = coeff_upper_bound, fill = as.factor(frequencies)), alpha = 0.2, colour = NA) +
         scale_colour_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), values = COLOURS.LIST) +
         scale_fill_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), values = COLOURS.LIST) +
-        facet_nested(problem_seed + ansatz ~ noise_category + noise_type,
+        facet_nested(ansatz ~ noise_category + noise_type,
             labeller = labeller(problem_seed = problem_labeller),
             scale = "free_y",
         ) +
         scale_x_continuous("Step", breaks = seq(0, 1000, 400)) +
-        scale_y_continuous(ifelse(use_tikz, "$\\lvert c_{\\boldsymbol{\\omega}} \\rvert$", "c")) +
+        scale_y_continuous(ifelse(use_tikz, "$\\lvert c_{\\boldsymbol{\\omega}} \\rvert$", "c"), limits = c(-0.005, 0.07), breaks=seq(0,1,0.02)) +
         theme_paper() +
         theme(
             legend.margin = margin(b = -4),
@@ -404,9 +405,6 @@ for (filtered_seed in 1000:1009) {
     save_name <- str_c("training_coeffs_seed", filtered_seed)
     create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)
 
-    # Joined plot of the noiseless training for this problem seed:
-    # top row MSE (mean +- sd over the initialisation seeds), bottom row
-    # the noiseless squared coefficient errors, one column per ansatz.
     d_mse_noiseless <- d_summarised_seed %>%
         filter(problem_seed == filtered_seed & noise_type == "Noiseless")
     d_coeffs_noiseless <- d %>%
@@ -435,15 +433,16 @@ for (filtered_seed in 1000:1009) {
 
     g_coeffs <- ggplot(
         d_coeffs_noiseless,
-        aes(x = step, y = mean_squared_diff, colour = as.factor(frequencies))
+        aes(x = step, y = mean_coeff_abs, colour = as.factor(frequencies))
     ) +
         geom_line(linewidth = LINE.SIZE) +
-        geom_ribbon(aes(ymin = dist_lower_bound, ymax = dist_upper_bound, fill = as.factor(frequencies)), alpha = 0.2, colour = NA) +
+        geom_line(aes(y = abs_target), linewidth = LINE.SIZE, linetype = "dashed") +
+        geom_ribbon(aes(ymin = coeff_lower_bound, ymax = coeff_upper_bound, fill = as.factor(frequencies)), alpha = 0.2, colour = NA) +
         scale_colour_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), values = COLOURS.LIST) +
         scale_fill_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), values = COLOURS.LIST) +
         facet_nested(. ~ ansatz) +
         scale_x_continuous("Step", breaks = seq(0, 1000, 400)) +
-        scale_y_continuous(diff_label) +
+        scale_y_continuous(ifelse(use_tikz, "$\\lvert c_{\\boldsymbol{\\omega}} \\rvert$", "c"), limits = c(-0.005, 0.07)) +
         theme_paper() +
         theme(
             # the ansatz strips are already shown in the MSE row
