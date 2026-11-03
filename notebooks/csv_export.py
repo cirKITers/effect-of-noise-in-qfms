@@ -22,7 +22,7 @@ id_ent_file = f"{CSV_DESTINATION}/ent_ids.csv"
 id_expr_file = f"{CSV_DESTINATION}/expr_ids.csv"
 id_training_file = f"{CSV_DESTINATION}/training_ids.csv"
 
-DEFAULT_MAX_SAMPLES = 1000
+DEFAULT_MAX_SAMPLES = None
 
 
 def limit_samples_per_config(
