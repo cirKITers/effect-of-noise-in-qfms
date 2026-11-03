@@ -9,14 +9,11 @@ if [ ! "$1" = "only_plot" ]; then
 	#            reference is noise level 0 of these runs), so that the noiseless
 	#            runs of the encoding study below are not mixed in
 	$GIT_BASE_DIR/.venv/bin/python notebooks/csv_export.py $experiment_id_flag -coeff -nt BitFlip,PhaseFlip,Depolarizing,AmplitudeDamping,PhaseDamping,StatePreparation,Measurement,GateError
-	# -fullcoeff:    1D/2D full coefficient, capped to 2000 coefficient samples per configuration, only for AD, as this is needed for plotting.
-	$GIT_BASE_DIR/.venv/bin/python notebooks/csv_export.py $experiment_id_flag -fullcoeff -nt AmplitudeDamping
+	# -fullcoeff:    1D/2D full coefficient, only for 6 qubit AD, as this is needed for plotting.
+	$GIT_BASE_DIR/.venv/bin/python notebooks/csv_export.py $experiment_id_flag -fullcoeff -nt AmplitudeDamping -n 6
 	# -enccoeff: full coefficients for the (noiseless) encoding study (coeff_*_encoding)
 	# -ent/-expr/-train: entanglement, expressibility and training data
 	$GIT_BASE_DIR/.venv/bin/python notebooks/csv_export.py $experiment_id_flag -enccoeff -ent -expr -train
-	# -coeffsub: coefficients with selective coherent noise (coeff_mean_subsampling);
-	#            only the coherent gate error runs are relevant for this plot
-	$GIT_BASE_DIR/.venv/bin/python notebooks/csv_export.py $experiment_id_flag -coeffsub -nt GateError
 	cd -
 fi
 

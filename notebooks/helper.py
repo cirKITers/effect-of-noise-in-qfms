@@ -696,7 +696,7 @@ def assign_ansatz_id(df):
 
 
 def run_ids_from_experiment_id(
-    experiment_ids: Union[List[str], str],
+    experiment_id: Optional[str],
     existing_run_ids: Optional[List[str]],
     experiment_type: Optional[str] = None,
     n: Optional[int] = None,
@@ -706,7 +706,11 @@ def run_ids_from_experiment_id(
         if experiment_type is not None
         else None
     )
-    runs = mlflow.search_runs(experiment_ids, filter_string=filter_string)
+    runs = mlflow.search_runs(
+        [experiment_id] if experiment_id is not None else None,
+        search_all_experiments=experiment_id is None,
+        filter_string=filter_string,
+    )
 
     run_ids = runs["run_id"].to_list()
     if n is not None:

@@ -242,7 +242,7 @@ g <- ggplot(
     scale_linetype_manual("", values = c("solid", "11")) +
     scale_shape_manual("", values = c(4, 17)) +
     scale_x_continuous("Noise Level", labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.02)) +
-    scale_y_log10(ifelse(use_tikz, "$\\sigma_c({\\boldsymbol{\\omega}})$ [log]", "|c| Relative Standard Deviation"), ) +
+    scale_y_log10(ifelse(use_tikz, "$\\sigma_c({\\boldsymbol{\\omega}})$ [log]", "|c| Relative Standard Deviation"), breaks=c(0.5, 1, 2)) +
     theme_paper() +
     guides(colour = guide_legend(nrow = 1), shape = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE), override.aes = list(alpha = 1, size = 3 * POINT.SIZE)))
 save_name <- str_c("coeff_abs_sd")
@@ -285,7 +285,7 @@ for (enc in c("RX", "RY")) {
         scale_x_continuous("Noise Level", labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.02)) +
         theme_paper() +
         guides(colour = guide_legend(nrow = 2, theme = theme(legend.byrow = TRUE))) +
-        scale_y_log10(ifelse(use_tikz, "$\\sigma_c({\\boldsymbol{\\omega}})$ [log]", "|c| Relative Standard Deviation"), ) +
+        scale_y_log10(ifelse(use_tikz, "$\\sigma_c({\\boldsymbol{\\omega}})$ [log]", "|c| Relative Standard Deviation"), breaks=c(0.5, 1, 2)) +
         facet_nested(noise_category + noise_type ~ ansatz,
             labeller = labeller(
                 freq1 = frequencies_labeller,
@@ -295,7 +295,7 @@ for (enc in c("RX", "RY")) {
         theme(
             legend.key.height = unit(0.2, "cm")
         )
-    
+
     save_name <- str_c("coeff_sd_qubits6_", enc)
     create_plot(g, save_name, 0.48* TEXTWIDTH, 0.45 * HEIGHT)
 

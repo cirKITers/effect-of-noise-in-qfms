@@ -9,12 +9,6 @@ from helper import (
     get_training_df,
 )
 from typing import Optional
-from runs.coefficient_runs import experiment_ids as coeff_eids
-from runs.coefficient_runs import experiment_ids_encoding as coeff_enc_eids
-from runs.coefficient_runs import experiment_ids_subsampling as coeff_sub
-from runs.expressibility_runs import experiment_ids as expr_eids
-from runs.entanglement_runs import experiment_ids as ent_eids
-from runs.training_runs import experiment_ids as training_eids
 
 CSV_DESTINATION = "plotting/rplots/csv_data"
 
@@ -103,9 +97,8 @@ def export_encoding_coeff_data(
     else:
         id_coeffs = pd.DataFrame(columns=["run_id"])
 
-    eids = coeff_enc_eids if experiment_id is None else [experiment_id]
     coeff_run_ids = run_ids_from_experiment_id(
-        eids,
+        experiment_id,
         existing_run_ids=id_coeffs["run_id"].to_list(),
         experiment_type="coefficients",
     )
@@ -228,12 +221,8 @@ def export_coeff_data(
     else:
         id_coeffs = pd.DataFrame(columns=["run_id"])
 
-    if subsampling:
-        eids = coeff_sub if experiment_id is None else [experiment_id]
-    else:
-        eids = coeff_eids if experiment_id is None else [experiment_id]
     coeff_run_ids = run_ids_from_experiment_id(
-        eids,
+        experiment_id,
         existing_run_ids=id_coeffs["run_id"].to_list(),
         experiment_type="coefficients",
     )
@@ -366,9 +355,8 @@ def export_expr_data(
         id_expr = pd.read_csv(id_expr_file)
     else:
         id_expr = pd.DataFrame(columns=["run_id"])
-    eids = expr_eids if experiment_id is None else [experiment_id]
     expr_run_ids = run_ids_from_experiment_id(
-        eids,
+        experiment_id,
         existing_run_ids=id_expr["run_id"].to_list(),
         experiment_type="expressibility",
     )
@@ -402,9 +390,10 @@ def export_ent_data(
         id_ent = pd.read_csv(id_ent_file)
     else:
         id_ent = pd.DataFrame(columns=["run_id"])
-    eid = ent_eids if experiment_id is None else [experiment_id]
     ent_run_ids = run_ids_from_experiment_id(
-        eid, existing_run_ids=id_ent["run_id"].to_list(), experiment_type="entanglement"
+        experiment_id,
+        existing_run_ids=id_ent["run_id"].to_list(),
+        experiment_type="entanglement",
     )
     if len(ent_run_ids) == 0:
         return
@@ -436,9 +425,8 @@ def export_training_data(
         id_training = pd.read_csv(id_training_file)
     else:
         id_training = pd.DataFrame(columns=["run_id"])
-    eids = training_eids if experiment_id is None else [experiment_id]
     training_run_ids = run_ids_from_experiment_id(
-        eids,
+        experiment_id,
         existing_run_ids=id_training["run_id"].to_list(),
         experiment_type="training",
     )
