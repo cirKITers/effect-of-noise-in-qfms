@@ -201,6 +201,7 @@ def get_expressibility_df(
             "run_id",
             "ansatz",
             "qubits",
+            "layers",
             "seed",
             "BitFlip",
             "PhaseFlip",
@@ -231,6 +232,7 @@ def get_expressibility_df(
                 "run_id",
                 "ansatz",
                 "qubits",
+                "layers",
                 "seed",
             ]
         )
@@ -242,6 +244,9 @@ def get_expressibility_df(
 
         qubits = int(client.get_run(run_id).data.params["model.n_qubits"])
         sub_df_a.loc[it, "qubits"] = qubits
+
+        layers = int(client.get_run(run_id).data.params["model.n_layers"])
+        sub_df_a.loc[it, "layers"] = layers
 
         noise_params = client.get_run(run_id).data.params["model.noise_params"]
         noise = [k for k, v in ast.literal_eval(noise_params).items() if float(v) > 0.0]
