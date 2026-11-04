@@ -422,7 +422,7 @@ for (filtered_seed in 1000:1009) {
             labeller = labeller(problem_seed = problem_labeller),
         ) +
         scale_x_continuous("Step", breaks = seq(0, 1000, 400)) +
-        scale_y_continuous("MSE", limits = c(-0.005, 0.06)) +
+        scale_y_continuous("MSE") +
         theme_paper()
 
     g_coeffs <- ggplot(
@@ -436,7 +436,7 @@ for (filtered_seed in 1000:1009) {
         scale_fill_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "w"), values = COLOURS.LIST) +
         facet_nested(. ~ ansatz) +
         scale_x_continuous("Step", breaks = seq(0, 1000, 400)) +
-        scale_y_continuous(ifelse(use_tikz, "$\\lvert c_{\\boldsymbol{\\omega}} \\rvert$", "c"), limits = c(-0.005, 0.07)) +
+        scale_y_continuous(ifelse(use_tikz, "$\\lvert c_{\\boldsymbol{\\omega}} \\rvert$", "c")) +
         theme_paper() +
         theme(
             legend.margin = margin(b = -4),
