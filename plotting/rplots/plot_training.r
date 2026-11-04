@@ -280,17 +280,16 @@ d_final_mse <- d_summarised %>%
 mse_max <- max(d_final_mse$mse_upper_bound)
 diff_max <- max(d_final_diff$dist_upper_bound)
 
-# noise category colours as in the training_mse plot
-category_breaks <- c("", "Decoherent", "SPAM", "Damping", "Coherent")
+category_breaks <- c("", "Decoherent", "SPAM", "Damping", "Coh.")
+category_labels <- c("Noiseless", "Decoherent", "SPAM", "Damping", "Coherent")
 scale_fill_category <- scale_fill_manual(
     NULL,
     values = COLOURS.LIST, breaks = category_breaks,
-    # the noiseless case (empty category label) needs no legend entry
-    limits = category_breaks, labels = c("Noiseless", category_breaks[-1])
+    limits = category_breaks, labels = category_labels
 )
 
 g_final_mse <- ggplot(
-    d_final_mse %>% mutate(noise_category == ifelse(noise_category == "Coh.", "Coherent", noise_category)),
+    d_final_mse,
     aes(x = noise_type, y = mean_mse, fill = noise_category)
 ) +
     geom_col(width = 0.8) +
@@ -309,7 +308,7 @@ g_final_mse <- ggplot(
     )
 
 g_final_diff <- ggplot(
-    d_final_diff %>% mutate(noise_category == ifelse(noise_category == "Coh.", "Coherent", noise_category)),
+    d_final_diff,
     aes(x = frequencies, y = mean_squared_diff, fill = noise_category)
 ) +
     geom_col(width = 0.8) +
@@ -452,5 +451,5 @@ for (filtered_seed in 1000:1009) {
         plot_layout(widths = c(30, 1, 30)) &
         theme(plot.margin = margin(0, 0, 0, 0))
     save_name <- str_c("training_noiseless_seed", filtered_seed)
-    create_plot(g, save_name, TEXTWIDTH, 0.25 * HEIGHT)
+    create_plot(g, save_name, TEXTWIDTH, 0.2 * HEIGHT)
 }
