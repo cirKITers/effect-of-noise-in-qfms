@@ -57,7 +57,7 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
             coeff_abs_dist = abs(coeff_abs - abs_target),
             noise_category = ifelse(
                 noise_type %in% c("BitFlip", "PhaseFlip", "Depolarizing"),
-                "Decoherent Gate",
+                "Decoherent",
                 ifelse(
                     noise_type %in% c("StatePreparation", "Measurement"),
                     "SPAM",
@@ -75,7 +75,7 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
             noise_value = round(noise_value, digits = 3),
         )
 
-    d$noise_category <- factor(d$noise_category, levels = c("", "Decoherent Gate", "SPAM", "Damping", "Coh."))
+    d$noise_category <- factor(d$noise_category, levels = c("", "Decoherent", "SPAM", "Damping", "Coh."))
     d$noise_type <- factor(d$noise_type,
         levels = c(
             "Noiseless", "BitFlip", "PhaseFlip", "Depolarizing",
@@ -179,7 +179,7 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
     d_summarised_seed <- read_csv(data_path_summarised_seed)
 
     d$noise_category[is.na(d$noise_category)] <- ""
-    d$noise_category <- factor(d$noise_category, levels = c("", "Decoherent Gate", "SPAM", "Damping", "Coh."))
+    d$noise_category <- factor(d$noise_category, levels = c("", "Decoherent", "SPAM", "Damping", "Coh."))
     d$noise_type <- factor(d$noise_type,
         levels = c(
             "Noiseless", "BF", "PF", "DP",
@@ -193,7 +193,7 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
     )
     d$loss <- loss_to_factor(d$loss)
     d_summarised$noise_category[is.na(d_summarised$noise_category)] <- ""
-    d_summarised$noise_category <- factor(d_summarised$noise_category, levels = c("", "Decoherent Gate", "SPAM", "Damping", "Coh."))
+    d_summarised$noise_category <- factor(d_summarised$noise_category, levels = c("", "Decoherent", "SPAM", "Damping", "Coh."))
     d_summarised$noise_type <- factor(d_summarised$noise_type,
         levels = c(
             "Noiseless", "BF", "PF", "DP",
@@ -207,7 +207,7 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
     )
     d_summarised$loss <- loss_to_factor(d_summarised$loss)
     d_summarised_freq$noise_category[is.na(d_summarised_freq$noise_category)] <- ""
-    d_summarised_freq$noise_category <- factor(d_summarised_freq$noise_category, levels = c("", "Decoherent Gate", "SPAM", "Damping", "Coh."))
+    d_summarised_freq$noise_category <- factor(d_summarised_freq$noise_category, levels = c("", "Decoherent", "SPAM", "Damping", "Coh."))
     d_summarised_freq$noise_type <- factor(d_summarised_freq$noise_type,
         levels = c(
             "Noiseless", "BF", "PF", "DP",
@@ -221,7 +221,7 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
     )
     d_summarised_freq$loss <- loss_to_factor(d_summarised_freq$loss)
     d_summarised_seed$noise_category[is.na(d_summarised_seed$noise_category)] <- ""
-    d_summarised_seed$noise_category <- factor(d_summarised_seed$noise_category, levels = c("", "Decoherent Gate", "SPAM", "Damping", "Coh."))
+    d_summarised_seed$noise_category <- factor(d_summarised_seed$noise_category, levels = c("", "Decoherent", "SPAM", "Damping", "Coh."))
     d_summarised_seed$noise_type <- factor(d_summarised_seed$noise_type,
         levels = c(
             "Noiseless", "BF", "PF", "DP",
@@ -281,7 +281,7 @@ mse_max <- max(d_final_mse$mse_upper_bound)
 diff_max <- max(d_final_diff$dist_upper_bound)
 
 # noise category colours as in the training_mse plot
-category_breaks <- c("", "Decoherent Gate", "SPAM", "Damping", "Coh.")
+category_breaks <- c("", "Decoherent", "SPAM", "Damping", "Coherent")
 scale_fill_category <- scale_fill_manual(
     NULL,
     values = COLOURS.LIST, breaks = category_breaks,
@@ -290,7 +290,7 @@ scale_fill_category <- scale_fill_manual(
 )
 
 g_final_mse <- ggplot(
-    d_final_mse,
+    d_final_mse %>% mutate(noise_category == ifelse(noise_category == "Coh.", "Coherent", noise_category)),
     aes(x = noise_type, y = mean_mse, fill = noise_category)
 ) +
     geom_col(width = 0.8) +
@@ -309,7 +309,7 @@ g_final_mse <- ggplot(
     )
 
 g_final_diff <- ggplot(
-    d_final_diff,
+    d_final_diff %>% mutate(noise_category == ifelse(noise_category == "Coh.", "Coherent", noise_category)),
     aes(x = frequencies, y = mean_squared_diff, fill = noise_category)
 ) +
     geom_col(width = 0.8) +
@@ -346,15 +346,15 @@ g <- ggplot(
 ) +
     geom_line(linewidth = LINE.SIZE) +
     geom_ribbon(aes(ymin = mse_lower_bound, ymax = mse_upper_bound, fill = noise_category), alpha = 0.1, colour = NA) +
-    scale_colour_manual("", values = COLOURS.LIST, breaks = c("", "Decoherent Gate", "SPAM", "Damping", "Coh.")) +
-    scale_fill_manual("", values = COLOURS.LIST, breaks = c("", "Decoherent Gate", "SPAM", "Damping", "Coh.")) +
+    scale_colour_manual("", values = COLOURS.LIST, breaks = c("", "Decoherent", "SPAM", "Damping", "Coh.")) +
+    scale_fill_manual("", values = COLOURS.LIST, breaks = c("", "Decoherent", "SPAM", "Damping", "Coh.")) +
     scale_linetype_manual("", values = c(1, 1, 2, 111, 1, 2, 1, 2, 1)) +
     facet_nested(. ~ ansatz) +
     scale_x_continuous("Step", breaks = seq(0, 1000, 400)) +
     scale_y_continuous("MSE") +
     theme_paper() +
     guides(
-        linetype = guide_legend(nrow = 2, theme = theme(legend.byrow = TRUE), override.aes = list(
+        linetype = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE), override.aes = list(
             colour = c(COLOURS.LIST[1], COLOURS.LIST[2], COLOURS.LIST[2], COLOURS.LIST[2], COLOURS.LIST[3], COLOURS.LIST[3], COLOURS.LIST[4], COLOURS.LIST[4], COLOURS.LIST[5]),
             fill = c(COLOURS.LIST[1], COLOURS.LIST[2], COLOURS.LIST[2], COLOURS.LIST[2], COLOURS.LIST[3], COLOURS.LIST[3], COLOURS.LIST[4], COLOURS.LIST[4], COLOURS.LIST[5])
         )),
@@ -362,7 +362,7 @@ g <- ggplot(
         fill = "none",
     )
 save_name <- str_c("training_mse")
-create_plot(g, save_name, 0.6 * TEXTWIDTH, 0.25 * HEIGHT)
+create_plot(g, save_name, TEXTWIDTH, 0.2 * HEIGHT)
 
 g <- ggplot(
     d_summarised %>% filter(!is.na(mean_ent)),
@@ -424,12 +424,7 @@ for (filtered_seed in 1000:1009) {
         ) +
         scale_x_continuous("Step", breaks = seq(0, 1000, 400)) +
         scale_y_continuous("MSE", limits = c(-0.005, 0.06)) +
-        theme_paper() +
-        theme(
-            axis.title.x = element_blank(),
-            axis.text.x = element_blank(),
-            axis.ticks.x = element_blank()
-        )
+        theme_paper()
 
     g_coeffs <- ggplot(
         d_coeffs_noiseless,
@@ -445,21 +440,17 @@ for (filtered_seed in 1000:1009) {
         scale_y_continuous(ifelse(use_tikz, "$\\lvert c_{\\boldsymbol{\\omega}} \\rvert$", "c"), limits = c(-0.005, 0.07)) +
         theme_paper() +
         theme(
-            # the ansatz strips are already shown in the MSE row
-            strip.text.x = element_blank(),
-            strip.background.x = element_blank()
+            legend.margin = margin(b = -4),
+            legend.key.height = unit(0.4, "cm"),
+            legend.key.width = unit(0.4, "cm")
         ) +
         guides(colour = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE)))
 
-    g <- (g_mse / plot_spacer() / g_coeffs) +
-        plot_layout(guides = "collect", heights = c(22,1,29)) &
-        theme(
-            legend.position = "top",
-            legend.margin = margin(b = -4),
-            legend.key.height = unit(0.4, "cm"),
-            legend.key.width = unit(0.4, "cm"),
-            plot.margin = margin(0,0,0,0)
-        )
+    # MSE plot left, coefficient plot right, separated by a small spacer; the
+    # frequency legend is not collected, so it is only shown over the right plot
+    g <- (g_mse | plot_spacer() | g_coeffs) +
+        plot_layout(widths = c(30, 1, 30)) &
+        theme(plot.margin = margin(0, 0, 0, 0))
     save_name <- str_c("training_noiseless_seed", filtered_seed)
-    create_plot(g, save_name, 0.6*TEXTWIDTH, 0.25 * HEIGHT)
+    create_plot(g, save_name, TEXTWIDTH, 0.25 * HEIGHT)
 }

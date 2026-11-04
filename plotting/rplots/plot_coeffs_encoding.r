@@ -57,7 +57,7 @@ g <- ggplot(d_coeffs %>% filter(qubits == 6 & coeffs_abs > 1e-14), aes(x = coeff
     scale_y_continuous("Imaginary Part", limits = c(-0.3, 0.3)) +
     guides(colour = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE), override.aes = list(alpha = 1, size = 3 * POINT.SIZE)))
 save_name <- str_c("coeff_real_imag_encoding")
-create_plot(g, save_name, 0.6 * TEXTWIDTH, 0.3 * HEIGHT)
+create_plot(g, save_name, 0.5 * TEXTWIDTH, 0.25 * HEIGHT)
 
 d_coeffs <- d_coeffs %>%
     distinct(ansatz, qubits, freq1, encoding, seed, .keep_all = TRUE) %>%

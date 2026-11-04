@@ -72,7 +72,7 @@ if(file.exists(coeffs_path)) {
         mutate(
             noise_category = ifelse(
                 noise_type %in% c("BitFlip", "PhaseFlip", "Depolarizing"),
-                "Decoherent Gate",
+                "Decoherent",
                 ifelse(
                     noise_type %in% c("StatePreparation", "Measurement"),
                     "SPAM",
@@ -86,7 +86,7 @@ if(file.exists(coeffs_path)) {
             noise_value = round(noise_value, digits = 3)
         )
 
-    d_coeffs$noise_category <- factor(d_coeffs$noise_category, levels = c("","Decoherent Gate", "SPAM", "Damping", "Coh."))
+    d_coeffs$noise_category <- factor(d_coeffs$noise_category, levels = c("","Decoherent", "SPAM", "Damping", "Coh."))
     d_coeffs$noise_type <- factor(d_coeffs$noise_type,
         levels = c(
             "Noiseless", "BitFlip", "PhaseFlip", "Depolarizing",
@@ -232,7 +232,7 @@ if(file.exists(expr_path)) {
         mutate(
             noise_category = ifelse(
                 noise_type %in% c("BitFlip", "PhaseFlip", "Depolarizing"),
-                "Decoherent Gate",
+                "Decoherent",
                 ifelse(
                     noise_type %in% c("StatePreparation", "Measurement"),
                     "SPAM",
@@ -245,7 +245,7 @@ if(file.exists(expr_path)) {
             ),
         )
 
-    d_expr$noise_category <- factor(d_expr$noise_category, levels = c("Decoherent Gate", "Coherent", "SPAM", "Damping", "Coh."))
+    d_expr$noise_category <- factor(d_expr$noise_category, levels = c("Decoherent", "Coherent", "SPAM", "Damping", "Coh."))
 
     d_expr$noise_type <- factor(d_expr$noise_type,
         levels = c(
@@ -328,7 +328,7 @@ if(file.exists(ent_path)) {
         mutate(
             noise_category = ifelse(
                 noise_type %in% c("BitFlip", "PhaseFlip", "Depolarizing"),
-                "Decoherent Gate",
+                "Decoherent",
                 ifelse(
                     noise_type %in% c("StatePreparation", "Measurement"),
                     "SPAM",
@@ -340,7 +340,7 @@ if(file.exists(ent_path)) {
             ),
         )
 
-    d_ent$noise_category <- factor(d_ent$noise_category, levels = c("Decoherent Gate", "SPAM", "Damping", "Coh."))
+    d_ent$noise_category <- factor(d_ent$noise_category, levels = c("Decoherent", "SPAM", "Damping", "Coh."))
 
     d_ent$noise_type <- factor(d_ent$noise_type,
         levels = c(
@@ -415,7 +415,7 @@ if(file.exists(train_path)) {
             coeff_diff_squared = (coeffs_real - target_coefficients_real)^2 + (coeffs_imag - target_coefficients_imag)^2,
             noise_category = ifelse(
                 noise_type %in% c("BitFlip", "PhaseFlip", "Depolarizing"),
-                "Decoherent Gate",
+                "Decoherent",
                 ifelse(
                     noise_type %in% c("StatePreparation", "Measurement"),
                     "SPAM",
@@ -433,7 +433,7 @@ if(file.exists(train_path)) {
             noise_value = round(noise_value, digits = 3),
         )
 
-    d_train$noise_category <- factor(d_train$noise_category, levels = c("", "Decoherent Gate", "SPAM", "Damping", "Coh."))
+    d_train$noise_category <- factor(d_train$noise_category, levels = c("", "Decoherent", "SPAM", "Damping", "Coh."))
     d_train$noise_type <- factor(d_train$noise_type,
         levels = c(
             "Noiseless", "BitFlip", "PhaseFlip", "Depolarizing",
@@ -519,8 +519,8 @@ if(file.exists(train_path)) {
     ) +
         geom_line(linewidth = LINE.SIZE) +
         geom_ribbon(aes(ymin = mse_lower_bound, ymax = mse_upper_bound, fill = noise_category), alpha = 0.1, colour = NA) +
-        scale_colour_manual("", values = COLOURS.LIST, breaks = c("", "Decoherent Gate", "SPAM", "Damping", "Coh.")) +
-        scale_fill_manual("", values = COLOURS.LIST, breaks = c("", "Decoherent Gate", "SPAM", "Damping", "Coh.")) +
+        scale_colour_manual("", values = COLOURS.LIST, breaks = c("", "Decoherent", "SPAM", "Damping", "Coh.")) +
+        scale_fill_manual("", values = COLOURS.LIST, breaks = c("", "Decoherent", "SPAM", "Damping", "Coh.")) +
         scale_linetype_manual("Noise Type", values = c(1, 1, 2, 111, 1, 2, 1, 2, 1)) +
         facet_nested(. ~ ansatz) +
         scale_x_continuous("Step") +

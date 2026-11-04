@@ -102,7 +102,7 @@ d_coeffs <- d_coeffs %>%
     mutate(
         noise_category = ifelse(
             noise_type %in% c("BitFlip", "PhaseFlip", "Depolarizing"),
-            "Decoherent Gate",
+            "Decoherent",
             ifelse(
                 noise_type %in% c("StatePreparation", "Measurement"),
                 "SPAM",
@@ -116,7 +116,7 @@ d_coeffs <- d_coeffs %>%
         noise_value = round(noise_value, digits = 3)
     )
 
-d_coeffs$noise_category <- factor(d_coeffs$noise_category, levels = c("","Decoherent Gate", "SPAM", "Damping", "Coh."))
+d_coeffs$noise_category <- factor(d_coeffs$noise_category, levels = c("","Decoherent", "SPAM", "Damping", "Coh."))
 d_coeffs$noise_type <- factor(d_coeffs$noise_type,
     levels = c(
         "Noiseless", "BitFlip", "PhaseFlip", "Depolarizing",
@@ -260,12 +260,12 @@ for (enc in c("RX", "RY")) {
         scale_fill_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "Frequency"), values = COLOURS.LIST) +
         scale_x_continuous("Noise Level", labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.02)) +
         theme_paper() +
-        guides(colour = guide_legend(nrow = 2, theme = theme(legend.byrow = TRUE))) +
+        guides(colour = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE))) +
         scale_y_log10(ifelse(use_tikz, "$\\mu_c({\\boldsymbol{{\\boldsymbol{\\omega}}}})$ [log]", "|c| Mean [log]"),
             breaks = c(1e-1, 1e-3, 1e-5), #scales::trans_breaks("log10", function(x) 10^x),
             labels = trans_format("log10", math_format(10^.x))
         ) +
-        facet_nested(noise_category + noise_type ~ ansatz,
+        facet_nested(ansatz ~ noise_category + noise_type,
             labeller = labeller(
                 freq1 = frequencies_labeller,
                 qubits = qubit_labeller,
@@ -276,7 +276,7 @@ for (enc in c("RX", "RY")) {
         )
 
     save_name <- str_c("coeff_mean_qubits6_", enc)
-    create_plot(g, save_name, 0.48* TEXTWIDTH, 0.45 * HEIGHT)
+    create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)
 
     g <- ggplot(d_coeffs_6q, aes(x = noise_value, y = rel_sd, colour = as.factor(freq1))) +
         geom_point(size = POINT.SIZE) +
@@ -284,9 +284,9 @@ for (enc in c("RX", "RY")) {
         scale_colour_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "Frequency"), values = COLOURS.LIST) +
         scale_x_continuous("Noise Level", labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.02)) +
         theme_paper() +
-        guides(colour = guide_legend(nrow = 2, theme = theme(legend.byrow = TRUE))) +
+        guides(colour = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE))) +
         scale_y_log10(ifelse(use_tikz, "$\\sigma_c({\\boldsymbol{\\omega}})$ [log]", "|c| Relative Standard Deviation"), breaks=c(0.5, 1, 2)) +
-        facet_nested(noise_category + noise_type ~ ansatz,
+        facet_nested(ansatz ~ noise_category + noise_type,
             labeller = labeller(
                 freq1 = frequencies_labeller,
                 qubits = qubit_labeller,
@@ -297,7 +297,7 @@ for (enc in c("RX", "RY")) {
         )
 
     save_name <- str_c("coeff_sd_qubits6_", enc)
-    create_plot(g, save_name, 0.48* TEXTWIDTH, 0.45 * HEIGHT)
+    create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)
 
     d_coeffs_6q <- d_coeffs_6q %>%
         filter(noise_value %in% c(0, 0.03))
@@ -348,7 +348,7 @@ for (enc in c("RX", "RY")) {
         scale_x_discrete("") +
         scale_y_continuous() +
         guides(
-            shape = guide_legend(nrow = 2, theme = theme(legend.byrow = TRUE), override.aes = list(size = 3 * POINT.SIZE, colour = c(COLOURS.LIST[1], COLOURS.LIST[2], COLOURS.LIST[2], COLOURS.LIST[2], COLOURS.LIST[3], COLOURS.LIST[3], COLOURS.LIST[4], COLOURS.LIST[4], COLOURS.LIST[5]))),
+            shape = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE), override.aes = list(size = 3 * POINT.SIZE, colour = c(COLOURS.LIST[1], COLOURS.LIST[2], COLOURS.LIST[2], COLOURS.LIST[2], COLOURS.LIST[3], COLOURS.LIST[3], COLOURS.LIST[4], COLOURS.LIST[4], COLOURS.LIST[5]))),
             colour = "none",
         ) +
         theme(
@@ -379,5 +379,5 @@ for (enc in c("RX", "RY")) {
         theme(axis.text.x = element_text(size = BASE.SIZE - 3))
 
     save_name <- str_c("coeff_covar_qubits6_sel_", enc)
-    create_plot(g, save_name, 0.6 * TEXTWIDTH, 0.31 * HEIGHT)
+    create_plot(g, save_name, TEXTWIDTH, 0.3 * HEIGHT)
 }

@@ -52,7 +52,7 @@ d_coeffs <- d_coeffs %>%
     mutate(
         noise_category = ifelse(
             noise_type %in% c("BitFlip", "PhaseFlip", "Depolarizing"),
-            "Decoherent Gate",
+            "Decoherent",
             ifelse(
                 noise_type %in% c("StatePreparation", "Measurement"),
                 "SPAM",

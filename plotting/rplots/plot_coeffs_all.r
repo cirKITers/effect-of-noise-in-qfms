@@ -94,7 +94,7 @@ d_coeffs <- d_coeffs %>%
     mutate(
         noise_category = ifelse(
             noise_type %in% c("BitFlip", "PhaseFlip", "Depolarizing"),
-            "Decoherent Gate",
+            "Decoherent",
             ifelse(
                 noise_type %in% c("StatePreparation", "Measurement"),
                 "SPAM",
@@ -108,7 +108,7 @@ d_coeffs <- d_coeffs %>%
         noise_value = round(noise_value, digits = 3)
     )
 
-d_coeffs$noise_category <- factor(d_coeffs$noise_category, levels = c("","Decoherent Gate", "SPAM", "Damping", "Coh."))
+d_coeffs$noise_category <- factor(d_coeffs$noise_category, levels = c("","Decoherent", "SPAM", "Damping", "Coh."))
 d_coeffs$noise_type <- factor(d_coeffs$noise_type,
     levels = c(
         "Noiseless", "BitFlip", "PhaseFlip", "Depolarizing",
