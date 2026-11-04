@@ -1,7 +1,7 @@
 # 1D-Coefficients - RY Encoding
 
 This page lists the individual results for for circuits with the one-dimensional encoding $R_Y$ and varying qubit counts $[3\dots 6]$.
-In particular, for each configuration the results comprise of the absolute coefficient mean $\mu_c(\boldsymbol{\omega})$, the corresponding relative standard deviation $\sigma_c(\boldsymbol{\omega})$ and the covariance ($\text{Cov}(\cdot, \cdot)$). In the paper these results would correspond to Figure 6a, Figure 6b and Figure 4. Shown here are the plots for all qubit numbers.
+In particular, for each configuration the results comprise of the absolute coefficient mean $\mu_c(\boldsymbol{\omega})$, the corresponding relative standard deviation $\sigma_c(\boldsymbol{\omega})$ and the covariance ($\text{Cov}(\cdot, \cdot)$). In the paper these results correspond to Figure 4, Figure 12 (Appendix "Relative Standard Deviation of the Coefficients") and Figure 13 (Appendix "Covariance of Real and Imaginary Coefficient Parts") for the six-qubit case. Shown here are the plots for all qubit numbers. The abbreviations of the ansätze and noise types are explained on the [Setup](setup.md) page.
 
 ## 3 Qubits
 
@@ -50,11 +50,11 @@ Covariance:
 
 ## 6 Qubits
 
-Mean (Figure 6a in our paper):
+Mean (Figure 4 in our paper):
 ![Coefficients 6 Qubits - Mean](figures/coeff_mean_qubits6_RY_light.png#only-light)
 ![Coefficients 6 Qubits - Mean](figures/coeff_mean_qubits6_RY_dark.png#only-dark)
 
-Relative Standard Deviation (Figure 6b in our paper):
+Relative Standard Deviation (Figure 12 in our paper):
 ![Coefficients 6 Qubits - Mean](figures/coeff_sd_qubits6_RY_light.png#only-light)
 ![Coefficients 6 Qubits - Mean](figures/coeff_sd_qubits6_RY_dark.png#only-dark)
 
@@ -62,6 +62,6 @@ Covariance:
 ![Coefficients 6 Qubits - Mean](figures/coeff_covar_qubits6_RY_light.png#only-light)
 ![Coefficients 6 Qubits - Mean](figures/coeff_covar_qubits6_RY_dark.png#only-dark)
 
-Covariance -- selection (Figure 4 in our paper):
+Covariance -- selection of the frequencies $\boldsymbol{\omega} \in \{0, 1, \text{max}\}$ in the noiseless setting and under 3% of each noise type (Figure 13 in our paper; points on the bottom border are zero):
 ![Coefficiens 6 Qubits - Mean](figures/coeff_covar_qubits6_sel_RY_light.png#only-light)
 ![Coefficiens 6 Qubits - Mean](figures/coeff_covar_qubits6_sel_RY_dark.png#only-dark)

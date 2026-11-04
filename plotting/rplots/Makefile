@@ -24,7 +24,7 @@ plot_ent: img-tikz/ent.tex
 plot_training: img-tikz/training_mse.tex
 
 gen: img-tikz
-	if [ -a img-tikz/coeff_real_imag_encoding.tex ]; then \
+	if [ -e img-tikz/coeff_real_imag_encoding.tex ]; then \
 		sed -i "s/{coeff_real_imag/{img-tikz\/coeff_real_imag/g" img-tikz/coeff_real_imag*; \
 	fi;
 	bash gen_img.sh
