@@ -102,7 +102,7 @@ d_expr$noise_type <- factor(d_expr$noise_type,
         "Noiseless", "BF", "PF", "DP",
         "AD", "PD",
         "SP", "ME",
-        "GE"
+        "CGE"
     ),
 )
 

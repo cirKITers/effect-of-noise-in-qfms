@@ -258,7 +258,7 @@ if(file.exists(expr_path)) {
             "Noiseless", "BF", "PF", "DP",
             "AD", "PD",
             "SP", "ME",
-            "GE"
+            "CGE"
         ),
     )
 
