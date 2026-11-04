@@ -340,7 +340,7 @@ save_name <- str_c("training_coeff_dist_final")
 create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)
 
 g <- ggplot(
-    d_summarised,
+    d_summarised %>% mutate(mse_lower_bound = ifelse(mse_lower_bound < 0, 0, mse_lower_bound)),
     aes(x = step, y = mean_mse, colour = noise_category, linetype = noise_type)
 ) +
     geom_line(linewidth = LINE.SIZE) +
@@ -350,7 +350,7 @@ g <- ggplot(
     scale_linetype_manual("", values = c(1, 1, 2, 111, 1, 2, 1, 2, 1)) +
     facet_nested(. ~ ansatz) +
     scale_x_continuous("Step", breaks = seq(0, 1000, 400)) +
-    scale_y_continuous("MSE") +
+    scale_y_continuous("MSE", limits=c(0, 0.065)) +
     theme_paper() +
     guides(
         linetype = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE), override.aes = list(
