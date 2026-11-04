@@ -112,10 +112,8 @@ g <- ggplot(
 ) +
     geom_point(size = POINT.SIZE) +
     geom_hline(aes(linetype="", yintercept = kl_max, colour = as.factor(qubits)), linewidth = LINE.SIZE) +
-    geom_ribbon(aes(ymin=lower_bound, ymax=upper_bound, fill=as.factor(qubits)), alpha = 0.2, colour = NA) +
     geom_line(linewidth = LINE.SIZE) +
     scale_colour_manual(ifelse(use_tikz, "\\# Qubits", "# Qubits"), values = COLOURS.LIST) +
-    scale_fill_manual(ifelse(use_tikz, "\\# Qubits", "# Qubits"), values = COLOURS.LIST) +
     facet_nested(ansatz ~ noise_category + noise_type,
         labeller = labeller(
             frequency = frequencies_labeller,
@@ -147,14 +145,12 @@ d_expr <- d_expr %>% mutate(at_bound = ifelse(mean_diff == 0, "", NA))
 
 g <- ggplot(
     d_expr,
-    aes(x = layers, y = mean_expr, colour = as.factor(qubits), fill = as.factor(qubits))
+    aes(x = layers, y = mean_expr, colour = as.factor(qubits))
 ) +
     geom_point(size = POINT.SIZE) +
     geom_hline(aes(linetype="", yintercept = kl_max, colour = as.factor(qubits)), linewidth = LINE.SIZE) +
-    geom_ribbon(aes(ymin=lower_bound, ymax=upper_bound, fill=as.factor(qubits)), alpha = 0.2, colour = NA) +
     geom_line(linewidth = LINE.SIZE) +
     scale_colour_manual(ifelse(use_tikz, "\\# Qubits", "# Qubits"), values = COLOURS.LIST) +
-    scale_fill_manual(ifelse(use_tikz, "\\# Qubits", "# Qubits"), values = COLOURS.LIST) +
     facet_nested(ansatz ~ noise_category + noise_type,
         labeller = labeller(
             frequency = frequencies_labeller,
