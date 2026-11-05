@@ -2,7 +2,8 @@
 
 We train six-qubit QFMs with $R_Y$ encoding on randomly generated Fourier series (see [Setup](setup.md)) by minimising the squared complex coefficient error summed over all frequencies with Adam (learning rate 0.01) for 1000 steps.
 During training we record the mean squared error (MSE), the learned absolute coefficients $\lvert c_{\boldsymbol{\omega}} \rvert$, the squared coefficient error $\Delta c_{\boldsymbol{\omega}} = \lvert c_{\boldsymbol{\omega}}(\boldsymbol{\theta}) - c'_{\boldsymbol{\omega}} \rvert^2$ between the learned and the target coefficients and the entangling capability.
-As the training grid samples one period without aliasing, Parseval's identity relates the two error metrics via $\text{MSE} = \sum_{\boldsymbol{\omega}} \Delta c_{\boldsymbol{\omega}}$.
+On an evenly spaced grid covering exactly one period without aliasing or a repeated endpoint, Parseval's identity relates the two error metrics via $\text{MSE} = \sum_{\boldsymbol{\omega}} \Delta c_{\boldsymbol{\omega}}$.
+The configured training grid uses 38 points on $[-3.1415, 3.1415)$, so this equality holds only approximately for the recorded MSE.
 Noisy training uses a noise level of 3% for each noise type.
 The abbreviations of the ansätze and noise types are explained on the [Setup](setup.md) page.
 
@@ -86,7 +87,7 @@ Our Figure 18 in the paper:
 
 The squared coefficient error $\Delta c_{\boldsymbol{\omega}}$ averaged over ten model parameter initialisation seeds and ten randomly generated problem instances during training in the noiseless setting and under each noise type (3%). Lines represent the mean, and shaded areas show the standard deviation over the 10 × 10 configurations.
 
-All configurations reach a plateau before the end of the training, such that the final values in Fig. 6 reflect the attainable level of each configuration.
+All configurations reach a plateau before the end of the training, such that the final values in Fig. 6 reflect the fitting error achieved under the chosen optimiser and training budget.
 Lower frequencies are matched within the first few hundred steps, whereas higher frequencies converge more slowly.
 
 ## Coefficients during Training for Problem Instances

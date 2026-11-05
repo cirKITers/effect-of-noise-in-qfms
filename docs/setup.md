@@ -24,12 +24,13 @@ The noise types fall into four groups, which differ in where and how often a cha
 
 | Group | Noise types | Placement | Applications |
 | --- | --- | --- | --- |
-| Decoherent gate errors | Bit Flip (BF), Phase Flip (PF), Depolarizing (DP) | after every gate | $N_g$ (number of gates) |
+| Decoherent gate errors | Bit Flip (BF), Phase Flip (PF), Depolarizing (DP) | after every gate | $N_g$ (number of local gate-noise insertions) |
 | Damping errors | Amplitude Damping (AD), Phase Damping (PD) | once per qubit at the end of the circuit | $n$ |
 | State preparation and measurement (SPAM) errors | State Preparation (SP), Measurement (ME) | once per qubit at the beginning / end of the circuit | $n$ |
 | Coherent gate errors (CGE) | additive rotation-angle offsets $\epsilon \sim \mathcal{N}(0, p_\text{cge}^2)$ | every parametrised rotation | $N_r$ (number of rotation angles) |
 
 Channel probabilities $p$ are specified per application, whereas $p_\text{cge}$ is the standard deviation of the additive angle error in radians.
+Gate noise acts separately on each wire of a gate, so equal local probabilities do not imply equal accumulated noise across ansätze.
 For the coefficient and training experiments, one realisation of the coherent offsets per circuit layout is kept fixed across inputs, parameter samples, optimisation steps and seeds, and the same standardised offsets are scaled with $p_\text{cge}$ across noise levels.
 The expressibility and entanglement experiments instead sample the coherent offsets across the state batch.
 
@@ -57,10 +58,14 @@ The RYA and CRA are inspired by circuits 15 and 19 of Sim et al. (2019) and are 
 
 ## Experimental Protocol
 
-All experiments use a single encoding layer ($L = 1$), $n \in [3\dots 6]$ qubits and the mean of the local $Z$ expectation values as readout.
-Noise is applied with seven linearly increasing levels from 0% to 3% in steps of 0.5%.
-Trainable parameters are sampled uniformly from $[0, 2\pi]$ with five seeds for the coefficient, expressibility and entanglement experiments and ten seeds for the training experiments.
+Unless stated otherwise, experiments use a single encoding layer ($L = 1$), $n \in [3\dots 6]$ qubits and the mean of the local $Z$ expectation values as readout.
+The [deeper-circuit expressibility study](expressibility.md#expressibility_of_deeper_circuits) additionally tests $L = 2$ and $L = 4$ at a fixed noise level of 3% and without noise.
+The main noise sweeps use seven linearly increasing levels from 0% to 3% in steps of 0.5%.
+Trainable parameters are sampled uniformly from $[0, 2\pi]$ with five seeds for the one-dimensional coefficient, expressibility and entanglement experiments, two for the two-dimensional coefficient experiments and ten for the training experiments.
 
 - **Coefficients:** one-dimensional ($R_X$, $R_Y$ or $R_Z$ encoding, $D = 1$) and two-dimensional ($R_X R_Y$ encoding, $D = 2$) inputs; $250 \times 2^n$ parameter vectors per seed for $D = 1$ and 250 per seed for $D = 2$. The two-dimensional experiments use two seeds.
-- **Expressibility and entanglement:** evaluated on the density matrix at $\boldsymbol{x} = \boldsymbol{0}$, as these descriptors only depend on the trainable layers; $250 \times 2^n$ parameter vectors per seed, and $75 n$ equal-width fidelity bins for the expressibility histogram.
-- **Training:** six-qubit circuits with $R_Y$ encoding are trained on ten randomly generated Fourier series with the same frequency set as the model and a maximum absolute target value of $a = 0.5$, using Adam (learning rate 0.01) for 1000 steps. The loss is the squared complex coefficient error summed over all frequencies, which on the training grid is equivalent to the mean squared error (MSE). Noisy training uses a noise level of 3% for each noise type.
+- **Expressibility and entanglement** are evaluated on the density matrix at $\boldsymbol{x} = \boldsymbol{0}$, as these descriptors only depend on the trainable layers.
+  Entanglement uses $250 \times 2^n$ parameter vectors per seed, while expressibility uses two independent batches of that size to form $250 \times 2^n$ state pairs and $75 n$ equal-width fidelity bins.
+- **Training** uses six-qubit circuits with $R_Y$ encoding on ten randomly generated Fourier series with the same frequency set as the model and a maximum absolute target value of $a = 0.5$, using Adam (learning rate 0.01) for 1000 steps.
+  The loss is the squared complex coefficient error summed over all frequencies, which equals the mean squared error (MSE) on an exact-period grid and approximates it on the configured training grid (see [Training](training.md)).
+  Noisy training uses a noise level of 3% for each noise type.
