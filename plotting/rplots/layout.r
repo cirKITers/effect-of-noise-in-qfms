@@ -83,3 +83,10 @@ latex_percent <- function (x) {
         stringr::str_c(x * 100, "%")
     }
 }
+
+ansatz_to_factor <- function(ansatzcol) {
+  return(factor(ansatzcol,
+      levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_20", "Circuit_19"),
+      labels = c("SEA", "HEA", "RYA", "CRA")
+  ))
+}

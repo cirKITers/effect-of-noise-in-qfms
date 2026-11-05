@@ -21,7 +21,7 @@ cd $GIT_BASE_DIR/plotting/rplots
 
 ## Data export
 cd $GIT_BASE_DIR
-$GIT_BASE_DIR/.venv/bin/python notebooks/csv_export.py -eid $(ls -rt mlruns | tail -n 1) -s $experiment_id_flag
+uv run python notebooks/csv_export.py -eid $(ls -rt mlruns | tail -n 1) -s $experiment_id_flag
 cd -
 
 ## Plotting

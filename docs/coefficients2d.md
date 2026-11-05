@@ -1,7 +1,7 @@
 # 2D-Coefficients
 
 This page lists the individual results for for circuits with the two-dimensional encoding $R_X R_Y$ and varying qubit counts $[3\dots 6]$.
-In particular, for each configuration the results comprise of the absolute coefficient mean $\mu_c(\boldsymbol{\omega})$, the corresponding relative standard deviation $\sigma_c(\boldsymbol{\omega})$ and the covariance ($\text{Cov}(\cdot, \cdot)$). We denote the first frequency component as $\omega^{(1)}$ and the second as $\omega^{(2)}$ resulting in the individual frequency $(\omega^{(1)}, \omega^{(2)})$ in each facet and quite lengthy plots.
+In particular, for each configuration the results comprise of the absolute coefficient mean $\mu_c(\boldsymbol{\omega})$, the corresponding relative standard deviation $\sigma_c(\boldsymbol{\omega})$ and the covariance ($\text{Cov}(\cdot, \cdot)$). We denote the first frequency component as $\omega^{(1)}$ and the second as $\omega^{(2)}$ resulting in the individual frequency $(\omega^{(1)}, \omega^{(2)})$ in each facet and quite lengthy plots. The two-dimensional experiments use two seeds and 250 parameter vectors per seed; a selection of these results is shown in Figures 14 and 15 of the paper. The abbreviations of the ansätze and noise types are explained on the [Setup](setup.md) page.
 
 ## 3 Qubits
 

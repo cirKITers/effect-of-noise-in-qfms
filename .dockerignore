@@ -1,0 +1,30 @@
+# version control and local environments
+.git
+.venv
+.vscode
+.cache
+.telemetry
+.viz
+
+# experiment results and exported data
+mlruns
+results
+logs
+*.csv
+*.log
+*.log.*
+session_store.db
+stats.json
+
+# generated plots (paper figures in plotting/rplots/img-gen are kept)
+plotting/rplots/img-tikz
+plotting/rplots/img-pdf
+plotting/rplots/build
+
+# python build artefacts
+__pycache__
+*.py[cod]
+*.egg-info
+build
+dist
+site

@@ -24,10 +24,7 @@ coeffs_path <- "csv_data/coeffs_full_dims1_q6_AmplitudeDamping.csv"
 d_coeffs <- read_csv(coeffs_path)
 d_coeffs <- d_coeffs %>% filter(qubits == 6)
 
-d_coeffs$ansatz <- factor(d_coeffs$ansatz,
-    levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_15", "Circuit_19"),
-    labels = c("SEA", "HEA", "C15", "C19")
-)
+d_coeffs$ansatz <- ansatz_to_factor(d_coeffs$ansatz)
 d_coeffs$freq1 <- as.factor(d_coeffs$freq1)
 
 d_coeffs <- d_coeffs %>%
@@ -55,7 +52,7 @@ d_coeffs <- d_coeffs %>%
     mutate(
         noise_category = ifelse(
             noise_type %in% c("BitFlip", "PhaseFlip", "Depolarizing"),
-            "Decoherent Gate",
+            "Decoherent",
             ifelse(
                 noise_type %in% c("StatePreparation", "Measurement"),
                 "SPAM",
@@ -118,4 +115,4 @@ g <- ggplot(d_coeffs_ansatz %>% filter(noise_type %in% c("Noiseless", "AD") & fr
         legend.key.height = unit(0.2, "cm")
     )
 save_name <- str_c("coeff_real_AD_qubits6")
-create_plot(g, save_name, 0.6 * TEXTWIDTH, 0.12 * HEIGHT)
+create_plot(g, save_name, TEXTWIDTH, 0.12 * HEIGHT)

@@ -12,15 +12,15 @@ Head over to the [results page](https://cirkiters.github.io/effect-of-noise-in-q
 
 This repository uses [Kedro](https://kedro.org/). To get started, follow these steps:
 1. Clone this repository
-2. Run `poetry install` or `pip install -r requirements.txt`
-3. Run the experiment: `kedro run`
+2. Run `uv sync`
+3. Run the experiment: `uv run kedro run`
 
 Experiments are automatically recorded using [MlFlow](https://mlflow.org/). You can view the experiments by
-1. Running `poetry run kedro mlflow ui`
+1. Running `uv run kedro mlflow ui`
 2. Navigating to [http://127.0.0.1:5000](http://127.0.0.1:5000)
 
 To visualize the nodes and pipeline
-1. Run `poetry run kedro viz`
+1. Run `uv run kedro viz`
 2. Navigating to [http://127.0.0.1:4141](http://127.0.0.1:4141)
 
 ## Tweaking :wrench:
@@ -47,8 +47,17 @@ docker load -i effect_of_noise_repro.tar
 Or build image:
 
 ```
-docker build -t effect_of_noise_repro .
+docker build --build-arg UID=$(id -u) --build-arg GID=$(id -g) -t effect_of_noise_repro .
 ```
+
+The image is built from the local checkout; experiment results (e.g. `mlruns`) and
+generated plots are excluded via `.dockerignore`.
+The build arguments `UID` and `GID` (default: 1000) create the container user
+with the same user and group id as the host user, so that the directories
+mounted below are writable from within the container.
+Make sure that these directories (in particular `mlruns`) exist and are owned
+by your user before starting the container, otherwise docker creates them
+owned by root.
 
 #### Create Container
 
