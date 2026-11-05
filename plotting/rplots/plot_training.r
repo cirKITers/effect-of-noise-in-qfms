@@ -393,7 +393,7 @@ for (filtered_seed in 1000:1009) {
             scale = "free_y",
         ) +
         scale_x_continuous("Step", breaks = seq(0, 1000, 400)) +
-        scale_y_continuous(ifelse(use_tikz, "$\\lvert c_{\\boldsymbol{\\omega}} \\rvert$", "c"), breaks=seq(0,1,0.02)) +
+        scale_y_continuous(ifelse(use_tikz, "$\\lvert c_{\\boldsymbol{\\omega}} \\rvert$", "c"), breaks = scales::breaks_extended(n = 3)) +
         theme_paper() +
         theme(
             legend.margin = margin(b = -4),
