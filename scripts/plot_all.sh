@@ -8,12 +8,12 @@ if [ ! "$1" = "only_plot" ]; then
 	#            restricted to the noisy runs of the main study (the noiseless
 	#            reference is noise level 0 of these runs), so that the noiseless
 	#            runs of the encoding study below are not mixed in
-	$GIT_BASE_DIR/.venv/bin/python notebooks/csv_export.py $experiment_id_flag -coeff -nt BitFlip,PhaseFlip,Depolarizing,AmplitudeDamping,PhaseDamping,StatePreparation,Measurement,GateError
+	uv run python notebooks/csv_export.py $experiment_id_flag -coeff -nt BitFlip,PhaseFlip,Depolarizing,AmplitudeDamping,PhaseDamping,StatePreparation,Measurement,GateError
 	# -fullcoeff:    1D/2D full coefficient, only for 6 qubit AD, as this is needed for plotting.
-	$GIT_BASE_DIR/.venv/bin/python notebooks/csv_export.py $experiment_id_flag -fullcoeff -nt AmplitudeDamping -n 6
+	uv run python notebooks/csv_export.py $experiment_id_flag -fullcoeff -nt AmplitudeDamping -n 6
 	# -enccoeff: full coefficients for the (noiseless) encoding study (coeff_*_encoding)
 	# -ent/-expr/-train: entanglement, expressibility and training data
-	$GIT_BASE_DIR/.venv/bin/python notebooks/csv_export.py $experiment_id_flag -enccoeff -ent -expr -train
+	uv run python notebooks/csv_export.py $experiment_id_flag -enccoeff -ent -expr -train
 	cd -
 fi
 

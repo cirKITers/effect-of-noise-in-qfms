@@ -23,7 +23,7 @@ for experiment in entanglement expressibility; do
 			for circuit in $circuits; do
 				for noise_type in $noise_types; do
 					echo "Started experiment $experiment with seed=$seed, n_qubits=$n_qubits, $circuit and noise_type=$noise_type"
-						$GIT_BASE_DIR/.venv/bin/kedro run --pipeline $experiment --params="data.omegas=$n_qubits,model.n_qubits=$n_qubits,model.encoding=RY,model.circuit_type=$circuit,seed=$seed,model.noise_params.$noise_type=0.03,model.noise_steps=6"
+						uv run kedro run --pipeline $experiment --params="data.omegas=$n_qubits,model.n_qubits=$n_qubits,model.encoding=RY,model.circuit_type=$circuit,seed=$seed,model.noise_params.$noise_type=0.03,model.noise_steps=6"
 				done
 			done
 		done
@@ -38,7 +38,7 @@ for seed in {1000..1004}; do
 			for encoding in RX RY; do
 				for noise_type in $noise_types; do
 					echo "Started experiment coefficients with seed=$seed, n_qubits=$n_qubits, $circuit, encoding=$encoding and noise_type=$noise_type"
-						$GIT_BASE_DIR/.venv/bin/kedro run --pipeline coefficients --params="data.omegas=$n_qubits,model.n_qubits=$n_qubits,model.encoding=$encoding,model.circuit_type=$circuit,seed=$seed,model.noise_params.$noise_type=0.03,model.noise_steps=6"
+						uv run kedro run --pipeline coefficients --params="data.omegas=$n_qubits,model.n_qubits=$n_qubits,model.encoding=$encoding,model.circuit_type=$circuit,seed=$seed,model.noise_params.$noise_type=0.03,model.noise_steps=6"
 				done
 			done
 		done
@@ -54,7 +54,7 @@ for seed in {1000..1004}; do
 		for circuit in $circuits; do
 			for noise_type in $noise_types; do
 				echo "Started 2D coefficients with seed=$seed, n_qubits=$n_qubits, $circuit, and noise_type=$noise_type"
-					$GIT_BASE_DIR/.venv/bin/kedro run --pipeline coefficients --params="data.omegas=$n_qubits,model.n_qubits=$n_qubits,model.circuit_type=$circuit,seed=$seed,coefficients.scale=False,model.noise_params.$noise_type=0.03,model.noise_steps=6"
+					uv run kedro run --pipeline coefficients --params="data.omegas=$n_qubits,model.n_qubits=$n_qubits,model.circuit_type=$circuit,seed=$seed,coefficients.scale=False,model.noise_params.$noise_type=0.03,model.noise_steps=6"
 			done
 		done
 	done
@@ -72,7 +72,7 @@ for seed in {1000..1004}; do
 		for circuit in $circuits; do
 			for encoding in RX RY RZ; do
 				echo "Started coefficient experiments for encoding with seed=$seed, n_qubits=$n_qubits, $circuit, and encoding=$encoding"
-					$GIT_BASE_DIR/.venv/bin/kedro run --pipeline coefficients --params="data.omegas=$n_qubits,model.n_qubits=$n_qubits,model.circuit_type=$circuit,seed=$seed,model.encoding=$encoding"
+					uv run kedro run --pipeline coefficients --params="data.omegas=$n_qubits,model.n_qubits=$n_qubits,model.circuit_type=$circuit,seed=$seed,model.encoding=$encoding"
 			done
 		done
 	done
@@ -85,7 +85,7 @@ for problem_seed in {1000..1009}; do
 		for circuit in $circuits; do
 			for noise_type in $noise_types; do
 				echo "Started experiment training with problem_seed=$problem_seed, seed=$seed, n_qubits=6, $circuit and noise_type=$noise_type"
-					$GIT_BASE_DIR/.venv/bin/kedro run --pipeline training --params="data.seed=$problem_seed,data.omegas=6,model.n_qubits=6,model.encoding=RY,model.circuit_type=$circuit,seed=$seed,model.noise_params.$noise_type=0.03,training.measure=MN"
+					uv run kedro run --pipeline training --params="data.seed=$problem_seed,data.omegas=6,model.n_qubits=6,model.encoding=RY,model.circuit_type=$circuit,seed=$seed,model.noise_params.$noise_type=0.03,training.measure=MN"
 			done
 		done
 	done
