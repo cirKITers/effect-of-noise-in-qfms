@@ -508,7 +508,7 @@ requires-dist = [
     { name = "optax", specifier = ">=0.2.8" },
     { name = "pandas", specifier = ">=2.2.3,<3" },
     { name = "pyyaml", specifier = ">=6.0.2,<7" },
-    { name = "qml-essentials", git = "https://github.com/cirKITers/qml-essentials?rev=1bfa1e5a753af6c56cadc21122b3af14e32dc046" },
+    { name = "qml-essentials", specifier = ">=0.3.2" },
 ]
 
 [package.metadata.requires-dev]
@@ -694,7 +694,7 @@ name = "gunicorn"
 version = "23.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "packaging" },
+    { name = "packaging", marker = "sys_platform != 'win32'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/34/72/9614c465dc206155d93eff0ca20d42e1e35afc533971379482de953521a4/gunicorn-23.0.0.tar.gz", hash = "sha256:f014447a0101dc57e294f6c18ca6b40227a4c90e9bdb586042628030cba004ec", size = 375031, upload-time = "2024-08-10T20:25:27.378Z" }
 wheels = [
@@ -1554,7 +1554,7 @@ name = "pexpect"
 version = "4.9.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "ptyprocess" },
+    { name = "ptyprocess", marker = "sys_platform != 'win32'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/42/92/cc564bf6381ff43ce1f4d06852fc19a2f11d180f23dc32d9588bee2f149d/pexpect-4.9.0.tar.gz", hash = "sha256:ee7d41123f3c9911050ea2c2dac107568dc43b2d3b0c7557a33212c398ead30f", size = 166450, upload-time = "2023-11-25T09:07:26.339Z" }
 wheels = [
@@ -1934,14 +1934,18 @@ wheels = [
 
 [[package]]
 name = "qml-essentials"
-version = "0.3.1"
-source = { git = "https://github.com/cirKITers/qml-essentials?rev=1bfa1e5a753af6c56cadc21122b3af14e32dc046#1bfa1e5a753af6c56cadc21122b3af14e32dc046" }
+version = "0.3.2"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "jaqsi" },
     { name = "jax" },
     { name = "jaxlib" },
     { name = "numpy" },
     { name = "scipy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/50/16/d9b89f943f8a74b7706ab6bb8ca306a923e09051ce468ddfc49e823421ea/qml_essentials-0.3.2.tar.gz", hash = "sha256:901f51e5bbfe6789bdd753c9aa460d7be5e8acbed5516fa5913b66bf9677e20c", size = 4480287, upload-time = "2026-11-09T10:06:11.546Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/3a/bc/74463570b450eb4111091dd63e959c47901dd2762974c9a9e4df638baf63/qml_essentials-0.3.2-py3-none-any.whl", hash = "sha256:3dfa5ca82edf579a899ff3c89c622b859b5c601bc737bdc877f67db86506a238", size = 85779, upload-time = "2026-11-09T10:06:10.296Z" },
 ]
 
 [[package]]
