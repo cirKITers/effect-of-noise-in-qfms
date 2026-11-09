@@ -40,6 +40,7 @@ d_coeffs_1D <- d_coeffs_1D %>%
         sd_mean_abs = sd(coeffs_abs_mean),
         rel_sd_mean_abs = sd(coeffs_abs_mean) / mean(coeffs_abs_mean),
         sd_abs = mean(sqrt(coeffs_abs_var)),
+        rel_sd = mean(sqrt(coeffs_abs_var) / coeffs_abs_mean),
         coeffs_var_real = mean(coeffs_real_var),
         coeffs_var_imag = mean(coeffs_imag_var),
         coeffs_covar_ri = mean(coeffs_co_var_real_imag)
@@ -47,12 +48,11 @@ d_coeffs_1D <- d_coeffs_1D %>%
     mutate(
         upper_bound = mean_abs + sd_abs,
         lower_bound = mean_abs - sd_abs,
-        rel_sd = sd_abs / mean_abs,
         freq2 = 0
     )
 
 d_coeffs_2D <- d_coeffs_2D %>%
-    mutate(coeffs_abs_mean = ifelse(coeffs_abs_mean < 1e-14 & ansatz != "Strongly_Entangling", NA, coeffs_abs_mean)) %>%
+    mutate(coeffs_abs_mean = ifelse(coeffs_abs_mean < 1e-14, NA, coeffs_abs_mean)) %>%
     group_by(
         BitFlip, PhaseFlip, Depolarizing,
         AmplitudeDamping, PhaseDamping,
@@ -66,6 +66,7 @@ d_coeffs_2D <- d_coeffs_2D %>%
         sd_mean_abs = sd(coeffs_abs_mean),
         rel_sd_mean_abs = sd(coeffs_abs_mean) / mean(coeffs_abs_mean),
         sd_abs = mean(sqrt(coeffs_abs_var)),
+        rel_sd = mean(sqrt(coeffs_abs_var) / coeffs_abs_mean),
         coeffs_var_real = mean(coeffs_real_var),
         coeffs_var_imag = mean(coeffs_imag_var),
         coeffs_covar_ri = mean(coeffs_co_var_real_imag)
@@ -73,7 +74,6 @@ d_coeffs_2D <- d_coeffs_2D %>%
     mutate(
         upper_bound = mean_abs + sd_abs,
         lower_bound = mean_abs - sd_abs,
-        rel_sd = sd_abs / mean_abs,
     )
 
 d_coeffs <- rbind(d_coeffs_1D, d_coeffs_2D)
@@ -94,7 +94,7 @@ d_coeffs <- d_coeffs %>%
     mutate(
         noise_category = ifelse(
             noise_type %in% c("BitFlip", "PhaseFlip", "Depolarizing"),
-            "Decoherent Gate",
+            "Decoherent",
             ifelse(
                 noise_type %in% c("StatePreparation", "Measurement"),
                 "SPAM",
@@ -108,7 +108,7 @@ d_coeffs <- d_coeffs %>%
         noise_value = round(noise_value, digits = 3)
     )
 
-d_coeffs$noise_category <- factor(d_coeffs$noise_category, levels = c("","Decoherent Gate", "SPAM", "Damping", "Coh."))
+d_coeffs$noise_category <- factor(d_coeffs$noise_category, levels = c("","Decoherent", "SPAM", "Damping", "Coh."))
 d_coeffs$noise_type <- factor(d_coeffs$noise_type,
     levels = c(
         "Noiseless", "BitFlip", "PhaseFlip", "Depolarizing",
@@ -124,10 +124,7 @@ d_coeffs$noise_type <- factor(d_coeffs$noise_type,
     ),
 )
 
-d_coeffs$ansatz <- factor(d_coeffs$ansatz,
-    levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_15", "Circuit_19"),
-    labels = c("SEA", "HEA", "C15", "C19")
-)
+d_coeffs$ansatz <- ansatz_to_factor(d_coeffs$ansatz)
 
 d_coeffs_selection <- d_coeffs %>%
     filter(noise_type %in% c("DP", "ME", "AD", "CGE"))

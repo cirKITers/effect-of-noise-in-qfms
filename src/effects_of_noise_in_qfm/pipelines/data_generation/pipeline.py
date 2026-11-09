@@ -19,7 +19,6 @@ def create_pipeline() -> Pipeline:
                     "shots": "params:model.shots",
                     "output_qubit": "params:model.output_qubit",
                     "seed": "params:seed",
-                    "mp_threshold": "params:model.mp_threshold",
                 },
                 outputs="model",
                 name="create_model",

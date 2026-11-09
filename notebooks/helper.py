@@ -1,7 +1,3 @@
-import plotly
-from plotly.validators.scatter.marker import SymbolValidator
-import re
-import json
 import hashlib
 import pandas as pd
 import mlflow
@@ -13,39 +9,9 @@ import ast
 import traceback
 
 
-def save_fig(fig, name, run_ids, experiment_id, font_size=16, scale=1):
-    hs = generate_hash(run_ids)
-    path = f"results/{experiment_id}/{hs}/"
-    os.makedirs(path, exist_ok=True)
-    print(f"Saving figure to {path}{name}.pdf")
-    fig.update_layout(font=dict(size=font_size))
-    fig.write_image(f"{path}{name}.pdf", scale=scale)
-
-
-def get_qual_color_iterator():
-    main_colors_it = iter(plotly.colors.qualitative.Dark2)
-    sec_colors_it = iter(plotly.colors.qualitative.Pastel2)
-
-    return main_colors_it, sec_colors_it
-
-
-def get_seq_color_iterator(n=10):
-    return iter(plotly.colors.sample_colorscale(plotly.colors.sequential.Emrld, n))
-
-
 def generate_hash(run_ids):
     hs = hashlib.md5(repr(run_ids).encode("utf-8")).hexdigest()
     return hs
-
-
-def read_from_html(path):
-    with open(path) as f:
-        html = f.read()
-    call_arg_str = re.findall(r"Plotly\.newPlot\((.*)\)", html[-(2**16) :])[0]
-    call_args = json.loads(f"[{call_arg_str}]")
-    plotly_json = {"data": call_args[1], "layout": call_args[2]}
-
-    return plotly.io.from_json(json.dumps(plotly_json))
 
 
 def read_from_csv(path, **kwargs):
@@ -82,6 +48,8 @@ def get_training_df(run_ids, debug=False):
         "step",
         "coeff_dist",
         "entanglement",
+        "measure",
+        "loss",
         "original_idx",
         "coeff_idx",
     ]
@@ -133,6 +101,12 @@ def get_training_df(run_ids, debug=False):
         problem_seed = int(client.get_run(run_id).data.params["data.seed"])
         sub_df_a.loc[it, "problem_seed"] = problem_seed
 
+        measure = client.get_run(run_id).data.params.get("training.measure", "MN")
+        sub_df_a.loc[it, "measure"] = measure
+
+        loss = client.get_run(run_id).data.params.get("training.loss", "mse")
+        sub_df_a.loc[it, "loss"] = loss
+
         encoding = client.get_run(run_id).data.params.get("model.encoding", "RX")
 
         n_input_feat = int(
@@ -174,7 +148,7 @@ def get_training_df(run_ids, debug=False):
             noise = noise[0]
         else:
             noise = "noiseless"
-        all_cfgs[ansatz][qubits][seed][noise]["0.03"][encoding][problem_seed] += 1
+        all_cfgs[ansatz][qubits][seed][noise]["0.03"][encoding][problem_seed][1] += 1
 
         converter_dict = {c: list_converter for c in array_cols}
 
@@ -199,7 +173,7 @@ def get_training_df(run_ids, debug=False):
 
         except Exception as e:
             print(f"No results for run {run_id}")
-            all_cfgs[ansatz][qubits][seed][noise]["0.03"][encoding][problem_seed] -= 1
+            all_cfgs[ansatz][qubits][seed][noise]["0.03"][encoding][problem_seed][1] -= 1
 
     if debug:
         check_complete(all_cfgs)
@@ -218,23 +192,6 @@ def get_csv_artifact(run_id, identifier: str, **kwargs):
     return df
 
 
-def get_plotly_artifact(run_id, identifier=""):
-    client = mlflow.tracking.MlflowClient()
-
-    sub_fig_path = client.download_artifacts(run_id, f"{identifier}.html", "./")
-    sub_fig = read_from_html(sub_fig_path)
-    sub_fig_trace = sub_fig.data[0]
-    sub_fig_trace.update(
-        # coloraxis=f"coloraxis",
-        zmax=1.0,
-        zmin=0.0,
-    )
-
-    os.remove(sub_fig_path)
-
-    return sub_fig_trace
-
-
 def get_expressibility_df(
     run_ids,
     debug=False,
@@ -244,6 +201,7 @@ def get_expressibility_df(
             "run_id",
             "ansatz",
             "qubits",
+            "layers",
             "seed",
             "BitFlip",
             "PhaseFlip",
@@ -274,6 +232,7 @@ def get_expressibility_df(
                 "run_id",
                 "ansatz",
                 "qubits",
+                "layers",
                 "seed",
             ]
         )
@@ -285,6 +244,9 @@ def get_expressibility_df(
 
         qubits = int(client.get_run(run_id).data.params["model.n_qubits"])
         sub_df_a.loc[it, "qubits"] = qubits
+
+        layers = int(client.get_run(run_id).data.params["model.n_layers"])
+        sub_df_a.loc[it, "layers"] = layers
 
         noise_params = client.get_run(run_id).data.params["model.noise_params"]
         noise = [k for k, v in ast.literal_eval(noise_params).items() if float(v) > 0.0]
@@ -307,9 +269,9 @@ def get_expressibility_df(
         seed = int(seed)
         sub_df_a.loc[it, "seed"] = seed
 
-        all_cfgs[ansatz][qubits][seed][noise][str(noise_value)]["RX"][1000] += 1
+        all_cfgs[ansatz][qubits][seed][noise][str(noise_value)]["RX"][1000][layers] += 1
         if (
-            all_cfgs[ansatz][qubits][seed][noise][str(noise_value)]["RX"][1000] > 1
+            all_cfgs[ansatz][qubits][seed][noise][str(noise_value)]["RX"][1000][layers] > 1
             or qubits == 7
         ):
             continue
@@ -320,7 +282,7 @@ def get_expressibility_df(
         ).reset_index(drop=True)
 
     if debug:
-        check_complete(all_cfgs, problem_seeds=[1000])
+        check_complete(all_cfgs, problem_seeds=[1000], export_layers=[1, 2, 4])
 
     return df
 
@@ -398,7 +360,7 @@ def get_entanglement_df(
             noise_value = noise_value[0]
         else:
             noise_value = 0
-        all_cfgs[ansatz][qubits][seed][noise][str(noise_value)]["RX"][1000] += 1
+        all_cfgs[ansatz][qubits][seed][noise][str(noise_value)]["RX"][1000][1] += 1
 
         try:
             sub_df_b = get_csv_artifact(run_id, "entangling_capability_noise")
@@ -408,21 +370,12 @@ def get_entanglement_df(
         except:
             print(f"No entanglement for run {run_id}")
             sub_df_b = pd.DataFrame()
-            all_cfgs[ansatz][qubits][seed][noise][str(noise_value)]["RX"] -= 1
+            all_cfgs[ansatz][qubits][seed][noise][str(noise_value)]["RX"][1] -= 1
 
     if debug:
         check_complete(all_cfgs, problem_seeds=[1000])
 
     return df
-
-
-def get_symbol_iterator():
-    raw_symbols = SymbolValidator().values
-    symbols = []
-    for i in range(0, len(raw_symbols), 12):
-        symbols.append(raw_symbols[i])
-
-    return iter(symbols)
 
 
 def init_all_cfg_dict():
@@ -433,6 +386,7 @@ def init_all_cfg_dict():
         "Strongly_Entangling_Plus",
         "Circuit_15",
         "Circuit_19",
+        "Circuit_20",
     ]:
         all_cfgs[circuit_type] = dict()
         for n_qubits in range(1, 8):
@@ -462,7 +416,11 @@ def init_all_cfg_dict():
                             for problem_seed in range(1000, 1010):
                                 all_cfgs[circuit_type][n_qubits][seed][noise][
                                     noise_value
-                                ][encoding][problem_seed] = 0
+                                ][encoding][problem_seed] = dict()
+                                for n_layers in [1, 2, 4]:
+                                    all_cfgs[circuit_type][n_qubits][seed][noise][
+                                        noise_value
+                                    ][encoding][problem_seed][n_layers] = 0
 
     return all_cfgs
 
@@ -482,12 +440,13 @@ def check_complete(
         "noiseless",
     ],
     problem_seeds=[1000, 1001, 1002, 1003, 1004, 1005, 1006, 1007, 1008, 1009],
+    export_layers=[1],
 ):
     for circuit_type in [
         "Hardware_Efficient",
         "Strongly_Entangling",
-        "Circuit_15",
         "Circuit_19",
+        "Circuit_20",
     ]:
         for n_qubits in export_qubits:
             for seed in range(1000, 1005):
@@ -497,17 +456,18 @@ def check_complete(
                             continue
                         for encoding in ["RX", "RY", "RXRY"]:
                             for problem_seed in problem_seeds:
-                                if (
-                                    all_cfgs[circuit_type][n_qubits][seed][noise][
-                                        noise_value
-                                    ][encoding][problem_seed]
-                                    != 1
-                                ):
-                                    print(
-                                        f"Got {all_cfgs[circuit_type][n_qubits][seed][noise][noise_value][encoding][problem_seed]} for "
-                                        f"{circuit_type}, {n_qubits}, {seed}, {noise}={noise_value}, {encoding}, "
-                                        f"ps={problem_seed}"
-                                    )
+                                for n_layers in export_layers:
+                                    if (
+                                        all_cfgs[circuit_type][n_qubits][seed][noise][
+                                            noise_value
+                                        ][encoding][problem_seed][n_layers]
+                                        != 1
+                                    ):
+                                        print(
+                                            f"Got {all_cfgs[circuit_type][n_qubits][seed][noise][noise_value][encoding][problem_seed]} for "
+                                            f"{circuit_type}, {n_qubits}, {seed}, {noise}={noise_value}, {encoding}, "
+                                            f"ps={problem_seed}, {n_layers} layers"
+                                        )
 
 
 def get_coeffs_df(
@@ -545,7 +505,7 @@ def get_coeffs_df(
         "GateError",
     ]
     if export_selective_noise:
-        columns.append("selective_noise")
+        columns.extend(["selective_noise", "oversampling"])
     array_cols = [
         "coeffs_abs_var",
         "coeffs_abs_mean",
@@ -662,15 +622,29 @@ def get_coeffs_df(
         if noise not in export_noise_types:
             continue
 
-        all_cfgs[ansatz][qubits][seed][noise][str(noise_value)][encoding][1000] += 1
-
+        # The selective (coherent) noise study (export_selective_noise=True)
+        # is identified by a non-default selective_noise and/or oversampling
+        # (the study was run with oversampling=20). When reproduced locally,
+        # it shares the MLflow experiment with the main coefficient study,
+        # which must only contain runs with the default configuration.
+        selective_noise = client.get_run(run_id).data.params.get(
+            "coefficients.selective_noise", "both"
+        )
+        oversampling = int(
+            client.get_run(run_id).data.params.get("coefficients.oversampling", 1)
+        )
+        is_selective_run = selective_noise != "both" or oversampling != 1
         if export_selective_noise:
-            selective_noise = client.get_run(run_id).data.params.get(
-                "coefficients.selective_noise", "both"
-            )
+            if not is_selective_run:
+                continue
             sub_df_a.loc[it, "selective_noise"] = selective_noise
+            sub_df_a.loc[it, "oversampling"] = oversampling
+        elif is_selective_run:
+            continue
 
-        if export_min_max:
+        all_cfgs[ansatz][qubits][seed][noise][str(noise_value)][encoding][1000][1] += 1
+
+        if export_min_max or export_full_coeffs:
             converter_dict = {c: list_converter for c in array_cols + big_array_cols}
         else:
             converter_dict = {c: list_converter for c in array_cols}
@@ -705,7 +679,7 @@ def get_coeffs_df(
         except Exception:
             print(f"No coefficients for run {run_id}")
             sub_df_b = pd.DataFrame()
-            all_cfgs[ansatz][qubits][seed][noise][str(noise_value)][encoding][1000] -= 1
+            all_cfgs[ansatz][qubits][seed][noise][str(noise_value)][encoding][1000][1] -= 1
 
     if debug:
         check_complete(
@@ -733,7 +707,7 @@ def assign_ansatz_id(df):
 
 
 def run_ids_from_experiment_id(
-    experiment_ids: Union[List[str], str],
+    experiment_id: Optional[str],
     existing_run_ids: Optional[List[str]],
     experiment_type: Optional[str] = None,
     n: Optional[int] = None,
@@ -743,7 +717,11 @@ def run_ids_from_experiment_id(
         if experiment_type is not None
         else None
     )
-    runs = mlflow.search_runs(experiment_ids, filter_string=filter_string)
+    runs = mlflow.search_runs(
+        [experiment_id] if experiment_id is not None else None,
+        search_all_experiments=experiment_id is None,
+        filter_string=filter_string,
+    )
 
     run_ids = runs["run_id"].to_list()
     if n is not None:

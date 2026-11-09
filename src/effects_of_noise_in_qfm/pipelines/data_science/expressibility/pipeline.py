@@ -12,8 +12,6 @@ def create_pipeline() -> Pipeline:
                     "model": "model",
                     "n_bins": "params:expressibility.n_bins",
                     "n_samples": "params:expressibility.n_samples",
-                    "input_domain": "params:data.domain",
-                    "n_input_samples": "params:expressibility.n_input_samples",
                     "noise_params": "params:model.noise_params",
                     "seed": "params:seed",
                 },

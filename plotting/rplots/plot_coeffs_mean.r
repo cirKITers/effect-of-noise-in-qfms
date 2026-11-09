@@ -26,6 +26,7 @@ d_coeffs_1D <- read_csv(coeffs_path_1D)
 d_coeffs_2D <- read_csv(coeffs_path_2D)
 
 d_coeffs_1D <- d_coeffs_1D %>%
+    filter(encoding %in% c("RX", "RY", "RXRY")) %>%
     mutate(coeffs_abs_mean = ifelse(coeffs_abs_mean < 1e-14, NA, coeffs_abs_mean)) %>%
     group_by(
         BitFlip, PhaseFlip, Depolarizing,
@@ -40,6 +41,7 @@ d_coeffs_1D <- d_coeffs_1D %>%
         sd_mean_abs = sd(coeffs_abs_mean),
         rel_sd_mean_abs = sd(coeffs_abs_mean) / mean(coeffs_abs_mean),
         sd_abs = mean(sqrt(coeffs_abs_var)),
+        rel_sd = mean(sqrt(coeffs_abs_var) / coeffs_abs_mean),
         coeffs_var_real = mean(coeffs_real_var),
         coeffs_var_imag = mean(coeffs_imag_var),
         coeffs_covar_ri = mean(coeffs_co_var_real_imag)
@@ -47,12 +49,11 @@ d_coeffs_1D <- d_coeffs_1D %>%
     mutate(
         upper_bound = mean_abs + sd_abs,
         lower_bound = mean_abs - sd_abs,
-        rel_sd = sd_abs / mean_abs,
         freq2 = 0
     )
 
 d_coeffs_2D <- d_coeffs_2D %>%
-    mutate(coeffs_abs_mean = ifelse(coeffs_abs_mean < 1e-14 & ansatz != "Strongly_Entangling", NA, coeffs_abs_mean)) %>%
+    mutate(coeffs_abs_mean = ifelse(coeffs_abs_mean < 1e-14, NA, coeffs_abs_mean)) %>%
     group_by(
         BitFlip, PhaseFlip, Depolarizing,
         AmplitudeDamping, PhaseDamping,
@@ -65,12 +66,12 @@ d_coeffs_2D <- d_coeffs_2D %>%
         mean_abs = mean(coeffs_abs_mean),
         sd_mean_abs = sd(coeffs_abs_mean),
         rel_sd_mean_abs = sd(coeffs_abs_mean) / mean(coeffs_abs_mean),
-        sd_abs = mean(sqrt(coeffs_abs_var))
+        sd_abs = mean(sqrt(coeffs_abs_var)),
+        rel_sd = mean(sqrt(coeffs_abs_var) / coeffs_abs_mean)
     ) %>%
     mutate(
         upper_bound = mean_abs + sd_abs,
         lower_bound = mean_abs - sd_abs,
-        rel_sd = sd_abs / mean_abs,
     )
 
 stat_coeff <- d_coeffs_1D %>% filter(!is.na(mean_abs) & !is.na(rel_sd_mean_abs) & GateError <= 0)
@@ -101,7 +102,7 @@ d_coeffs <- d_coeffs %>%
     mutate(
         noise_category = ifelse(
             noise_type %in% c("BitFlip", "PhaseFlip", "Depolarizing"),
-            "Decoherent Gate",
+            "Decoherent",
             ifelse(
                 noise_type %in% c("StatePreparation", "Measurement"),
                 "SPAM",
@@ -115,7 +116,7 @@ d_coeffs <- d_coeffs %>%
         noise_value = round(noise_value, digits = 3)
     )
 
-d_coeffs$noise_category <- factor(d_coeffs$noise_category, levels = c("","Decoherent Gate", "SPAM", "Damping", "Coh."))
+d_coeffs$noise_category <- factor(d_coeffs$noise_category, levels = c("","Decoherent", "SPAM", "Damping", "Coh."))
 d_coeffs$noise_type <- factor(d_coeffs$noise_type,
     levels = c(
         "Noiseless", "BitFlip", "PhaseFlip", "Depolarizing",
@@ -131,10 +132,7 @@ d_coeffs$noise_type <- factor(d_coeffs$noise_type,
     ),
 )
 
-d_coeffs$ansatz <- factor(d_coeffs$ansatz,
-    levels = c("Strongly_Entangling", "Hardware_Efficient", "Circuit_15", "Circuit_19"),
-    labels = c("SEA", "HEA", "C15", "C19")
-)
+d_coeffs$ansatz <- ansatz_to_factor(d_coeffs$ansatz)
 
 d_coeffs_selection <- d_coeffs %>%
     filter(noise_type %in% c("DP", "ME", "AD", "CGE"))
@@ -244,7 +242,7 @@ g <- ggplot(
     scale_linetype_manual("", values = c("solid", "11")) +
     scale_shape_manual("", values = c(4, 17)) +
     scale_x_continuous("Noise Level", labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.02)) +
-    scale_y_log10(ifelse(use_tikz, "$\\sigma_c({\\boldsymbol{\\omega}})$ [log]", "|c| Relative Standard Deviation"), ) +
+    scale_y_log10(ifelse(use_tikz, "$\\sigma_c({\\boldsymbol{\\omega}})$ [log]", "|c| Relative Standard Deviation"), breaks=c(0.5, 1, 2)) +
     theme_paper() +
     guides(colour = guide_legend(nrow = 1), shape = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE), override.aes = list(alpha = 1, size = 3 * POINT.SIZE)))
 save_name <- str_c("coeff_abs_sd")
@@ -262,12 +260,12 @@ for (enc in c("RX", "RY")) {
         scale_fill_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "Frequency"), values = COLOURS.LIST) +
         scale_x_continuous("Noise Level", labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.02)) +
         theme_paper() +
-        guides(colour = guide_legend(nrow = 2, theme = theme(legend.byrow = TRUE))) +
+        guides(colour = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE))) +
         scale_y_log10(ifelse(use_tikz, "$\\mu_c({\\boldsymbol{{\\boldsymbol{\\omega}}}})$ [log]", "|c| Mean [log]"),
             breaks = c(1e-1, 1e-3, 1e-5), #scales::trans_breaks("log10", function(x) 10^x),
             labels = trans_format("log10", math_format(10^.x))
         ) +
-        facet_nested(noise_category + noise_type ~ ansatz,
+        facet_nested(ansatz ~ noise_category + noise_type,
             labeller = labeller(
                 freq1 = frequencies_labeller,
                 qubits = qubit_labeller,
@@ -278,7 +276,7 @@ for (enc in c("RX", "RY")) {
         )
 
     save_name <- str_c("coeff_mean_qubits6_", enc)
-    create_plot(g, save_name, 0.48* TEXTWIDTH, 0.45 * HEIGHT)
+    create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)
 
     g <- ggplot(d_coeffs_6q, aes(x = noise_value, y = rel_sd, colour = as.factor(freq1))) +
         geom_point(size = POINT.SIZE) +
@@ -286,9 +284,9 @@ for (enc in c("RX", "RY")) {
         scale_colour_manual(ifelse(use_tikz, "${\\boldsymbol{\\omega}}$", "Frequency"), values = COLOURS.LIST) +
         scale_x_continuous("Noise Level", labels = ifelse(use_tikz, latex_percent, scales::percent), breaks = seq(0, 1, 0.02)) +
         theme_paper() +
-        guides(colour = guide_legend(nrow = 2, theme = theme(legend.byrow = TRUE))) +
-        scale_y_log10(ifelse(use_tikz, "$\\sigma_c({\\boldsymbol{\\omega}})$ [log]", "|c| Relative Standard Deviation"), ) +
-        facet_nested(noise_category + noise_type ~ ansatz,
+        guides(colour = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE))) +
+        scale_y_log10(ifelse(use_tikz, "$\\sigma_c({\\boldsymbol{\\omega}})$ [log]", "|c| Relative Standard Deviation"), breaks=c(0.5, 1, 2)) +
+        facet_nested(ansatz ~ noise_category + noise_type,
             labeller = labeller(
                 freq1 = frequencies_labeller,
                 qubits = qubit_labeller,
@@ -297,9 +295,9 @@ for (enc in c("RX", "RY")) {
         theme(
             legend.key.height = unit(0.2, "cm")
         )
-    
+
     save_name <- str_c("coeff_sd_qubits6_", enc)
-    create_plot(g, save_name, 0.48* TEXTWIDTH, 0.45 * HEIGHT)
+    create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)
 
     d_coeffs_6q <- d_coeffs_6q %>%
         filter(noise_value %in% c(0, 0.03))
@@ -350,7 +348,7 @@ for (enc in c("RX", "RY")) {
         scale_x_discrete("") +
         scale_y_continuous() +
         guides(
-            shape = guide_legend(nrow = 2, theme = theme(legend.byrow = TRUE), override.aes = list(size = 3 * POINT.SIZE, colour = c(COLOURS.LIST[1], COLOURS.LIST[2], COLOURS.LIST[2], COLOURS.LIST[2], COLOURS.LIST[3], COLOURS.LIST[3], COLOURS.LIST[4], COLOURS.LIST[4], COLOURS.LIST[5]))),
+            shape = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE), override.aes = list(size = 3 * POINT.SIZE, colour = c(COLOURS.LIST[1], COLOURS.LIST[2], COLOURS.LIST[2], COLOURS.LIST[2], COLOURS.LIST[3], COLOURS.LIST[3], COLOURS.LIST[4], COLOURS.LIST[4], COLOURS.LIST[5]))),
             colour = "none",
         ) +
         theme(
@@ -381,5 +379,5 @@ for (enc in c("RX", "RY")) {
         theme(axis.text.x = element_text(size = BASE.SIZE - 3))
 
     save_name <- str_c("coeff_covar_qubits6_sel_", enc)
-    create_plot(g, save_name, 0.6 * TEXTWIDTH, 0.31 * HEIGHT)
+    create_plot(g, save_name, TEXTWIDTH, 0.3 * HEIGHT)
 }

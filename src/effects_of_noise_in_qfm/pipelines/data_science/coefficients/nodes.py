@@ -1,11 +1,13 @@
 from qml_essentials.model import Model
 from qml_essentials.coefficients import Coefficients
-from qml_essentials.ansaetze import Gates
-import pennylane.numpy as np
+from jaqsi.unitary import UnitaryGates
+import jax
+import numpy as np
 from rich.progress import Progress
 from typing import Dict
 import pandas as pd
 from functools import partial
+from copy import copy
 import logging
 
 from effects_of_noise_in_qfm.helpers.utils import NoiseDict
@@ -45,7 +47,7 @@ def iterate_noise(
             "frequencies",
         ]
     )
-    rng = np.random.default_rng(seed)
+    random_key = jax.random.key(seed)
 
     enc = model._enc
 
@@ -60,23 +62,21 @@ def iterate_noise(
         kwargs["noise_params"] = None
         return pqc(*args, **kwargs)
 
-    def pqc_no_batch_gate_error(*args, **kwargs):
-        Gates.batch_gate_error = False
-        ret = pqc(*args, **kwargs)
-        Gates.batch_gate_error = True
-        return ret
-
     if selective_noise == "iec":
         model.pqc = pqc_noise_free
     elif selective_noise == "pqc":
-        model._enc = [partial(enc_noise_free, i) for i in range(len(model._enc))]
-        model.pqc = pqc_no_batch_gate_error
+        # keep the Encoding object (the model reads its attributes) and only
+        # replace the encoding gates by their noise-free versions
+        model._enc = copy(enc)
+        model._enc.callable = [partial(enc_noise_free, i) for i in range(len(enc))]
     elif selective_noise != "both":
         raise ValueError(
             f"selective_noise must be 'both', 'iec' or 'pqc', got {selective_noise}"
         )
-    else:
-        model.pqc = pqc_no_batch_gate_error
+
+    # Coherent gate errors are quasi-static: use one error realisation for all
+    # inputs and parameter samples instead of redrawing it per batch element
+    UnitaryGates.batch_gate_error = False
 
     if scale:
         n_samples = int(np.power(2, model.n_qubits) * n_samples)
@@ -94,7 +94,7 @@ def iterate_noise(
             coeffs = []
             freqs = []
             # Re-initialize model, because it triggers new sampling
-            model.initialize_params(rng=rng, repeat=n_samples)
+            random_key = model.initialize_params(random_key, repeat=n_samples)
 
             cs, f = Coefficients.get_spectrum(
                 model=model,
@@ -115,9 +115,9 @@ def iterate_noise(
                         freqs.append(f[len(f) // 2 + 1 :])
                 else:
                     coeffs.append(c)
-                    _f = np.stack(np.meshgrid(*[f] * model.n_input_feat)).T.reshape(
-                        *c.shape, model.n_input_feat
-                    )
+                    # f holds one frequency vector per input feature;
+                    # build the grid of frequency tuples matching the axes of c
+                    _f = np.stack(np.meshgrid(*f, indexing="ij"), axis=-1)
                     freqs.append(_f)
 
                 progress.update(sample_coeff_task, advance=1)
@@ -148,34 +148,14 @@ def iterate_noise(
             df.loc[step, "coeffs_abs_mean"] = np.abs(coeffs).mean(axis=0).tolist()
             df.loc[step, "coeffs_real_mean"] = mean_real.tolist()
             df.loc[step, "coeffs_imag_mean"] = mean_imag.tolist()
-            df.loc[step, "coeffs_full_real"] = np.array(coeffs).T.real.tolist()
-            df.loc[step, "coeffs_full_imag"] = np.array(coeffs).T.imag.tolist()
+            # move the sample axis to the end (.T would also swap the frequency
+            # axes for multi-dimensional inputs)
+            coeffs_full = np.moveaxis(np.array(coeffs), 0, -1)
+            df.loc[step, "coeffs_full_real"] = coeffs_full.real.tolist()
+            df.loc[step, "coeffs_full_imag"] = coeffs_full.imag.tolist()
             df.loc[step, "frequencies"] = freqs[0].tolist()
 
             progress.advance(noise_it_task)
 
-    import plotly.graph_objects as go
-    import plotly.colors as pc
-
-    colors = pc.sequential.Plasma
-    fig = go.Figure(
-        data=[
-            go.Scatter(
-                x=df.frequencies[i],
-                y=df.coeffs_abs_mean.iloc[i],
-                mode="markers",
-                name=f"Noise level {df.noise_level[i]:.2f}",
-                marker=dict(color=colors[i]),
-            )
-            for i in range(noise_steps + 1)
-        ]
-    )
-    fig.update_layout(
-        title="Absolute value of the coefficients",
-        xaxis_title="Frequency",
-        yaxis_title="Absolute value of the coefficient",
-        template="plotly_white",
-        yaxis_type="log",
-    )
-    fig.show()
+    UnitaryGates.batch_gate_error = True
     return {"coefficients_noise": df}

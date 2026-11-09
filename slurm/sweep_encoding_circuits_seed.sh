@@ -3,7 +3,7 @@
 # first argument: seed
 
 # run experiments with all different circuits
-# Hardware_Efficient Circuit_19 Strongly_Entangling Circuit_15
+# Hardware_Efficient Circuit_19 Strongly_Entangling Circuit_20
 for encoding in RX RY RZ
 do
     echo "Running with Encoding $encoding"

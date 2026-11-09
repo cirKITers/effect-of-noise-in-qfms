@@ -1,10 +1,12 @@
 from qml_essentials.entanglement import Entanglement
 from qml_essentials.coefficients import Coefficients
 from qml_essentials.model import Model
-from qml_essentials.ansaetze import Gates
+from jaqsi.unitary import UnitaryGates
 
-import pennylane as qml
-import pennylane.numpy as np
+import jax
+import jax.numpy as jnp
+import optax
+import numpy as np
 import mlflow
 from typing import Dict, Tuple, Callable
 from rich.progress import track
@@ -27,11 +29,14 @@ def validate_problem(omegas: int, model: Model):
         model (Model): The function approximating model.
     """
     if model.n_layers == 1 or model.n_qubits == 1:
-        if model.degree < omegas:
+        # model.degree is the number of coefficients, so compare the
+        # highest reachable frequency instead
+        max_freq = int(np.max(model.frequencies[0]))
+        if max_freq < omegas:
             log.warning(
                 f"Model is too small to use {omegas} frequencies. Consider adjusting the model degree."
             )
-        elif model.degree > omegas:
+        elif max_freq > omegas:
             log.warning(
                 f"Model is too large to use {omegas} frequencies. Consider adjusting the model degree."
             )
@@ -43,35 +48,37 @@ def validate_problem(omegas: int, model: Model):
 
 ## TODO: move to qml_essentials
 def step_cost_and_grads(
-    opt: qml.GradientDescentOptimizer, objective_fn: Callable, *args, **kwargs
-) -> Tuple[np.ndarray, float, np.ndarray]:
+    opt: optax.GradientTransformation,
+    opt_state: optax.OptState,
+    objective_fn: Callable,
+    params: jnp.ndarray,
+    **kwargs,
+) -> Tuple[jnp.ndarray, optax.OptState, float, jnp.ndarray]:
     """
-    Same as qml.GradientDescentOptimizer.step_and_cost but with returning the
+    Same as an optax update step but with returning the cost and the
     gradients
 
-    Update trainable arguments with one step of the optimizer and return the
+    Update trainable parameters with one step of the optimizer and return the
     corresponding objective function value prior to the step.
 
     Args:
-        opt (qml.GradientDescentOptimizer): PennyLane Optimiser.
+        opt (optax.GradientTransformation): Optax Optimiser.
+        opt_state (optax.OptState): Current state of the optimiser.
         objective_fn (Callable): The objective function for optimisation.
+        params (jnp.ndarray): The trainable parameters :math:`x^{(t)}`.
+        kwargs: Additional keyword arguments for the objective function.
 
     Returns:
-        Tuple[np.ndarray, float, np.ndarray]:
+        Tuple[jnp.ndarray, optax.OptState, float, jnp.ndarray]:
             - The new variable values :math:`x^{(t+1)}`.
+            - The updated optimiser state.
             - The objective function output prior to the step.
             - The gradients.
     """
-    g, forward = opt.compute_grad(objective_fn, args, kwargs)
-    new_args = opt.apply_grad(g, args)
+    forward, g = jax.value_and_grad(objective_fn)(params, **kwargs)
+    updates, opt_state = opt.update(g, opt_state, params)
 
-    if forward is None:
-        forward = objective_fn(*args, **kwargs)
-
-    # unwrap from list if one argument, cleaner return
-    if len(new_args) == 1:
-        return new_args[0], forward, g
-    return new_args, forward, g
+    return optax.apply_updates(params, updates), opt_state, forward, g
 
 
 def train_model(
@@ -85,6 +92,9 @@ def train_model(
     convergence_threshold: float,
     convergence_gradient: float,
     convergence_steps: int,
+    metric_steps: int,
+    measure: str,
+    loss: str,
 ) -> Dict[str, pd.DataFrame]:
     """
     Train a given model on the regression task of a target Fourier series.
@@ -106,24 +116,53 @@ def train_model(
             -1 to disable.
         convergence_steps (int): Number of steps over which the gradient is
             checked if convergence_gradient is set.
+        metric_steps (int): Interval (in training steps) at which the
+            expensive entanglement metric is computed. Entanglement is
+            evaluated at step 0 and every ``metric_steps`` steps afterwards;
+            in all other steps the "entanglement" column is left empty (NaN).
+        measure (str): Entanglement measure, either Entanglement of Formation
+            (EF), Meyer-Wallach (MW) or Mean Negativity (MN).
+        loss (str): Training objective, either the MSE on the training inputs
+            ("mse") or the squared complex coefficient error summed over all
+            frequencies ("coeff").
 
     Returns:
         Dict[str, pd.DataFrame]: Result dict containing the following:
             - "params": Parameter at each step.
             - "grads": Gradients at each step.
-            - "metrics": Metrics occuring during the training (MSE, FS dist,
-                Entanglement, Fourier Coefficients).
+            - "metrics": Metrics occuring during the training (MSE, summed
+                squared coefficient error, Entanglement (every
+                ``metric_steps``), Fourier Coefficients).
     """
-    opt = qml.AdamOptimizer(stepsize=learning_rate)
+    if metric_steps < 1:
+        raise ValueError(f"metric_steps must be >= 1, got {metric_steps}")
+
+    if loss not in ("mse", "coeff"):
+        raise ValueError(f"Unknown loss: {loss}")
+
+    if measure == "EF":
+        ent_measure = Entanglement.entanglement_of_formation
+    elif measure == "MW":
+        ent_measure = Entanglement.meyer_wallach
+    elif measure == "MN":
+        ent_measure = Entanglement.mean_negativity
+    else:
+        raise ValueError(f"Unknown entanglement measure: {measure}")
+
+    # same hyperparameters as the previously used PennyLane AdamOptimizer
+    opt = optax.adam(learning_rate=learning_rate, b1=0.9, b2=0.99, eps=1e-8)
+    opt_state = opt.init(model.params)
 
     # Indices for logging params and gradients
+    # (model params carry a leading batch dimension of size one)
+    params_shape = model.params.shape[-2:]
     df_param_index_names = ["layer_dim", "param_dim"]
     df_params_index = pd.MultiIndex.from_product(
-        [range(s) for s in model.params.shape], names=df_param_index_names
+        [range(s) for s in params_shape], names=df_param_index_names
     )
     df_grads_index_names = ["out_dim", "layer_dim", "param_dim"]
     df_grads_index = pd.MultiIndex.from_product(
-        [range(s) for s in (1, *model.params.shape)], names=df_grads_index_names
+        [range(s) for s in (1, *params_shape)], names=df_grads_index_names
     )
     df_params = pd.DataFrame()
     df_grads = pd.DataFrame()
@@ -140,9 +179,20 @@ def train_model(
     )
 
     def mse(prediction, target):
-        return np.mean((prediction - target) ** 2)
+        return jnp.mean((prediction - target) ** 2)
+
+    def coeff_error(coeffs):
+        return jnp.sum(jnp.abs(coeffs - fourier_coefficients) ** 2)
 
     def cost(params, **kwargs):
+        if loss == "coeff":
+            kwargs.pop("inputs")
+            coeffs, _ = Coefficients.get_spectrum(
+                model, shift=True, trim=True, params=params, **kwargs
+            )
+            return coeff_error(coeffs)
+
+        # force_mean already averages over the measured qubits
         prediction = model(params=params, **kwargs)
         if model.execution_type == "probs":
             # convert probabilities for zero state to expectation value
@@ -151,52 +201,46 @@ def train_model(
                 f"{model.execution_type} in conjunction with shots."
             )
             prediction = 2 * prediction[:, 0] - 1
-        elif isinstance(model.output_qubit, list):
-            prediction = np.mean(prediction, axis=0)
         return mse(prediction, fourier_series)
 
     log.info(f"Training model for {steps} steps")
 
     costs = np.zeros(steps)
 
-    # HACK
-    pqc = model.pqc
-
-    def pqc_no_batch_gate_error(*args, **kwargs):
-        Gates.batch_gate_error = False
-        ret = pqc(*args, **kwargs)
-        Gates.batch_gate_error = True
-        return ret
+    # Coherent gate errors are quasi-static
+    # thus, one gate error realisation should be used.
+    # Note that this sets the gate error for the entire training
+    # to a single realization; we might want to reconsider that in the future
+    UnitaryGates.batch_gate_error = False
 
     for step in track(range(steps), description="Training..", total=steps):
         df_metrics.loc[step, "step"] = step
 
-        # log entanglement
-        ent_cap = Entanglement.entanglement_of_formation(
-            model=model,
-            n_samples=0,  # disable sampling, use model params
-            seed=None,  # set seed none to disable warnings
-            noise_params=noise_params,
-            cache=False,
-        )
-        log.debug(f"Entangling capability in step {step}: {ent_cap}")
-        mlflow.log_metric("entangling_capability", ent_cap, step)
-        df_metrics.loc[step, "entanglement"] = ent_cap
+        # log entanglement (expensive, therefore only every metric_steps)
+        if step % metric_steps == 0:
+            ent_cap = float(
+                ent_measure(
+                    model=model,
+                    n_samples=0,  # disable sampling, use model params
+                    noise_params=noise_params,
+                )
+            )
+            log.debug(f"Entangling capability in step {step}: {ent_cap}")
+            mlflow.log_metric("entangling_capability", ent_cap, step)
+            df_metrics.loc[step, "entanglement"] = ent_cap
+        else:
+            # leave the column empty for steps without entanglement data
+            df_metrics.loc[step, "entanglement"] = np.nan
 
-        # HACK
-        model.pqc = pqc_no_batch_gate_error
         # log coefficients
         coeffs, freqs = Coefficients.get_spectrum(
             model=model,
             shift=True,
             trim=True,
             noise_params=noise_params,
-            cache=False,
         )
-        # HACK
-        model.pqc = pqc
 
-        dist = np.sum(np.abs(coeffs - fourier_coefficients))
+        dist = float(coeff_error(coeffs))
         log.debug(f"Coefficients dist: {dist}")
         df_metrics.loc[step, "coeff_dist"] = dist
 
@@ -204,27 +248,42 @@ def train_model(
             coeffs = coeffs[len(coeffs) // 2 :]
             freqs = freqs[len(freqs) // 2 :]
         else:
-            freqs = np.stack(np.meshgrid(*[freqs] * model.n_input_feat)).T.reshape(
-                *coeffs.shape, model.n_input_feat
-            )
+            # freqs holds one frequency vector per input feature;
+            # build the grid of frequency tuples matching the axes of coeffs
+            freqs = np.stack(np.meshgrid(*freqs, indexing="ij"), axis=-1)
 
         log.debug(f"Frequencies in step {step}: {freqs}")
         log.debug(f"Coefficients in step {step}: {coeffs}")
 
         df_metrics.loc[step, "frequencies"] = freqs.tolist()
-        df_metrics.loc[step, "coeffs_real"] = np.array(coeffs).T.real.tolist()
-        df_metrics.loc[step, "coeffs_imag"] = np.array(coeffs).T.imag.tolist()
+        df_metrics.loc[step, "coeffs_real"] = np.array(coeffs).real.tolist()
+        df_metrics.loc[step, "coeffs_imag"] = np.array(coeffs).imag.tolist()
+
+        if loss == "coeff":
+            mse_val = mse(
+                model(
+                    inputs=jnp.asarray(domain_samples),
+                    noise_params=noise_params,
+                    execution_type="expval",
+                    force_mean=True,
+                    random_key=model.next_key(),
+                ),
+                fourier_series,
+            )
 
         # actual training step
-        model.params, cost_val, grads = step_cost_and_grads(
+        model.params, opt_state, cost_val, grads = step_cost_and_grads(
             opt,
+            opt_state,
             cost,
             model.params,
             inputs=domain_samples,
             noise_params=noise_params,
-            cache=False,  # disable caching because currently no gradients are being stored
             execution_type="expval",
             force_mean=True,
+            # fresh randomness (shots) has to be passed in
+            # explicitly when the model is called inside a JAX transform
+            random_key=model.next_key(),
         )
 
         # log params and gradients
@@ -249,20 +308,22 @@ def train_model(
 
         # log cost
         log.debug(f"Cost in step {step}: {cost_val}")
-        mlflow.log_metric("mse", cost_val, step)
-        df_metrics.loc[step, "mse"] = cost_val
+        if loss == "mse":
+            mse_val = cost_val
+        mlflow.log_metric("mse", mse_val, step)
+        df_metrics.loc[step, "mse"] = mse_val
         costs[step] = cost_val
 
         # log control parameters
         control_params = np.array(
             [
                 model.pqc.get_control_angles(params, model.n_qubits)
-                for params in model.params
+                for params in model.params[0]
             ]
         )
         indices = model.pqc.get_control_indices(model.n_qubits)
         if indices is not None:
-            control_params = model.params[:, indices[0] : indices[1] : indices[2]]
+            control_params = model.params[..., indices[0] : indices[1] : indices[2]]
             control_rotation_mean = (
                 np.sum(np.abs(control_params) % (2 * np.pi)) / control_params.size
             )
@@ -284,6 +345,8 @@ def train_model(
                 f"Convergence gradient {convergence_gradient} reached after {step} steps."
             )
             break
+
+    UnitaryGates.batch_gate_error = True
 
     # Convert indices to columns
     df_params = df_params.rename_axis(df_param_index_names).reset_index()
@@ -309,6 +372,9 @@ def iterate_noise(
     convergence_gradient: float,
     convergence_steps: int,
     seed: int,
+    metric_steps: int,
+    measure: str,
+    loss: str,
 ):
     """
     Iterate over different noise levels and train a given model on the
@@ -334,14 +400,19 @@ def iterate_noise(
         convergence_steps (int): Number of steps over which the gradient is
             checked if convergence_gradient is set.
         seed (int): Seed for model initialisation each noise param iteration.
+        metric_steps (int): Interval (in training steps) at which the
+            entanglement metric is computed.
+        measure (str): Entanglement measure (EF, MW or MN).
+        loss (str): Training objective ("mse" or "coeff").
 
     Returns:
         Dict[str, pd.DataFrame]: Result dict containing the following for all
         noise levels:
             - "params": Parameter at each step.
             - "grads": Gradients at each step.
-            - "metrics": Metrics occuring during the training (MSE, FS dist,
-                Entanglement, Fourier Coefficients).
+            - "metrics": Metrics occuring during the training (MSE, summed
+                squared coefficient error, Entanglement, Fourier
+                Coefficients).
     """
     noise_params = NoiseDict(noise_params)
     noise_columns_df = [
@@ -357,7 +428,7 @@ def iterate_noise(
         part_noise_params = noise_params * (step / noise_steps)
 
         # Reset Model
-        model.initialize_params(np.random.default_rng(seed))
+        model.initialize_params(jax.random.key(seed))
         res = train_model(
             model,
             domain_samples,
@@ -369,6 +440,9 @@ def iterate_noise(
             convergence_threshold,
             convergence_gradient,
             convergence_steps,
+            metric_steps,
+            measure,
+            loss,
         )
 
         # Add noise data to dfs
