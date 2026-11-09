@@ -1,0 +1,926 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://cirkiters.github.io/effect-of-noise-in-qfms/setup/">
+      
+      
+        <link rel="prev" href="..">
+      
+      
+        <link rel="next" href="../coefficients/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+    
+    
+      
+        <title>Setup - Effects of Noise in QFMs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../style.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+   <link href="../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#setup" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Effects of Noise in QFMs" class="md-header__button md-logo" aria-label="Effects of Noise in QFMs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Effects of Noise in QFMs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Setup
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9zM20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12zm-9.15 3.96h2.3L12 9z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="amber"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="amber"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Effects of Noise in QFMs" class="md-nav__button md-logo" aria-label="Effects of Noise in QFMs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Effects of Noise in QFMs
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Setup
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#noise_models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Noise Models
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ansaetze" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ansaetze
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Ansaetze">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#strongly_entangling_ansatz_sea" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Strongly Entangling Ansatz (SEA)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hardware_efficient_ansatz_hea" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hardware Efficient Ansatz (HEA)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ry-rotation-only_ansatz_rya_circuit_20" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RY-Rotation-Only Ansatz (RYA, Circuit 20)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#controlled_rotation_ansatz_cra_circuit_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Controlled Rotation Ansatz (CRA, Circuit 19)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#experimental_protocol" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Experimental Protocol
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../coefficients/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Coefficients
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../coefficients1d_rx/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1D-Coefficients - RX Encoding
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../coefficients1d_ry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1D-Coefficients - RY Encoding
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../coefficients2d/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2D-Coefficients
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../training/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../entanglement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Entanglement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../expressibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Expressibility
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#noise_models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Noise Models
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ansaetze" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ansaetze
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Ansaetze">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#strongly_entangling_ansatz_sea" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Strongly Entangling Ansatz (SEA)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hardware_efficient_ansatz_hea" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hardware Efficient Ansatz (HEA)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ry-rotation-only_ansatz_rya_circuit_20" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RY-Rotation-Only Ansatz (RYA, Circuit 20)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#controlled_rotation_ansatz_cra_circuit_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Controlled Rotation Ansatz (CRA, Circuit 19)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#experimental_protocol" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Experimental Protocol
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="setup">Setup<a class="headerlink" href="#setup" title="Permanent link">#</a></h1>
+<p>Our implementation heavily relies on our <a href="https://cirkiters.github.io/qml-essentials/">QML Essentials package</a>.
+Furthermore we use <a href="https://kedro.readthedocs.io/">Kedro</a> to manage our experiments.</p>
+<h2 id="noise_models">Noise Models<a class="headerlink" href="#noise_models" title="Permanent link">#</a></h2>
+<p>The noise model we use in our experiments can be summarized as follows:
+<a class="glightbox" href="../figures/noise_0_light.png#only-light" data-type="image" data-width="auto" data-height="auto" data-title="Noise Model" data-desc-position="top"><img alt="Noise Model" src="../figures/noise_0_light.png#only-light" /></a>
+<a class="glightbox" href="../figures/noise_0_dark.png#only-dark" data-type="image" data-width="auto" data-height="auto" data-title="Noise Model" data-desc-position="top"><img alt="Noise Model" src="../figures/noise_0_dark.png#only-dark" /></a></p>
+<p>Here, <span class="arithmatex">\(\mathcal{N}_{SP}\)</span> describes state preparation noise, <span class="arithmatex">\(\mathcal{N}_{G}\)</span> gate noise and <span class="arithmatex">\(\mathcal{N}_{D}\)</span> circuit noise.
+Coherent gate errors are modelled by <span class="arithmatex">\(\epsilon\)</span>.</p>
+<p>The gate noise <span class="arithmatex">\(\mathcal{N}_G\)</span> can be decomposed as follows:
+<a class="glightbox" href="../figures/noise_1_light.png#only-light" data-type="image" data-width="auto" data-height="auto" data-title="Gate Noise" data-desc-position="top"><img alt="Gate Noise" src="../figures/noise_1_light.png#only-light" /></a>
+<a class="glightbox" href="../figures/noise_1_dark.png#only-dark" data-type="image" data-width="auto" data-height="auto" data-title="Gate Noise" data-desc-position="top"><img alt="Gate Noise" src="../figures/noise_1_dark.png#only-dark" /></a></p>
+<p>At the end of the circuit the noise model <span class="arithmatex">\(\mathcal{N}_D\)</span> is applied:
+<a class="glightbox" href="../figures/noise_2_light.png#only-light" data-type="image" data-width="auto" data-height="auto" data-title="Circuit Noise" data-desc-position="top"><img alt="Circuit Noise" src="../figures/noise_2_light.png#only-light" /></a>
+<a class="glightbox" href="../figures/noise_2_dark.png#only-dark" data-type="image" data-width="auto" data-height="auto" data-title="Circuit Noise" data-desc-position="top"><img alt="Circuit Noise" src="../figures/noise_2_dark.png#only-dark" /></a></p>
+<p>The noise types fall into four groups, which differ in where and how often a channel acts during one circuit evaluation (Table 1 in the paper):</p>
+<table>
+<thead>
+<tr>
+<th>Group</th>
+<th>Noise types</th>
+<th>Placement</th>
+<th>Applications</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Decoherent gate errors</td>
+<td>Bit Flip (BF), Phase Flip (PF), Depolarizing (DP)</td>
+<td>after every gate</td>
+<td><span class="arithmatex">\(N_g\)</span> (number of local gate-noise insertions)</td>
+</tr>
+<tr>
+<td>Damping errors</td>
+<td>Amplitude Damping (AD), Phase Damping (PD)</td>
+<td>once per qubit at the end of the circuit</td>
+<td><span class="arithmatex">\(n\)</span></td>
+</tr>
+<tr>
+<td>State preparation and measurement (SPAM) errors</td>
+<td>State Preparation (SP), Measurement (ME)</td>
+<td>once per qubit at the beginning / end of the circuit</td>
+<td><span class="arithmatex">\(n\)</span></td>
+</tr>
+<tr>
+<td>Coherent gate errors (CGE)</td>
+<td>additive rotation-angle offsets <span class="arithmatex">\(\epsilon \sim \mathcal{N}(0, p_\text{cge}^2)\)</span></td>
+<td>every parametrised rotation</td>
+<td><span class="arithmatex">\(N_r\)</span> (number of rotation angles)</td>
+</tr>
+</tbody>
+</table>
+<p>Channel probabilities <span class="arithmatex">\(p\)</span> are specified per application, whereas <span class="arithmatex">\(p_\text{cge}\)</span> is the standard deviation of the additive angle error in radians.
+Gate noise acts separately on each wire of a gate, so equal local probabilities do not imply equal accumulated noise across ansätze.
+For the coefficient and training experiments, one realisation of the coherent offsets per circuit layout is kept fixed across inputs, parameter samples, optimisation steps and seeds, and the same standardised offsets are scaled with <span class="arithmatex">\(p_\text{cge}\)</span> across noise levels.
+The expressibility and entanglement experiments instead sample the coherent offsets across the state batch.</p>
+<h2 id="ansaetze">Ansaetze<a class="headerlink" href="#ansaetze" title="Permanent link">#</a></h2>
+<p>We use the following ansaetze throughout our experiments (Figure 10 in the paper, shown for four qubits).
+In the plots, the ansätze are abbreviated as SEA, HEA, RYA and CRA.
+The RYA and CRA are inspired by circuits 15 and 19 of Sim et al. (2019) and are called <code>Circuit_20</code> and <code>Circuit_19</code> in the code and in the result data, respectively.</p>
+<h3 id="strongly_entangling_ansatz_sea">Strongly Entangling Ansatz (SEA)<a class="headerlink" href="#strongly_entangling_ansatz_sea" title="Permanent link">#</a></h3>
+<p><a class="glightbox" href="../figures/Strongly_Entangling_light.png#circuit#only-light" data-type="image" data-width="auto" data-height="auto" data-title="Strongly Entangling" data-desc-position="top"><img alt="Strongly Entangling" src="../figures/Strongly_Entangling_light.png#circuit#only-light" /></a>
+<a class="glightbox" href="../figures/Strongly_Entangling_dark.png#circuit#only-dark" data-type="image" data-width="auto" data-height="auto" data-title="Strongly Entangling" data-desc-position="top"><img alt="Strongly Entangling" src="../figures/Strongly_Entangling_dark.png#circuit#only-dark" /></a></p>
+<h3 id="hardware_efficient_ansatz_hea">Hardware Efficient Ansatz (HEA)<a class="headerlink" href="#hardware_efficient_ansatz_hea" title="Permanent link">#</a></h3>
+<p><a class="glightbox" href="../figures/Hardware_Efficient_light.png#circuit#only-light" data-type="image" data-width="auto" data-height="auto" data-title="Hardware Efficient" data-desc-position="top"><img alt="Hardware Efficient" src="../figures/Hardware_Efficient_light.png#circuit#only-light" /></a>
+<a class="glightbox" href="../figures/Hardware_Efficient_dark.png#circuit#only-dark" data-type="image" data-width="auto" data-height="auto" data-title="Hardware Efficient" data-desc-position="top"><img alt="Hardware Efficient" src="../figures/Hardware_Efficient_dark.png#circuit#only-dark" /></a></p>
+<h3 id="ry-rotation-only_ansatz_rya_circuit_20">RY-Rotation-Only Ansatz (RYA, Circuit 20)<a class="headerlink" href="#ry-rotation-only_ansatz_rya_circuit_20" title="Permanent link">#</a></h3>
+<p><a class="glightbox" href="../figures/Circuit_20_light.png#circuit#only-light" data-type="image" data-width="auto" data-height="auto" data-title="Circuit 20" data-desc-position="top"><img alt="Circuit 20" src="../figures/Circuit_20_light.png#circuit#only-light" /></a>
+<a class="glightbox" href="../figures/Circuit_20_dark.png#circuit#only-dark" data-type="image" data-width="auto" data-height="auto" data-title="Circuit 20" data-desc-position="top"><img alt="Circuit 20" src="../figures/Circuit_20_dark.png#circuit#only-dark" /></a></p>
+<h3 id="controlled_rotation_ansatz_cra_circuit_19">Controlled Rotation Ansatz (CRA, Circuit 19)<a class="headerlink" href="#controlled_rotation_ansatz_cra_circuit_19" title="Permanent link">#</a></h3>
+<p><a class="glightbox" href="../figures/Circuit_19_light.png#circuit#only-light" data-type="image" data-width="auto" data-height="auto" data-title="Circuit 19" data-desc-position="top"><img alt="Circuit 19" src="../figures/Circuit_19_light.png#circuit#only-light" /></a>
+<a class="glightbox" href="../figures/Circuit_19_dark.png#circuit#only-dark" data-type="image" data-width="auto" data-height="auto" data-title="Circuit 19" data-desc-position="top"><img alt="Circuit 19" src="../figures/Circuit_19_dark.png#circuit#only-dark" /></a></p>
+<h2 id="experimental_protocol">Experimental Protocol<a class="headerlink" href="#experimental_protocol" title="Permanent link">#</a></h2>
+<p>Unless stated otherwise, experiments use a single encoding layer (<span class="arithmatex">\(L = 1\)</span>), <span class="arithmatex">\(n \in [3\dots 6]\)</span> qubits and the mean of the local <span class="arithmatex">\(Z\)</span> expectation values as readout.
+The <a href="../expressibility/#expressibility_of_deeper_circuits">deeper-circuit expressibility study</a> additionally tests <span class="arithmatex">\(L = 2\)</span> and <span class="arithmatex">\(L = 4\)</span> at a fixed noise level of 3% and without noise.
+The main noise sweeps use seven linearly increasing levels from 0% to 3% in steps of 0.5%.
+Trainable parameters are sampled uniformly from <span class="arithmatex">\([0, 2\pi]\)</span> with five seeds for the one-dimensional coefficient, expressibility and entanglement experiments, two for the two-dimensional coefficient experiments and ten for the training experiments.</p>
+<ul>
+<li><strong>Coefficients:</strong> one-dimensional (<span class="arithmatex">\(R_X\)</span>, <span class="arithmatex">\(R_Y\)</span> or <span class="arithmatex">\(R_Z\)</span> encoding, <span class="arithmatex">\(D = 1\)</span>) and two-dimensional (<span class="arithmatex">\(R_X R_Y\)</span> encoding, <span class="arithmatex">\(D = 2\)</span>) inputs; <span class="arithmatex">\(250 \times 2^n\)</span> parameter vectors per seed for <span class="arithmatex">\(D = 1\)</span> and 250 per seed for <span class="arithmatex">\(D = 2\)</span>. The two-dimensional experiments use two seeds.</li>
+<li><strong>Expressibility and entanglement</strong> are evaluated on the density matrix at <span class="arithmatex">\(\boldsymbol{x} = \boldsymbol{0}\)</span>, as these descriptors only depend on the trainable layers.
+  Entanglement uses <span class="arithmatex">\(250 \times 2^n\)</span> parameter vectors per seed, while expressibility uses two independent batches of that size to form <span class="arithmatex">\(250 \times 2^n\)</span> state pairs and <span class="arithmatex">\(75 n\)</span> equal-width fidelity bins.</li>
+<li><strong>Training</strong> uses six-qubit circuits with <span class="arithmatex">\(R_Y\)</span> encoding on ten randomly generated Fourier series with the same frequency set as the model and a maximum absolute target value of <span class="arithmatex">\(a = 0.5\)</span>, using Adam (learning rate 0.01) for 1000 steps.
+  The loss is the squared complex coefficient error summed over all frequencies, which equals the mean squared error (MSE) on an exact-period grid and approximates it on the configured training grid (see <a href="../training/">Training</a>).
+  Noisy training uses a noise level of 3% for each noise type.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+    <a href="https://www.kit.edu/impressum.php" target="_blank" rel="noopener" title="Impressum" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M110 0C49.2 0 0 49.2 0 110c0 23.7 7.6 45.8 20.5 64C7.6 192 0 214.1 0 238c0 53.7 38.9 99.6 91.9 108.4l61.7 10.3c22.2 3.7 38.4 22.9 38.4 45.3 0 25.4-20.6 46-46 46H48c-17.7 0-32 14.3-32 32s14.3 32 32 32h98c60.7 0 110-49.2 110-110 0-23.7-7.6-45.9-20.5-64 12.9-18 20.5-40.1 20.5-64 0-53.8-38.9-99.6-91.9-108.5l-61.7-10.3C80.2 151.6 64 132.4 64 110c0-25.4 20.6-46 46-46h98c17.7 0 32-14.3 32-32S225.7 0 208 0zm74.7 299.1c-6.5-2.4-13.4-4.3-20.5-5.5l-61.7-10.3c-22.2-3.7-38.4-22.9-38.4-45.3 0-9.2 2.7-17.8 7.4-25 6.5 2.4 13.4 4.3 20.5 5.5l61.7 10.3c22.2 3.7 38.4 22.9 38.4 45.3 0 9.2-2.7 17.8-7.4 25"/></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="https://www.kit.edu/datenschutz.php" target="_blank" rel="noopener" title="Datenschutz" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M0 96c0-35.3 28.7-64 64-64h448c35.3 0 64 28.7 64 64zm0 48h576v272c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64zm247.3 272c20.2 0 35.3-19.4 22.4-35-14.7-17.7-36.9-29-61.7-29h-64c-24.8 0-47 11.3-61.7 29-12.9 15.6 2.2 35 22.4 35h142.5zM176 312a56 56 0 1 0 0-112 56 56 0 1 0 0 112m184-104c-13.3 0-24 10.7-24 24s10.7 24 24 24h112c13.3 0 24-10.7 24-24s-10.7-24-24-24zm0 96c-13.3 0-24 10.7-24 24s10.7 24 24 24h112c13.3 0 24-10.7 24-24s-10.7-24-24-24z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="https://github.com/cirKITers/effect-of-noise-in-qfms" target="_blank" rel="noopener" title="CirKITers @ Github" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.c21346df.min.js"></script>
+      
+        <script src="../javascripts/mathjax.js"></script>
+      
+        <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>
