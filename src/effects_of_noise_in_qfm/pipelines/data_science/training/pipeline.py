@@ -32,6 +32,8 @@ def create_noise_iteration_pipeline() -> Pipeline:
                     "metric_steps": "params:training.metric_steps",
                     "measure": "params:training.measure",
                     "loss": "params:training.loss",
+                    "lr_schedule": "params:training.lr_schedule",
+                    "lr_decay": "params:training.lr_decay",
                     "seed": "params:seed",
                 },
                 outputs={
@@ -73,6 +75,8 @@ def create_pipeline() -> Pipeline:
                     "metric_steps": "params:training.metric_steps",
                     "measure": "params:training.measure",
                     "loss": "params:training.loss",
+                    "lr_schedule": "params:training.lr_schedule",
+                    "lr_decay": "params:training.lr_decay",
                 },
                 outputs={
                     "params": "trained_params",

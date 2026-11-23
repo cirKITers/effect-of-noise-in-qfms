@@ -120,6 +120,27 @@ for seed in 1000; do
 	done
 done
 
+
+# Training with other optimiser settings
+echo "Started training experiments with other optimiser settings..."
+optimiser_settings=(
+	"0.1 1000 constant"
+	"0.001 3000 constant"
+	"0.01 3000 cosine"
+)
+for setting in "${optimiser_settings[@]}"; do
+	read -r lr steps schedule <<< "$setting"
+	for problem_seed in {1000..1004}; do
+		for seed in {1000..1004}; do
+			for circuit in $circuits; do
+				echo "Started experiment training with lr=$lr, steps=$steps, schedule=$schedule, problem_seed=$problem_seed, seed=$seed, n_qubits=6, $circuit and noise_type=Depolarizing"
+					uv run kedro run --pipeline training --params="data.seed=$problem_seed,data.omegas=6,model.n_qubits=6,model.encoding=RY,model.circuit_type=$circuit,seed=$seed,model.noise_params.Depolarizing=0.03,training.measure=MN,training.learning_rate=$lr,training.steps=$steps,training.lr_schedule=$schedule,training.lr_decay=0.01"
+			done
+		done
+	done
+done
+
+
 sed -i "s/effects_of_noise_in_qfm/paper_experiments/g" mlruns/$(ls -rt mlruns| tail -n 1)/meta.yaml
 
 echo "all experiments done."

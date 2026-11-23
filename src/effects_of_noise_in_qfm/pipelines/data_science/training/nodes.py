@@ -95,6 +95,8 @@ def train_model(
     metric_steps: int,
     measure: str,
     loss: str,
+    lr_schedule: str = "constant",
+    lr_decay: float = 0.01,
 ) -> Dict[str, pd.DataFrame]:
     """
     Train a given model on the regression task of a target Fourier series.
@@ -125,6 +127,10 @@ def train_model(
         loss (str): Training objective, either the MSE on the training inputs
             ("mse") or the squared complex coefficient error summed over all
             frequencies ("coeff").
+        lr_schedule (str): Learning-rate schedule, either "constant" or
+            "cosine" (cosine decay from ``learning_rate`` to
+            ``learning_rate * lr_decay`` over ``steps`` steps).
+        lr_decay (float): Final learning-rate factor of the cosine schedule.
 
     Returns:
         Dict[str, pd.DataFrame]: Result dict containing the following:
@@ -149,8 +155,17 @@ def train_model(
     else:
         raise ValueError(f"Unknown entanglement measure: {measure}")
 
+    if lr_schedule == "constant":
+        lr = learning_rate
+    elif lr_schedule == "cosine":
+        lr = optax.cosine_decay_schedule(
+            init_value=learning_rate, decay_steps=steps, alpha=lr_decay
+        )
+    else:
+        raise ValueError(f"Unknown learning-rate schedule: {lr_schedule}")
+
     # same hyperparameters as the previously used PennyLane AdamOptimizer
-    opt = optax.adam(learning_rate=learning_rate, b1=0.9, b2=0.99, eps=1e-8)
+    opt = optax.adam(learning_rate=lr, b1=0.9, b2=0.99, eps=1e-8)
     opt_state = opt.init(model.params)
 
     # Indices for logging params and gradients
@@ -375,6 +390,8 @@ def iterate_noise(
     metric_steps: int,
     measure: str,
     loss: str,
+    lr_schedule: str = "constant",
+    lr_decay: float = 0.01,
 ):
     """
     Iterate over different noise levels and train a given model on the
@@ -404,6 +421,8 @@ def iterate_noise(
             entanglement metric is computed.
         measure (str): Entanglement measure (EF, MW or MN).
         loss (str): Training objective ("mse" or "coeff").
+        lr_schedule (str): Learning-rate schedule ("constant" or "cosine").
+        lr_decay (float): Final learning-rate factor of the cosine schedule.
 
     Returns:
         Dict[str, pd.DataFrame]: Result dict containing the following for all
@@ -443,6 +462,8 @@ def iterate_noise(
             metric_steps,
             measure,
             loss,
+            lr_schedule,
+            lr_decay,
         )
 
         # Add noise data to dfs

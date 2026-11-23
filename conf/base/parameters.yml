@@ -62,6 +62,8 @@ coefficients:
 training:
   steps: 1000
   learning_rate: 0.01
+  lr_schedule: "constant" # constant or cosine (cosine decay from learning_rate to learning_rate * lr_decay over all steps)
+  lr_decay: 0.01
   metric_steps: 10 # compute expensive metrics (entanglement) only every n steps
   measure: "MN" # Entanglement of Formation (EF), Meyer-Wallach (MW), Mean Negativity (MN)
   loss: "coeff" # mse (training inputs) or coeff (squared complex coefficient error over all frequencies)
