@@ -91,6 +91,35 @@ for problem_seed in {1000..1009}; do
 	done
 done
 
+# Expressibility of deeper circuits: L in {2, 4} encoding layers,
+echo "Started expressibility experiments for deeper circuits..."
+for n_layers in 2 4; do
+	for seed in {1000..1004}; do
+		for n_qubits in {3..6}; do
+			for circuit in $circuits; do
+				for noise_type in $noise_types; do
+					echo "Started experiment expressibility with n_layers=$n_layers, seed=$seed, n_qubits=$n_qubits, $circuit and noise_type=$noise_type"
+						uv run kedro run --pipeline expressibility --params="data.omegas=$n_qubits,model.n_qubits=$n_qubits,model.n_layers=$n_layers,model.encoding=RY,model.circuit_type=$circuit,seed=$seed,model.noise_params.$noise_type=0.03,model.noise_steps=1"
+				done
+			done
+		done
+	done
+done
+
+# Second revision: expressibility capability on a grid of fixed inputs instead of x = 0
+N_INPUTS=8
+echo "Started descriptor experiments on the fixed-input grid..."
+for seed in 1000; do
+	for n_qubits in 6; do
+		for circuit in $circuits; do
+			for noise_type in $noise_types; do
+				echo "Started experiment expressibility on $N_INPUTS fixed inputs with seed=$seed, n_qubits=$n_qubits, $circuit and noise_type=$noise_type"
+					uv run kedro run --pipeline expressibility --params="data.omegas=$n_qubits,model.n_qubits=$n_qubits,model.encoding=RY,model.circuit_type=$circuit,seed=$seed,model.noise_params.$noise_type=0.03,model.noise_steps=6,$experiment.n_inputs=$N_INPUTS"
+			done
+		done
+	done
+done
+
 sed -i "s/effects_of_noise_in_qfm/paper_experiments/g" mlruns/$(ls -rt mlruns| tail -n 1)/meta.yaml
 
 echo "all experiments done."

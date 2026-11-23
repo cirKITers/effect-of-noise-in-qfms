@@ -45,6 +45,11 @@ expressibility:
   # Expressibility Params
   n_samples: 250
   n_bins: 75
+  # 0: evaluate the fidelity distribution at x = 0 (zero-input protocol).
+  # n > 0: evaluate it at n evenly spaced inputs over data.domain (one period
+  # without the repeated endpoint, so x = 0 is included for even n), with the
+  # same parameter samples for every input, and record one value per input.
+  n_inputs: 0
 
 coefficients:
   # Coefficients Params
