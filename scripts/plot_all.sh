@@ -14,6 +14,9 @@ if [ ! "$1" = "only_plot" ]; then
 	# -enccoeff: full coefficients for the (noiseless) encoding study (coeff_*_encoding)
 	# -ent/-expr/-train: entanglement, expressibility and training data
 	uv run python notebooks/csv_export.py $experiment_id_flag -enccoeff -ent -expr -train
+	# -exprinputs: expressibility on fixed inputs
+	# -trainopt: different training options
+	uv run python notebooks/csv_export.py $experiment_id_flag -exprinputs -trainopt
 	cd -
 fi
 

@@ -28,7 +28,33 @@ def rgb_to_rgba(rgb_value: str, alpha: float):
     return f"rgba{rgb_value[3:-1]}, {alpha})"
 
 
-def get_training_df(run_ids, debug=False):
+# default optimiser configuration of the main training study; runs with any
+# other configuration belong to the optimiser study
+DEFAULT_OPTIMISER = {"learning_rate": 0.01, "steps": 1000, "lr_schedule": "constant"}
+
+
+def _is_default_optimiser(params) -> bool:
+    return (
+        float(params.get("training.learning_rate", 0.01)) == DEFAULT_OPTIMISER["learning_rate"]
+        and int(params.get("training.steps", 1000)) == DEFAULT_OPTIMISER["steps"]
+        and params.get("training.lr_schedule", "constant") == DEFAULT_OPTIMISER["lr_schedule"]
+    )
+
+
+def get_training_df(run_ids, debug=False, optimiser_study=False):
+    """
+    Collect the training data of the given runs.
+
+    Args:
+        run_ids: MLflow run ids of training runs.
+        debug: Print missing configurations.
+        optimiser_study: If False (default), only runs with the default
+            optimiser configuration (Adam, learning rate 0.01, 1000 steps,
+            constant schedule) are collected, i.e. the main training study.
+            If True, only runs with a different configuration are collected.
+            The columns ``learning_rate``, ``steps``, ``lr_schedule`` and
+            ``lr_decay`` identify the configuration in both cases.
+    """
     columns = [
         "run_id",
         "ansatz",
@@ -36,6 +62,10 @@ def get_training_df(run_ids, debug=False):
         "seed",
         "problem_seed",
         "encoding",
+        "learning_rate",
+        "steps",
+        "lr_schedule",
+        "lr_decay",
         "BitFlip",
         "PhaseFlip",
         "AmplitudeDamping",
@@ -100,6 +130,18 @@ def get_training_df(run_ids, debug=False):
 
         problem_seed = int(client.get_run(run_id).data.params["data.seed"])
         sub_df_a.loc[it, "problem_seed"] = problem_seed
+
+        run_params = client.get_run(run_id).data.params
+        if _is_default_optimiser(run_params) == optimiser_study:
+            continue
+        sub_df_a.loc[it, "learning_rate"] = float(
+            run_params.get("training.learning_rate", 0.01)
+        )
+        sub_df_a.loc[it, "steps"] = int(run_params.get("training.steps", 1000))
+        sub_df_a.loc[it, "lr_schedule"] = run_params.get(
+            "training.lr_schedule", "constant"
+        )
+        sub_df_a.loc[it, "lr_decay"] = float(run_params.get("training.lr_decay", 1.0))
 
         measure = client.get_run(run_id).data.params.get("training.measure", "MN")
         sub_df_a.loc[it, "measure"] = measure
@@ -195,7 +237,19 @@ def get_csv_artifact(run_id, identifier: str, **kwargs):
 def get_expressibility_df(
     run_ids,
     debug=False,
+    input_grid=False,
 ):
+    """
+    Collect the expressibility data of the given runs.
+
+    Args:
+        run_ids: MLflow run ids of expressibility runs.
+        debug: Print missing configurations.
+        input_grid: If False (default), only runs of the zero-input protocol
+            (``expressibility.n_inputs`` = 0 or absent) are collected. If
+            True, only runs evaluated on a grid of fixed inputs are collected;
+            their rows carry ``input_idx`` and ``input_value`` columns.
+    """
     df = pd.DataFrame(
         columns=[
             "run_id",
@@ -203,6 +257,7 @@ def get_expressibility_df(
             "qubits",
             "layers",
             "seed",
+            "n_inputs",
             "BitFlip",
             "PhaseFlip",
             "AmplitudeDamping",
@@ -247,6 +302,13 @@ def get_expressibility_df(
 
         layers = int(client.get_run(run_id).data.params["model.n_layers"])
         sub_df_a.loc[it, "layers"] = layers
+
+        n_inputs = int(
+            client.get_run(run_id).data.params.get("expressibility.n_inputs", 0)
+        )
+        if (n_inputs > 0) != input_grid:
+            continue
+        sub_df_a.loc[it, "n_inputs"] = n_inputs
 
         noise_params = client.get_run(run_id).data.params["model.noise_params"]
         noise = [k for k, v in ast.literal_eval(noise_params).items() if float(v) > 0.0]

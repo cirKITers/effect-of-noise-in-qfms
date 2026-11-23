@@ -15,6 +15,8 @@ CSV_DESTINATION = "plotting/rplots/csv_data"
 id_ent_file = f"{CSV_DESTINATION}/ent_ids.csv"
 id_expr_file = f"{CSV_DESTINATION}/expr_ids.csv"
 id_training_file = f"{CSV_DESTINATION}/training_ids.csv"
+id_expr_inputs_file = f"{CSV_DESTINATION}/expr_inputs_ids.csv"
+id_training_opt_file = f"{CSV_DESTINATION}/training_optimiser_ids.csv"
 
 DEFAULT_MAX_SAMPLES = None
 
@@ -344,6 +346,7 @@ def export_coeff_data(
 def export_expr_data(
     experiment_id: Optional[str] = None,
     single: bool = False,
+    input_grid: bool = False,
 ):
     global CSV_DESTINATION
     if single:
@@ -351,8 +354,9 @@ def export_expr_data(
     else:
         dest = CSV_DESTINATION
     os.makedirs(dest, exist_ok=True)
-    if os.path.exists(id_expr_file):
-        id_expr = pd.read_csv(id_expr_file)
+    id_file = id_expr_inputs_file if input_grid else id_expr_file
+    if os.path.exists(id_file):
+        id_expr = pd.read_csv(id_file)
     else:
         id_expr = pd.DataFrame(columns=["run_id"])
     expr_run_ids = run_ids_from_experiment_id(
@@ -362,8 +366,10 @@ def export_expr_data(
     )
     if len(expr_run_ids) == 0:
         return
-    expr_df = get_expressibility_df(expr_run_ids)
-    result_file = f"{dest}/expr.csv"
+    expr_df = get_expressibility_df(expr_run_ids, input_grid=input_grid)
+    if expr_df.size == 0:
+        return
+    result_file = f"{dest}/{'expr_inputs' if input_grid else 'expr'}.csv"
     if os.path.exists(result_file) and not single:
         expr_df.to_csv(result_file, index=False, mode="a", header=False)
     else:
@@ -372,7 +378,7 @@ def export_expr_data(
 
     additional_runs = pd.DataFrame(expr_df["run_id"], columns=["run_id"])
     run_df = pd.concat([id_expr, additional_runs], ignore_index=True)
-    run_df.drop_duplicates().to_csv(id_expr_file, index=False)
+    run_df.drop_duplicates().to_csv(id_file, index=False)
     print("Exported Indices")
 
 
@@ -414,6 +420,7 @@ def export_ent_data(
 def export_training_data(
     experiment_id: Optional[str] = None,
     single: bool = False,
+    optimiser_study: bool = False,
 ):
     global CSV_DESTINATION
     if single:
@@ -421,8 +428,9 @@ def export_training_data(
     else:
         dest = CSV_DESTINATION
     os.makedirs(dest, exist_ok=True)
-    if os.path.exists(id_training_file):
-        id_training = pd.read_csv(id_training_file)
+    id_file = id_training_opt_file if optimiser_study else id_training_file
+    if os.path.exists(id_file):
+        id_training = pd.read_csv(id_file)
     else:
         id_training = pd.DataFrame(columns=["run_id"])
     training_run_ids = run_ids_from_experiment_id(
@@ -432,9 +440,13 @@ def export_training_data(
     )
     if len(training_run_ids) == 0:
         return
-    training_df = get_training_df(training_run_ids)
+    training_df = get_training_df(training_run_ids, optimiser_study=optimiser_study)
+    if training_df.size == 0:
+        return
 
-    result_file = f"{dest}/training.csv"
+    result_file = (
+        f"{dest}/{'training_optimiser' if optimiser_study else 'training'}.csv"
+    )
     if os.path.exists(result_file) and not single:
         training_df.to_csv(result_file, index=False, mode="a", header=False)
     else:
@@ -443,7 +455,7 @@ def export_training_data(
 
     additional_runs = pd.DataFrame(training_df["run_id"], columns=["run_id"])
     run_df = pd.concat([id_training, additional_runs], ignore_index=True)
-    run_df.drop_duplicates().to_csv(id_training_file, index=False)
+    run_df.drop_duplicates().to_csv(id_file, index=False)
     print("Exported Indices")
 
 
@@ -536,6 +548,20 @@ def get_arg_parser():
         default=False,
         help="Store training data",
     )
+    parser.add_argument(
+        "-exprinputs",
+        "--expressibility_inputs",
+        action="store_true",
+        default=False,
+        help="Store expressibility data of the fixed-input grid study (expr_inputs.csv)",
+    )
+    parser.add_argument(
+        "-trainopt",
+        "--training_optimiser",
+        action="store_true",
+        default=False,
+        help="Store training data of the optimiser study (training_optimiser.csv)",
+    )
     args = parser.parse_args()
     return args
 
@@ -583,3 +609,7 @@ if __name__ == "__main__":
         export_ent_data(experiment_id=p.experiment_id, single=p.single)
     if p.training:
         export_training_data(experiment_id=p.experiment_id, single=p.single)
+    if p.expressibility_inputs:
+        export_expr_data(experiment_id=p.experiment_id, input_grid=True)
+    if p.training_optimiser:
+        export_training_data(experiment_id=p.experiment_id, optimiser_study=True)
