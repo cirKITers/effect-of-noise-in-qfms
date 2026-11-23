@@ -114,7 +114,7 @@ for seed in 1000; do
 		for circuit in $circuits; do
 			for noise_type in $noise_types; do
 				echo "Started experiment expressibility on $N_INPUTS fixed inputs with seed=$seed, n_qubits=$n_qubits, $circuit and noise_type=$noise_type"
-					uv run kedro run --pipeline expressibility --params="data.omegas=$n_qubits,model.n_qubits=$n_qubits,model.encoding=RY,model.circuit_type=$circuit,seed=$seed,model.noise_params.$noise_type=0.03,model.noise_steps=6,expressibility.n_inputs=$N_INPUTS"
+					uv run kedro run --pipeline expressibility --params="data.omegas=$n_qubits,model.n_qubits=$n_qubits,model.encoding=RY,model.circuit_type=$circuit,seed=$seed,model.noise_params.$noise_type=0.03,model.noise_steps=3,expressibility.n_inputs=$N_INPUTS"
 			done
 		done
 	done
