@@ -4,9 +4,9 @@
 # number of steps and a cosine learning-rate schedule, under depolarising noise
 # at 3% (noise level 0 of the same runs is the noiseless reference).
 # The runs of the main study (Adam, learning rate 0.01, 1000 steps, constant
-# schedule) serve as the reference setting; they are taken from the summary
-# files written by plot_training.r, i.e. averaged over its 10 x 10 runs, while
-# the other settings are averaged over 5 x 5 runs.
+# schedule) serve as the reference setting; they are read from training.csv
+# and restricted to the problem seeds and initialisation seeds of this study
+# (1000 to 1004), so that every setting is averaged over the same 5 x 5 runs.
 
 library(tidyverse)
 library(ggh4x)
@@ -30,13 +30,19 @@ if (length(args) == 1) {
 data_path <- "csv_data/training_optimiser.csv"
 data_path_summarised <- "csv_data/training_optimiser_summarised_runs.csv"
 data_path_summarised_freq <- "csv_data/training_optimiser_summarised_freq.csv"
-# reference (default optimiser) from the main study, written by plot_training.r
-ref_path_summarised <- "csv_data/training_summarised_runs.csv"
-ref_path_summarised_freq <- "csv_data/training_summarised_freq.csv"
+# reference (default optimiser): raw runs of the main study, restricted to the
+# seeds of this study and summarised into separate cache files
+ref_path <- "csv_data/training.csv"
+ref_path_summarised <- "csv_data/training_optimiser_reference_summarised_runs.csv"
+ref_path_summarised_freq <- "csv_data/training_optimiser_reference_summarised_freq.csv"
 
 DEFAULT.LR <- 0.01
 DEFAULT.STEPS <- 1000
 DEFAULT.SCHEDULE <- "constant"
+# problem seeds and initialisation seeds of the optimiser study
+STUDY.SEEDS <- 1000:1004
+# training objective of the optimiser study (see training.loss in parameters.yml)
+STUDY.LOSS <- "coeff"
 
 # One label per optimiser setting; the default setting of the main study first.
 setting_label <- function(learning_rate, steps, lr_schedule) {
@@ -57,9 +63,11 @@ noise_to_factor <- function(noise_type) {
     factor(noise_type, levels = c("Noiseless", "DP"))
 }
 
-if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq)) {
-    d <- read_csv(data_path)
-
+# Summarise exported training runs (one row per run, step and frequency) per
+# optimiser setting, noise type, ansatz and step: the squared coefficient error
+# per frequency and the MSE. Only the noiseless runs and depolarising noise are
+# kept, as in the optimiser study.
+summarise_training <- function(d) {
     d <- d %>%
         pivot_longer(
             c(
@@ -74,6 +82,10 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
     d$noise_type[d$noise_value == 0] <- "Noiseless"
 
     d <- d %>%
+        filter(
+            noise_type %in% c("Noiseless", "Depolarizing"),
+            loss == STUDY.LOSS,
+        ) %>%
         distinct(
             learning_rate, steps, lr_schedule, noise_type, noise_value, ansatz, qubits,
             frequencies, step, problem_seed, seed,
@@ -83,7 +95,6 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
             coeff_diff_squared = (coeffs_real - target_coefficients_real)^2 +
                 (coeffs_imag - target_coefficients_imag)^2,
             noise_value = round(noise_value, digits = 3),
-            setting = setting_label(learning_rate, steps, lr_schedule),
         )
 
     d$noise_type <- factor(d$noise_type,
@@ -93,7 +104,7 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
     d$ansatz <- ansatz_to_factor(d$ansatz)
 
     d_summarised_freq <- d %>%
-        group_by(setting, learning_rate, steps, lr_schedule, noise_type, ansatz, qubits, step, frequencies) %>%
+        group_by(learning_rate, steps, lr_schedule, noise_type, ansatz, qubits, step, frequencies) %>%
         summarise(
             mean_squared_diff = mean(coeff_diff_squared),
             sd_squared_diff = sd(coeff_diff_squared),
@@ -106,10 +117,10 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
 
     # Scalar metrics are repeated for every frequency in the exported data.
     d_runs <- d %>%
-        distinct(setting, noise_type, ansatz, qubits, step, problem_seed, seed, .keep_all = TRUE)
+        distinct(learning_rate, steps, lr_schedule, noise_type, ansatz, qubits, step, problem_seed, seed, .keep_all = TRUE)
 
     d_summarised <- d_runs %>%
-        group_by(setting, learning_rate, steps, lr_schedule, noise_type, ansatz, qubits, step) %>%
+        group_by(learning_rate, steps, lr_schedule, noise_type, ansatz, qubits, step) %>%
         summarise(
             mean_mse = mean(mse),
             sd_mse = sd(mse),
@@ -119,7 +130,17 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
             mse_lower_bound = mean_mse - sd_mse,
             mse_upper_bound = mean_mse + sd_mse,
         )
-    print(d_summarised %>% group_by(setting) %>% summarise(max_step = max(step), runs = max(n_runs)))
+    print(d_summarised %>% group_by(learning_rate, steps, lr_schedule) %>% summarise(max_step = max(step), runs = max(n_runs)))
+
+    list(runs = d_summarised, freq = d_summarised_freq)
+}
+
+# Runs with the other optimiser settings.
+if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq)) {
+    d <- read_csv(data_path)
+    summarised <- summarise_training(d)
+    d_summarised <- summarised$runs
+    d_summarised_freq <- summarised$freq
 
     write_csv(d_summarised, data_path_summarised)
     write_csv(d_summarised_freq, data_path_summarised_freq)
@@ -128,31 +149,57 @@ if (!file.exists(data_path_summarised) || !file.exists(data_path_summarised_freq
     d_summarised_freq <- read_csv(data_path_summarised_freq)
 }
 
-# Reference setting from the main study (default optimiser); only the noise
-# types of this study are used.
-ref_summarised <- read_csv(ref_path_summarised) %>%
-    filter(noise_type %in% c("Noiseless", "DP")) %>%
-    mutate(
-        setting = default_label,
-        learning_rate = DEFAULT.LR, steps = DEFAULT.STEPS, lr_schedule = DEFAULT.SCHEDULE,
-    ) %>%
-    select(setting, learning_rate, steps, lr_schedule, noise_type, ansatz, qubits, step,
-           mean_mse, sd_mse, mse_lower_bound, mse_upper_bound)
-ref_summarised_freq <- read_csv(ref_path_summarised_freq) %>%
-    filter(noise_type %in% c("Noiseless", "DP")) %>%
-    mutate(
-        setting = default_label,
-        learning_rate = DEFAULT.LR, steps = DEFAULT.STEPS, lr_schedule = DEFAULT.SCHEDULE,
-    ) %>%
-    select(setting, learning_rate, steps, lr_schedule, noise_type, ansatz, qubits, step, frequencies,
-           mean_squared_diff, sd_squared_diff, dist_lower_bound, dist_upper_bound)
+# Reference setting: the runs of the main study (default optimiser settings)
+# with the same problem seeds and initialisation seeds as the optimiser study.
+# The main-study file is large, so it is read in chunks and only the matching
+# depolarising (and noiseless) runs are kept.
+if (!file.exists(ref_path_summarised) || !file.exists(ref_path_summarised_freq)) {
+    d_ref <- read_csv_chunked(
+        ref_path,
+        DataFrameCallback$new(function(chunk, pos) {
+            chunk %>%
+                filter(
+                    problem_seed %in% STUDY.SEEDS,
+                    seed %in% STUDY.SEEDS,
+                    !is.na(Depolarizing),
+                )
+        }),
+        chunk_size = 1e6,
+        # the column types are guessed from the first chunk only, where the
+        # noise columns of the other noise types may be entirely NA
+        col_types = cols(
+            .default = col_guess(),
+            BitFlip = col_double(), PhaseFlip = col_double(), Depolarizing = col_double(),
+            AmplitudeDamping = col_double(), PhaseDamping = col_double(),
+            StatePreparation = col_double(), Measurement = col_double(), GateError = col_double(),
+            MultiQubitDepolarizing = col_double(), ThermalRelaxation = col_double(),
+        )
+    )
+    d_ref <- d_ref %>%
+        mutate(
+            learning_rate = DEFAULT.LR,
+            steps = DEFAULT.STEPS,
+            lr_schedule = DEFAULT.SCHEDULE,
+        )
+    summarised <- summarise_training(d_ref)
+    ref_summarised <- summarised$runs
+    ref_summarised_freq <- summarised$freq
+
+    write_csv(ref_summarised, ref_path_summarised)
+    write_csv(ref_summarised_freq, ref_path_summarised_freq)
+} else {
+    ref_summarised <- read_csv(ref_path_summarised)
+    ref_summarised_freq <- read_csv(ref_path_summarised_freq)
+}
 
 d_summarised <- bind_rows(d_summarised, ref_summarised)
 d_summarised_freq <- bind_rows(d_summarised_freq, ref_summarised_freq)
 
+# The setting label depends on the output mode (tikz or pdf), so it is
+# computed here rather than stored in the cache files.
 for (name in c("d_summarised", "d_summarised_freq")) {
     tmp <- get(name)
-    tmp$setting <- setting_to_factor(tmp$setting)
+    tmp$setting <- setting_to_factor(setting_label(tmp$learning_rate, tmp$steps, tmp$lr_schedule))
     tmp$noise_type <- noise_to_factor(tmp$noise_type)
     tmp$ansatz <- factor(tmp$ansatz, levels = c("SEA", "HEA", "RYA", "CRA"))
     assign(name, tmp)

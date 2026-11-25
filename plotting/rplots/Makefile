@@ -79,8 +79,7 @@ img-pdf/training_mse.pdf: layout.r plot_training.r csv_data/training.csv
 	mkdir -p img-pdf
 	Rscript plot_training.r pdf
 
-# the reference setting is read from the summary files written by plot_training.r
-img-pdf/training_optimiser_final.pdf: layout.r plot_training_optimiser.r csv_data/training_optimiser.csv img-pdf/training_mse.pdf
+img-pdf/training_optimiser_final.pdf: layout.r plot_training_optimiser.r csv_data/training_optimiser.csv csv_data/training.csv
 	mkdir -p img-pdf
 	Rscript plot_training_optimiser.r pdf
 
@@ -116,7 +115,7 @@ img-tikz/training_mse.tex: layout.r plot_training.r csv_data/training.csv
 	mkdir -p img-tikz
 	Rscript plot_training.r
 
-img-tikz/training_optimiser_final.tex: layout.r plot_training_optimiser.r csv_data/training_optimiser.csv img-tikz/training_mse.tex
+img-tikz/training_optimiser_final.tex: layout.r plot_training_optimiser.r csv_data/training_optimiser.csv csv_data/training.csv
 	mkdir -p img-tikz
 	Rscript plot_training_optimiser.r
 
