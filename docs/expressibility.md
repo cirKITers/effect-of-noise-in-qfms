@@ -31,3 +31,19 @@ KL divergence of the fidelity distribution from the Haar reference for $L \in \{
 Without noise and under coherent gate errors, the KL divergence of the SEA does not change with depth, whereas the HEA and the CRA decrease by about one order of magnitude from one to two layers for four and more qubits and then level off at the values of the SEA.
 The RYA remains at its single-layer value of about 0.2 for all depths, as additional real-valued gates do not lift the restriction to real amplitudes.
 Under decoherent gate errors, the KL divergence increases monotonically with depth for all ansätze and qubit counts and approaches the upper bound, while SPAM and damping errors act only once per qubit at the circuit boundary and are therefore independent of depth.
+
+## Expressibility at Fixed Inputs
+
+The expressibility above is evaluated at $\boldsymbol{x} = \boldsymbol{0}$.
+For the HEA and the RYA this is without loss of generality: the trainable layer following the encoding starts with an $R_Y$ rotation on every qubit, so $R_Y(\theta_k) R_Y(x) = R_Y(\theta_k + x)$, and with angles sampled uniformly over a full period the state ensemble at any input has the same distribution as the zero-input ensemble.
+For the SEA and the CRA the encoding rotation cannot be absorbed exactly into the subsequent gates.
+To check the influence of the input empirically, the KL divergence of the six-qubit circuits was additionally evaluated at eight evenly spaced inputs over one period, $x \in \{-\pi, -3\pi/4, \dots, 3\pi/4\}$ (so $x = 0$ is one of the grid points), using the same parameter samples ($250 \times 2^6$ state pairs, seed 1000) for every input, for all four ansätze and all noise types at levels 0%, 1%, 2% and 3%.
+
+![Expressibility at fixed inputs](figures/expr_input_light.png#only-light)
+![Expressibility at fixed inputs](figures/expr_input_dark.png#only-dark)
+
+KL divergence of the fidelity distribution from the Haar reference as a function of the input $x$ for six-qubit circuits and noise levels from 0% to 3%; lower values indicate higher expressibility. Each point is one evaluation on the fixed input with the same parameter samples as the other points of the curve.
+
+The curves are essentially flat for every ansatz, noise type and noise level, including the SEA and the CRA.
+Across the eight inputs, the relative standard deviation of the KL divergence is 4.5% on average and at most 18.6%, which is small compared with the differences between noise levels.
+The paper therefore reports only these numbers and keeps the zero-input protocol for the main results; this figure is not part of the paper.

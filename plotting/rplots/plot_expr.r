@@ -26,8 +26,8 @@ N.BINS <- 75
 # noise and treated as "bound reached exactly".
 DIFF.EPS <- 1e-6
 
-coeffs_path <- "csv_data/expr.csv"
-d_expr <- read_csv(coeffs_path)
+expr_path <- "csv_data/expr.csv"
+d_expr <- read_csv(expr_path)
 
 d_expr$ansatz <- ansatz_to_factor(d_expr$ansatz)
 
@@ -172,3 +172,131 @@ g <- ggplot(
 
 save_name <- str_c("expr_layers")
 create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)
+
+input_expr_path <- "csv_data/expr_inputs.csv"
+d_inputs <- read_csv(input_expr_path)
+
+d_inputs$ansatz <- ansatz_to_factor(d_inputs$ansatz)
+
+d_inputs <- d_inputs %>%
+    pivot_longer(
+        c(
+            BitFlip, PhaseFlip, Depolarizing,
+            AmplitudeDamping, PhaseDamping, GateError,
+            StatePreparation, Measurement,
+        ),
+        names_to = "noise_type", values_to = "noise_value"
+    )
+
+d_inputs <- d_inputs %>%
+    filter(!is.na(noise_value) & noise_value <= 0.03) %>%
+    mutate(
+        noise_category = ifelse(
+            noise_type %in% c("BitFlip", "PhaseFlip", "Depolarizing"),
+            "Decoherent",
+            ifelse(
+                noise_type %in% c("StatePreparation", "Measurement"),
+                "SPAM",
+                ifelse(
+                    noise_type %in% c("AmplitudeDamping", "PhaseDamping"),
+                    "Damping",
+                    "Coh."
+                )
+            )
+        ),
+    ) %>%
+    mutate(
+        kl_max = (2^qubits - 1) * log(N.BINS * qubits),
+        diff_expr = kl_max - expressibility,
+        diff_expr = ifelse(diff_expr < DIFF.EPS, 0, diff_expr),
+        noise_value = round(noise_value, digits = 3)
+    ) %>%
+    distinct(noise_type, noise_value, ansatz, qubits, layers, seed, input_idx, .keep_all = TRUE)
+
+d_inputs$noise_category <- factor(d_inputs$noise_category, levels = c("", "Decoherent", "Coherent", "SPAM", "Damping", "Coh."))
+
+d_inputs$noise_type <- factor(d_inputs$noise_type,
+    levels = c(
+        "Noiseless", "BitFlip", "PhaseFlip", "Depolarizing",
+        "AmplitudeDamping", "PhaseDamping",
+        "StatePreparation", "Measurement",
+        "GateError"
+    ),
+    labels = c(
+        "Noiseless", "BF", "PF", "DP",
+        "AD", "PD",
+        "SP", "ME",
+        "CGE"
+    ),
+)
+
+d_inputs$noise_value = factor(
+  d_inputs$noise_value,
+  levels = c(0, 0.01, 0.02, 0.03),
+  labels = c("0\\%", "1\\%", "2\\%", "3\\%")
+)
+
+g <- ggplot(
+  d_inputs,
+  aes(
+    x = input_value,
+    y = expressibility,
+    colour = noise_value
+  )
+) +
+  geom_point(size = POINT.SIZE) +
+  geom_line(linewidth = LINE.SIZE) +
+  scale_colour_manual("Noise Level", values = COLOURS.LIST) +
+  facet_nested(
+    ansatz ~ noise_category + noise_type,
+    labeller = labeller(
+      frequency = frequencies_labeller,
+      qubits = qubit_labeller,
+    ),
+  ) +
+  scale_x_continuous(
+    ifelse(use_tikz, "$x$", "x"),
+    breaks = c(-pi, 0, pi),
+    labels = c("$-\\pi$", "$0$", "$\\pi$"),
+    limits = c(-pi, pi)
+  ) +
+  theme_paper() +
+  guides(colour = guide_legend(nrow = 1)) +
+  scale_y_log10(
+    ifelse(
+      use_tikz,
+      "\\quad \\scriptsize{more expr.} \\normalsize{$\\leftarrow$    KL-Divergence [log]    $\\rightarrow$} \\scriptsize{less expr.}",
+      "KL-Divergence [log]"
+    ),
+    breaks = c(1e-2, 1e0, 1e2),
+    labels = trans_format("log10", math_format(10^.x)),
+  ) +
+  theme(
+    legend.margin = margin(b = -4),
+  )
+
+
+
+save_name <- str_c("expr_input")
+create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)
+
+d_sum <- d_inputs %>%
+    group_by(noise_type, noise_value, ansatz, qubits, layers) %>%
+    summarise(
+        mean_expr = mean(expressibility),
+        sd_expr = sd(expressibility),
+    )
+
+print(
+  str_c(
+    "Max relative standard deviation: ",
+    max(d_sum$sd_expr / d_sum$mean_expr)
+  )
+)
+
+print(
+  str_c(
+    "Mean relative standard deviation: ",
+    mean(d_sum$sd_expr / d_sum$mean_expr)
+  )
+)
