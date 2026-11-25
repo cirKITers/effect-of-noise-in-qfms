@@ -16,6 +16,7 @@ id_ent_file = f"{CSV_DESTINATION}/ent_ids.csv"
 id_expr_file = f"{CSV_DESTINATION}/expr_ids.csv"
 id_training_file = f"{CSV_DESTINATION}/training_ids.csv"
 id_expr_inputs_file = f"{CSV_DESTINATION}/expr_inputs_ids.csv"
+id_ent_inputs_file = f"{CSV_DESTINATION}/ent_inputs_ids.csv"
 id_training_opt_file = f"{CSV_DESTINATION}/training_optimiser_ids.csv"
 
 DEFAULT_MAX_SAMPLES = None
@@ -385,6 +386,7 @@ def export_expr_data(
 def export_ent_data(
     experiment_id: Optional[str] = None,
     single: bool = False,
+    input_grid: bool = False,
 ):
     global CSV_DESTINATION
     if single:
@@ -392,8 +394,9 @@ def export_ent_data(
     else:
         dest = CSV_DESTINATION
     os.makedirs(dest, exist_ok=True)
-    if os.path.exists(id_ent_file):
-        id_ent = pd.read_csv(id_ent_file)
+    id_file = id_ent_inputs_file if input_grid else id_ent_file
+    if os.path.exists(id_file):
+        id_ent = pd.read_csv(id_file)
     else:
         id_ent = pd.DataFrame(columns=["run_id"])
     ent_run_ids = run_ids_from_experiment_id(
@@ -403,8 +406,13 @@ def export_ent_data(
     )
     if len(ent_run_ids) == 0:
         return
-    ent_df = get_entanglement_df(ent_run_ids)
-    result_file = f"{dest}/ent.csv"
+    # single-run exports take the run as configured, without the study filter
+    ent_df = get_entanglement_df(
+        ent_run_ids, input_grid=None if single else input_grid
+    )
+    if ent_df.size == 0:
+        return
+    result_file = f"{dest}/{'ent_inputs' if input_grid else 'ent'}.csv"
     if os.path.exists(result_file) and not single:
         ent_df.to_csv(result_file, index=False, mode="a", header=False)
     else:
@@ -413,7 +421,7 @@ def export_ent_data(
 
     additional_runs = pd.DataFrame(ent_df["run_id"], columns=["run_id"])
     run_df = pd.concat([id_ent, additional_runs], ignore_index=True)
-    run_df.drop_duplicates().to_csv(id_ent_file, index=False)
+    run_df.drop_duplicates().to_csv(id_file, index=False)
     print("Exported Indices")
 
 
@@ -556,6 +564,13 @@ def get_arg_parser():
         help="Store expressibility data of the fixed-input grid study (expr_inputs.csv)",
     )
     parser.add_argument(
+        "-entinputs",
+        "--entanglement_inputs",
+        action="store_true",
+        default=False,
+        help="Store entangling capability data of the fixed-input grid study (ent_inputs.csv)",
+    )
+    parser.add_argument(
         "-trainopt",
         "--training_optimiser",
         action="store_true",
@@ -611,5 +626,7 @@ if __name__ == "__main__":
         export_training_data(experiment_id=p.experiment_id, single=p.single)
     if p.expressibility_inputs:
         export_expr_data(experiment_id=p.experiment_id, input_grid=True)
+    if p.entanglement_inputs:
+        export_ent_data(experiment_id=p.experiment_id, input_grid=True)
     if p.training_optimiser:
         export_training_data(experiment_id=p.experiment_id, optimiser_study=True)

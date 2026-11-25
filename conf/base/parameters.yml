@@ -40,6 +40,7 @@ entanglement:
   n_samples: 250
   n_sigmas: 5 # Only applies when entanlement.measure = "RE"
   scale: True
+  n_inputs: 0 # as expressibility.n_inputs
 
 expressibility:
   # Expressibility Params

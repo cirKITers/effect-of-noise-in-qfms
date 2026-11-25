@@ -142,3 +142,120 @@ g <- ggplot(
 
 save_name <- str_c("ent_noiseless")
 create_plot(g, save_name, 0.5 * TEXTWIDTH, 0.15 * HEIGHT)
+
+# ---------------------------------------------------------------------------
+# Entangling capability on a grid of fixed inputs (second revision), see the
+# corresponding block in scripts/run_paper_experiments.sh; one value per
+# noise level and input with the same parameter samples for every input.
+# ---------------------------------------------------------------------------
+input_ent_path <- "csv_data/ent_inputs.csv"
+if (file.exists(input_ent_path)) {
+    d_inputs <- read_csv(input_ent_path)
+
+    d_inputs$ansatz <- ansatz_to_factor(d_inputs$ansatz)
+
+    d_inputs <- d_inputs %>%
+        pivot_longer(
+            c(
+                BitFlip, PhaseFlip, Depolarizing,
+                AmplitudeDamping, PhaseDamping, GateError,
+                StatePreparation, Measurement,
+            ),
+            names_to = "noise_type", values_to = "noise_value"
+        ) %>%
+        filter(!is.na(noise_value) & noise_value <= 0.03) %>%
+        mutate(
+            noise_category = ifelse(
+                noise_type %in% c("BitFlip", "PhaseFlip", "Depolarizing"),
+                "Decoherent",
+                ifelse(
+                    noise_type %in% c("StatePreparation", "Measurement"),
+                    "SPAM",
+                    ifelse(noise_type == "GateError",
+                        "Coh.",
+                        "Damping"
+                    )
+                )
+            ),
+            noise_value = round(noise_value, digits = 3)
+        ) %>%
+        distinct(noise_type, noise_value, ansatz, qubits, seed, measure, input_idx, .keep_all = TRUE)
+
+    d_inputs$noise_category <- factor(d_inputs$noise_category, levels = c("Decoherent", "SPAM", "Damping", "Coh."))
+
+    d_inputs$noise_type <- factor(d_inputs$noise_type,
+        levels = c(
+            "Noiseless", "BitFlip", "PhaseFlip", "Depolarizing",
+            "AmplitudeDamping", "PhaseDamping",
+            "StatePreparation", "Measurement",
+            "GateError"
+        ),
+        labels = c(
+            "Noiseless", "BF", "PF", "DP",
+            "AD", "PD",
+            "SP", "ME",
+            "CGE"
+        ),
+    )
+
+    d_inputs$noise_value <- factor(
+        d_inputs$noise_value,
+        levels = c(0, 0.01, 0.02, 0.03),
+        labels = c("0\\%", "1\\%", "2\\%", "3\\%")
+    )
+
+    g <- ggplot(
+        d_inputs,
+        aes(
+            x = input_value,
+            y = entangling_capability,
+            colour = noise_value
+        )
+    ) +
+        geom_point(size = POINT.SIZE) +
+        geom_line(linewidth = LINE.SIZE) +
+        scale_colour_manual("Noise Level", values = COLOURS.LIST) +
+        facet_nested(
+            ansatz ~ noise_category + noise_type,
+            labeller = labeller(
+                frequency = frequencies_labeller,
+                qubits = qubit_labeller,
+            ),
+        ) +
+        scale_x_continuous(
+            ifelse(use_tikz, "$x$", "x"),
+            breaks = c(-pi, 0, pi),
+            labels = c("$-\\pi$", "$0$", "$\\pi$"),
+            limits = c(-pi, pi)
+        ) +
+        scale_y_log10(str_c(ent_label, " [log]")) +
+        theme_paper() +
+        guides(colour = guide_legend(nrow = 1)) +
+        theme(
+            legend.margin = margin(b = -4),
+            plot.margin = margin(l = 2)
+        )
+
+    save_name <- str_c("ent_input")
+    create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)
+
+    d_sum <- d_inputs %>%
+        group_by(noise_type, noise_value, ansatz, qubits, measure) %>%
+        summarise(
+            mean_ent = mean(entangling_capability),
+            sd_ent = sd(entangling_capability),
+        )
+
+    print(
+        str_c(
+            "Fixed inputs: max relative standard deviation over inputs: ",
+            max(d_sum$sd_ent / d_sum$mean_ent)
+        )
+    )
+    print(
+        str_c(
+            "Fixed inputs: mean relative standard deviation over inputs: ",
+            mean(d_sum$sd_ent / d_sum$mean_ent)
+        )
+    )
+}

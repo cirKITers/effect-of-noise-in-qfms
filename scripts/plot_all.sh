@@ -16,7 +16,7 @@ if [ ! "$1" = "only_plot" ]; then
 	uv run python notebooks/csv_export.py $experiment_id_flag -enccoeff -ent -expr -train
 	# -exprinputs: expressibility on fixed inputs
 	# -trainopt: different training options
-	uv run python notebooks/csv_export.py $experiment_id_flag -exprinputs -trainopt
+	uv run python notebooks/csv_export.py $experiment_id_flag -exprinputs -entinputs -trainopt
 	cd -
 fi
 

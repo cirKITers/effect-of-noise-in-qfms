@@ -352,13 +352,24 @@ def get_expressibility_df(
 def get_entanglement_df(
     run_ids,
     debug=False,
+    input_grid: Optional[bool] = False,
 ):
+    """
+    Collect the entangling-capability data of the given runs.
+
+    Args:
+        run_ids: MLflow run ids of entanglement runs.
+        debug: Print missing configurations.
+        input_grid: As in ``get_expressibility_df`` (parameter
+            ``entanglement.n_inputs``); None collects all runs.
+    """
     df = pd.DataFrame(
         columns=[
             "run_id",
             "ansatz",
             "qubits",
             "seed",
+            "n_inputs",
             "BitFlip",
             "PhaseFlip",
             "AmplitudeDamping",
@@ -398,6 +409,13 @@ def get_entanglement_df(
 
         measure = client.get_run(run_id).data.params.get("entanglement.measure", "EF")
         sub_df_a.loc[it, "measure"] = measure
+
+        n_inputs = int(
+            client.get_run(run_id).data.params.get("entanglement.n_inputs", 0)
+        )
+        if input_grid is not None and (n_inputs > 0) != input_grid:
+            continue
+        sub_df_a.loc[it, "n_inputs"] = n_inputs
 
         qubits = int(client.get_run(run_id).data.params["model.n_qubits"])
         sub_df_a.loc[it, "qubits"] = qubits
