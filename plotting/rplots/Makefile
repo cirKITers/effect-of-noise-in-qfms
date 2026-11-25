@@ -1,7 +1,7 @@
 all: plot
 
-plot: plot_expr plot_ent plot_coeffs_mean plot_coeffs_encoding plot_coeffs_all plot_training gen
-pdf: plot_expr_pdf plot_ent_pdf plot_coeffs_mean_pdf plot_coeffs_encoding_pdf plot_coeffs_all_pdf plot_training_pdf
+plot: plot_expr plot_ent plot_coeffs_mean plot_coeffs_encoding plot_coeffs_all plot_training plot_training_optimiser gen
+pdf: plot_expr_pdf plot_ent_pdf plot_coeffs_mean_pdf plot_coeffs_encoding_pdf plot_coeffs_all_pdf plot_training_pdf plot_training_optimiser_pdf
 single_coeff: img-pdf/single/coeffs.pdf
 single_expr: img-pdf/single/expr.pdf
 single_ent: img-pdf/single/ent.pdf
@@ -14,6 +14,7 @@ plot_coeffs_encoding_pdf: img-pdf/coeff_real_imag_encoding.pdf
 plot_expr_pdf: img-pdf/expr.pdf
 plot_ent_pdf: img-pdf/ent.pdf
 plot_training_pdf: img-pdf/training_mse.pdf
+plot_training_optimiser_pdf: img-pdf/training_optimiser_final.pdf
 
 plot_coeffs: img-tikz/coeff_real_imag_qubits6.tex
 plot_coeffs_all: img-tikz/coeff_mean_qubits5.tex
@@ -22,6 +23,7 @@ plot_coeffs_encoding: img-tikz/coeff_real_imag_encoding.tex
 plot_expr: img-tikz/expr.tex
 plot_ent: img-tikz/ent.tex
 plot_training: img-tikz/training_mse.tex
+plot_training_optimiser: img-tikz/training_optimiser_final.tex
 
 gen: img-tikz
 	if [ -e img-tikz/coeff_real_imag_encoding.tex ]; then \
@@ -77,6 +79,11 @@ img-pdf/training_mse.pdf: layout.r plot_training.r csv_data/training.csv
 	mkdir -p img-pdf
 	Rscript plot_training.r pdf
 
+# the reference setting is read from the summary files written by plot_training.r
+img-pdf/training_optimiser_final.pdf: layout.r plot_training_optimiser.r csv_data/training_optimiser.csv img-pdf/training_mse.pdf
+	mkdir -p img-pdf
+	Rscript plot_training_optimiser.r pdf
+
 img-tikz/coeff_mean_qubits6.tex: layout.r plot_coeffs_mean.r csv_data/coeffs_stat_dims1.csv csv_data/coeffs_stat_dims2.csv
 	mkdir -p img-tikz
 	Rscript plot_coeffs_mean.r
@@ -109,7 +116,11 @@ img-tikz/training_mse.tex: layout.r plot_training.r csv_data/training.csv
 	mkdir -p img-tikz
 	Rscript plot_training.r
 
+img-tikz/training_optimiser_final.tex: layout.r plot_training_optimiser.r csv_data/training_optimiser.csv img-tikz/training_mse.tex
+	mkdir -p img-tikz
+	Rscript plot_training_optimiser.r
+
 clean:
 	rm -rf build img-tikz img-pdf img-gen
 
-.PHONY: all pdf clean plot_coeffs plot_ent plot_expr plot_coeffs_mean plot_coeffs_encoding plot_coeffs_all plot_training
+.PHONY: all pdf clean plot_coeffs plot_ent plot_expr plot_coeffs_mean plot_coeffs_encoding plot_coeffs_all plot_training plot_training_optimiser
