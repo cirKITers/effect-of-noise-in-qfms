@@ -48,7 +48,7 @@ STUDY.LOSS <- "coeff"
 setting_label <- function(learning_rate, steps, lr_schedule) {
     str_c(
         ifelse(use_tikz, "$\\eta$ = ", "lr = "), learning_rate,
-        ifelse(lr_schedule == "cosine", " (cosine)", ""),
+        ifelse(lr_schedule == "cosine", ", sched.", ""),
         ", ", as.integer(steps), " steps"
     )
 }
@@ -264,7 +264,7 @@ g_final_diff <- ggplot(
     theme_paper() +
     theme(
         panel.spacing.x = unit(1.5, "pt"),
-        axis.title.x = element_text(vjust = 5),
+        axis.title.x = element_text(vjust = 13),
         plot.margin = margin(0, 0, 0, 0)
     )
 
@@ -277,7 +277,7 @@ g <- (g_final_mse | plot_spacer() | g_final_diff) +
         legend.key.width = unit(0.4, "cm"),
         plot.margin = margin(0, 0, 0, 0)
     ) &
-    guides(fill = guide_legend(nrow = 2, theme = theme(legend.byrow = TRUE)))
+    guides(fill = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE)))
 save_name <- str_c("training_optimiser_final")
 create_plot(g, save_name, TEXTWIDTH, 0.35 * HEIGHT)
 
@@ -297,7 +297,7 @@ g <- ggplot(
     scale_y_continuous("MSE", limits = c(0, 0.065)) +
     theme_paper() +
     guides(
-        colour = guide_legend(nrow = 2, theme = theme(legend.byrow = TRUE)),
+        colour = guide_legend(nrow = 1, theme = theme(legend.byrow = TRUE)),
         fill = "none",
     )
 save_name <- str_c("training_optimiser_mse")

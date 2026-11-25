@@ -90,6 +90,29 @@ The squared coefficient error $\Delta c_{\boldsymbol{\omega}}$ averaged over ten
 All configurations reach a plateau before the end of the training, such that the final values in Fig. 6 reflect the fitting error achieved under the chosen optimiser and training budget.
 Lower frequencies are matched within the first few hundred steps, whereas higher frequencies converge more slowly.
 
+## Training with Other Optimiser Settings
+
+To test whether the residuals at high frequencies depend on the optimisation budget, we repeated the training in the noiseless setting and under DP (3%) with three further optimiser settings: Adam with a learning rate of 0.1 for 1000 steps, with a learning rate of 0.001 for 3000 steps, and with a learning rate of 0.01 decayed to 0.0001 over 3000 steps following a cosine schedule (`training.lr_schedule=cosine`, `training.lr_decay=0.01`).
+These runs use the problem instances with seeds $[1000\dots 1004]$ and the parameter initialisation seeds $[1000\dots 1004]$; the default setting (learning rate 0.01, 1000 steps) is shown for the same $5 \times 5$ configurations as reference.
+
+Our Figure 20 in the paper (Appendix "Training with Other Optimiser Settings"):
+![Final training performance for other optimiser settings](figures/training_optimiser_final_light.png#only-light)
+![Final training performance for other optimiser settings](figures/training_optimiser_final_dark.png#only-dark)
+
+Training performance at the end of the training in the noiseless setting and under DP (3%) for the four optimiser settings, averaged over five model parameter initialisation seeds and five randomly generated problem instances. Bars represent the mean and error bars the standard deviation over the 5 × 5 configurations. Left: final MSE for each ansatz (rows) and noise type. Right: final squared coefficient error $\Delta c_{\boldsymbol{\omega}}$ for each frequency $\boldsymbol{\omega}$.
+
+The final values are practically independent of the optimiser setting.
+For every ansatz and both noise configurations, the final MSEs of the four settings differ by less than 0.002 and the coefficient errors by less than 0.0004, which is comparable to or smaller than the standard deviation across the 5 × 5 configurations.
+The high-frequency residuals of the RYA and the CRA without noise and those of all ansätze under DP persist for the larger and the smaller learning rate, over three times the number of training steps and under the decaying schedule, and the HEA retains the constant error at its structurally absent frequencies.
+
+The MSE during training for the four optimiser settings:
+![MSE during training for other optimiser settings](figures/training_optimiser_mse_light.png#only-light)
+![MSE during training for other optimiser settings](figures/training_optimiser_mse_dark.png#only-dark)
+
+The MSE over five parameter initialisation seeds and five randomly generated problem instances during training in the noiseless setting and under DP (3%) for each optimiser setting. Lines represent the mean, and shaded areas show the standard deviation over the 5 × 5 configurations.
+
+The settings differ only in the speed of convergence: with a learning rate of 0.001, the MSE approaches its final value only after about 2000 steps for the noiseless RYA and CRA, whereas the other settings reach a plateau within the first few hundred steps.
+
 ## Coefficients during Training for Problem Instances
 
 In the following, we show the learned absolute coefficients of the QFMs averaged over ten parameter model initialisation seeds for each single randomly generated problem instance with seeds $[1000\dots 1009]$ and different types of noise (3%) during training of 1000 steps. In the figures the shaded areas correspond to the standard deviation across the parameter initialisation seeds from the mean. The coefficients of the objective Fourier series are marked with dashed lines.
@@ -138,7 +161,7 @@ Problem instance seed 1009:
 
 ## Entanglement during Training
 
-Our Figure 20 in the paper (Appendix "Entanglement during Training"):
+Our Figure 21 in the paper (Appendix "Entanglement during Training"):
 ![Entanglement during training](figures/training_ent_light.png#only-light)
 ![Entanglement during training](figures/training_ent_dark.png#only-dark)
 
